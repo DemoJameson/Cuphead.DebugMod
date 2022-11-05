@@ -1,0 +1,92 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net35</TargetFramework>
+        <AssemblyName>Cuphead.DebugMod</AssemblyName>
+        <Description>Cuphead plugin provides several features</Description>
+        <Version>1.0.0</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>latest</LangVersion>
+        <RestoreAdditionalProjectSources>
+            https://api.nuget.org/v3/index.json;
+            https://nuget.bepinex.dev/v3/index.json
+        </RestoreAdditionalProjectSources>
+        <Configurations>1.0~1.1;1.2;1.3+</Configurations>
+        <Platforms>AnyCPU</Platforms>
+        <RootNamespace>BepInEx.CupheadDebugMod</RootNamespace>
+        <Optimize>true</Optimize>
+        <PathMap>$(MSBuildProjectDirectory)=CupheadDebugMod/</PathMap>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == '1.0~1.1' ">
+      <DefineConstants>TRACE;v1_0</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == '1.2' ">
+      <DefineConstants>TRACE;v1_2</DefineConstants>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == '1.3+' ">
+      <DefineConstants>TRACE;v1_3</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BepInEx.Analyzers" Version="1.*" PrivateAssets="all" />
+        <PackageReference Include="BepInEx.Core" Version="5.*" />
+        <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(Configuration)' == '1.0~1.1' ">
+        <PackageReference Include="UnityEngine.Modules" Version="5.6.2" IncludeAssets="compile" />
+        <Reference Include="Assembly-CSharp">
+            <HintPath>libs\1.0~1.1\Assembly-CSharp-nstrip.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(Configuration)' == '1.2' ">
+        <PackageReference Include="UnityEngine.Modules" Version="2017.4.9" IncludeAssets="compile" />
+        <Reference Include="Assembly-CSharp">
+            <HintPath>libs\1.2\Assembly-CSharp-nstrip.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup Condition=" '$(Configuration)' == '1.3+' ">
+        <PackageReference Include="UnityEngine.Modules" Version="2017.4.9" IncludeAssets="compile" />
+        <Reference Include="Assembly-CSharp">
+            <HintPath>libs\1.3+\Assembly-CSharp-nstrip.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+        <Reference Include="UniverseLib.Mono">
+            <HintPath>libs\1.3+\UniverseLib.Mono.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="libs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <EmbeddedResource Remove="libs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Remove="libs\**" />
+    </ItemGroup>
+
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+        <Exec Condition="'$(Configuration)' == '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x64 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
+        <Exec Condition="'$(Configuration)' != '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x86 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
+        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
+        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip' -Force" />
+
+        <Exec Command="xcopy $(SolutionDir)BepInex\BepInex_unix $(SolutionDir)out\macOS_Cuphead_v$(Configuration) /E/H/C/I/Y" />
+        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
+        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip' -Force" />
+    </Target>
+</Project>

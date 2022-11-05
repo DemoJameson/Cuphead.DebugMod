@@ -1,0 +1,19 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cuphead.DebugMod", "Cuphead.DebugMod\Cuphead.DebugMod.csproj", "{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		1.0~1.1|Any CPU = 1.0~1.1|Any CPU
+		1.2|Any CPU = 1.2|Any CPU
+		1.3+|Any CPU = 1.3+|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0~1.1|Any CPU.ActiveCfg = 1.0~1.1|Any CPU
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0~1.1|Any CPU.Build.0 = 1.0~1.1|Any CPU
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.2|Any CPU.ActiveCfg = 1.2|Any CPU
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.2|Any CPU.Build.0 = 1.2|Any CPU
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.3+|Any CPU.ActiveCfg = 1.3+|Any CPU
+		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.3+|Any CPU.Build.0 = 1.3+|Any CPU
+	EndGlobalSection
+EndGlobal

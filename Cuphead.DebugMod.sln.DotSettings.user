@@ -1,0 +1,9 @@
+﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=D_003A_005CRiderProjects_005CCuphead_002EDebugMod_005CCuphead_002EDebugMod_005Clibs_005CAssembly_002DCSharp_002Dnstrip_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=E_003A_005CGame_005CSteam_005CSteamApps_005Ccommon_005CCuphead_005CBepInEx_005Cplugins_005Csinai_002Ddev_002DUnityExplorer_005CUniverseLib_002EMono_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=E_003A_005CGame_005CSteam_005CSteamApps_005Ccommon_005CCuphead_005CCuphead_005FData_005CManaged_005CUnityEngine_002EUI_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:Boolean x:Key="/Default/AddReferences/RecentPaths/=E_003A_005CGame_005CSteam_005CSteamApps_005Ccommon_005CCuphead_005Fv1_002E3_002E4_005CCuphead_005FData_005CManaged_005CUnityEngine_002EUI_002Edll/@EntryIndexedValue">True</s:Boolean>
+	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;&#xD;
+  &lt;Assembly Path="D:\RiderProjects\Cuphead.DebugMod\Cuphead.DebugMod\libs\1.0~1.1\Assembly-CSharp-nstrip.dll" /&gt;&#xD;
+  &lt;Assembly Path="D:\Games\Steam\steamapps\common\Celeste\Resource\Code\Cuphead.DebugMod\Cuphead.DebugMod\libs\1.2+\UniverseLib.Mono-nstrip.dll" /&gt;&#xD;
+&lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>
