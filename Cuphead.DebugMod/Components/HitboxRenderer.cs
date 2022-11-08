@@ -445,15 +445,6 @@ public class HitboxRenderer : MonoBehaviour {
                     };
                     boxCollidersLines[i].SetPositions(positions);
                 }
-
-                if (UnityEngine.Random.Range(0, 1) == 2) {
-                    boxCollidersLines[i].positionCount = (CupheadLevelCamera.Current.ContainsPoint(
-                        boxColliders[i].bounds.center,
-                        new Vector2(boxColliders[i].bounds.center.x + boxColliders[i].bounds.extents.x,
-                            boxColliders[i].bounds.center.y + boxColliders[i].bounds.extents.y))
-                        ? 4
-                        : 0);
-                }
             }
         }
     }
