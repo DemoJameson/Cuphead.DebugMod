@@ -146,7 +146,6 @@ public class DebugInfo : PluginComponent {
                 GUILayout.Label("Difficulty: " + Level.ScoringData.difficulty);
                 GUILayout.Label("DmgMultiplier: " + PlayerManager.DamageMultiplier);
                 GUILayout.Label("Player Count: " + PlayerManager.Count);
-                GUILayout.Label("Player count raw: " + PlayerManager.Count);
                 GUILayout.Label("Current scene: " + CurrentSceneName);
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
