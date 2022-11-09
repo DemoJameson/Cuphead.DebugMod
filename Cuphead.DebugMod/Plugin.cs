@@ -11,6 +11,5 @@ public class Plugin : BaseUnityPlugin {
     private void Awake() {
         Instance = this;
         PluginComponent.Initialize(gameObject);
-        HookHelper.Patch(typeof(Plugin).Assembly);
     }
 }
