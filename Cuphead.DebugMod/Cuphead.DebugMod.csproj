@@ -68,6 +68,13 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Reference Include="Rewired_Core">
+            <HintPath>libs\common\Rewired_Core.dll</HintPath>
+            <Private>False</Private>
+        </Reference>
+    </ItemGroup>
+
+    <ItemGroup>
         <Compile Remove="libs\**" />
     </ItemGroup>
 
