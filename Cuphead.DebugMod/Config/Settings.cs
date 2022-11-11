@@ -1,6 +1,7 @@
 ﻿using System;
 using BepInEx.Configuration;
 using UnityEngine;
+using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
 namespace BepInEx.CupheadDebugMod.Config;
 
@@ -39,6 +40,13 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> ResetSpeed;
     public static ConfigEntry<KeyboardShortcut> PauseResume;
     public static ConfigEntry<KeyboardShortcut> FrameAdvance;
+
+    #if v1_3
+    private static ConfigEntry<RelicLevels> RelicLevel;
+    #endif
+
+    public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
+
 
     public static event Action OnKeyUpdate;
 
@@ -79,6 +87,14 @@ public class Settings : PluginComponent {
         ResetSpeed = config.Bind("Game Speed", "Reset Game Speed", new KeyboardShortcut(KeyCode.Alpha0), --order);
         PauseResume = config.Bind("Game Speed", "Pause or Resume", new KeyboardShortcut(KeyCode.RightBracket), --order);
         FrameAdvance = config.Bind("Game Speed", "Frame Advance", new KeyboardShortcut(KeyCode.LeftBracket), --order);
+
+        #if v1_3
+        RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
+        #endif
+
+        FrogsPhaseOnePattern = config.Bind("RNG", "Ribby and Croaks Phase 1", FrogsPhaseOnePatterns.Random);
+
+
     }
 
     private void Update() {
