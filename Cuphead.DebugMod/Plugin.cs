@@ -1,5 +1,4 @@
-﻿using BepInEx.CupheadDebugMod.Components;
-using BepInEx.Logging;
+﻿using BepInEx.Logging;
 
 namespace BepInEx.CupheadDebugMod;
 
