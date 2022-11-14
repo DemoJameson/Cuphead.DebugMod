@@ -46,6 +46,9 @@ public class Settings : PluginComponent {
     #endif
 
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
+    public static ConfigEntry<FrogsPhaseFinalPatterns> FrogsPhaseFinalPattern;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp2Patterns> FlyingBlimpPhaseBlimp2Pattern;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp3Patterns> FlyingBlimpPhaseBlimp3Pattern;
 
 
     public static event Action OnKeyUpdate;
@@ -92,7 +95,10 @@ public class Settings : PluginComponent {
         RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
         #endif
 
-        FrogsPhaseOnePattern = config.Bind("RNG", "Ribby and Croaks Phase 1", FrogsPhaseOnePatterns.Random);
+        FrogsPhaseOnePattern = config.Bind("RNG", "Ribby and Croaks Phase 1", FrogsPhaseOnePatterns.Random, --order);
+        FrogsPhaseFinalPattern = config.Bind("RNG", "Ribby and Croaks Final Phase", FrogsPhaseFinalPatterns.Random, --order);
+        FlyingBlimpPhaseBlimp2Pattern = config.Bind("RNG", "Hilda Berg Second Blimp Phase", FlyingBlimpPhaseBlimp2Patterns.Random, --order);
+        FlyingBlimpPhaseBlimp3Pattern = config.Bind("RNG", "Hilda Berg Third Blimp Phase", FlyingBlimpPhaseBlimp3Patterns.Random, --order);
 
 
     }

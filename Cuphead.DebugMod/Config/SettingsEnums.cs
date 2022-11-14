@@ -11,8 +11,32 @@ namespace BepInEx.CupheadDebugMod.Config {
             Punches,
             Fireflies
         }
+        public enum FrogsPhaseFinalPatterns {
+            Random,
+            Snake,
+            Tiger,
+            Bison
+        }
+        public enum FlyingBlimpPhaseBlimp2Patterns {
+            Random,
+            Tornado1,
+            Shoot1,
+            Shoot2,
+            Shoot3,
+            Tornado2,
+            Shoot4,
+            Shoot5
+        }
+        public enum FlyingBlimpPhaseBlimp3Patterns {
+            Random,
+            Shoot1,
+            Tornado1,
+            Shoot2,
+            Shoot3,
+            Tornado2,
+        }
 
-        #if v1_3
+#if v1_3
 
         private enum RelicLevels {
             Default,
@@ -28,7 +52,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             DivineRelic
         }
 
-        #endif
+#endif
 
 
     }
