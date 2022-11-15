@@ -36,6 +36,38 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tornado2,
         }
 
+        public enum DevilPhaseOnePatterns {
+            Random,
+            Head1,
+            Clap1,
+            Pitchfork1,
+            Clap2,
+            Head2,
+            Clap3,
+            Pitchfork2
+        }
+
+        public enum DevilPhaseOneHeadTypes {
+            Random,
+            Dragon,
+            Spider
+        }
+
+        public enum DevilPhaseOnePitchforkTypes {
+            Random,
+            Pinwheel,
+            Bouncer,
+            Ring
+        }
+
+        public enum FlyingMermaidPhaseOnePatterns {
+            Random,
+            Ghosts,
+            Summon1,
+            Fish,
+            Summon2
+        }
+
 #if v1_3
 
         private enum RelicLevels {
