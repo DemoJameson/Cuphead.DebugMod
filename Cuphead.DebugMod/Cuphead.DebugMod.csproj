@@ -82,6 +82,7 @@
 
     <ItemGroup>
         <Compile Remove="libs\**" />
+        <Compile Condition=" '$(Configuration)' != '1.0~1.1' " Remove="Components\EnableDebugConsole.cs" />
     </ItemGroup>
 
     <ItemGroup>
