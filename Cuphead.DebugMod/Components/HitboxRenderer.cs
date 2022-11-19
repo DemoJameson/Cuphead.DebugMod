@@ -231,14 +231,14 @@ public class HitboxRenderer : MonoBehaviour {
             if (!(circleColliders[j] != null)) {
                 circleColliders[j] = components[j];
                 circleCollidersLines[j] =
-                    ((gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1)
+                    gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1
                         ? gameObject.AddComponent<LineRenderer>()
-                        : new GameObject().AddComponent<LineRenderer>());
+                        : new GameObject().AddComponent<LineRenderer>();
                 circleCollidersLines[j].gameObject.transform
                     .SetParent(gameObject.transform, worldPositionStays: false);
                 float radius = circleColliders[j].radius;
                 Vector2 offset = circleColliders[j].offset;
-                Vector3[] array3 = new Vector3[(int) radius / 3 + 5 * ((!(GameObject.Find("Map") != null)) ? 1 : 6)];
+                Vector3[] array3 = new Vector3[(int) radius / 3 + 5 * (!(GameObject.Find("Map") != null) ? 1 : 6)];
                 for (int k = 1; k < array3.Length + 1; k++) {
                     float f = (float) Math.PI / 180f * (float) j;
                     array3[k - 1] = new Vector3(offset.x + Mathf.Sin(f) * radius, offset.y + Mathf.Cos(f) * radius, 0f);
@@ -251,8 +251,8 @@ public class HitboxRenderer : MonoBehaviour {
                 color.a = hitboxTransparency;
                 circleCollidersLines[j].startColor = color;
                 circleCollidersLines[j].endColor = color;
-                circleCollidersLines[j].startWidth = ((Map.Current != null) ? 0.05f : 5f);
-                circleCollidersLines[j].endWidth = ((Map.Current != null) ? 0.05f : 5f);
+                circleCollidersLines[j].startWidth = Map.Current != null ? 0.05f : 5f;
+                circleCollidersLines[j].endWidth = Map.Current != null ? 0.05f : 5f;
                 circleCollidersLines[j].sortingLayerName = renderLayer.ToString();
                 circleCollidersLines[j].sortingOrder = 20000;
                 circleCollidersLines[j].material.renderQueue = 5000;
@@ -283,11 +283,11 @@ public class HitboxRenderer : MonoBehaviour {
             if (!(boxColliders[j] != null)) {
                 boxColliders[j] = components[j];
                 boxCollidersLines[j] =
-                    ((gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1)
+                    gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1
                         ? gameObject.AddComponent<LineRenderer>()
-                        : new GameObject().AddComponent<LineRenderer>());
+                        : new GameObject().AddComponent<LineRenderer>();
                 boxCollidersLines[j].gameObject.transform
-                    .SetParent(gameObject.transform, worldPositionStays: false);
+                    .SetParent(gameObject.transform, false);
                 Vector2 size = boxColliders[j].size;
                 Vector2 offset = boxColliders[j].offset;
                 size *= 0.5f;
@@ -304,8 +304,8 @@ public class HitboxRenderer : MonoBehaviour {
                 color.a = hitboxTransparency;
                 boxCollidersLines[j].startColor = color;
                 boxCollidersLines[j].endColor = color;
-                boxCollidersLines[j].startWidth = ((Map.Current != null) ? 0.05f : 5f);
-                boxCollidersLines[j].endWidth = ((Map.Current != null) ? 0.05f : 5f);
+                boxCollidersLines[j].startWidth = Map.Current != null ? 0.05f : 5f;
+                boxCollidersLines[j].endWidth = Map.Current != null ? 0.05f : 5f;
                 boxCollidersLines[j].sortingLayerName = renderLayer.ToString();
                 boxCollidersLines[j].sortingOrder = 20000;
                 boxCollidersLines[j].material.renderQueue = 5000;
@@ -336,9 +336,9 @@ public class HitboxRenderer : MonoBehaviour {
             if (!(polygonColliders[j] != null)) {
                 polygonColliders[j] = components[j];
                 polygonCollidersLines[j] =
-                    ((gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1)
+                    gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1
                         ? gameObject.AddComponent<LineRenderer>()
-                        : new GameObject().AddComponent<LineRenderer>());
+                        : new GameObject().AddComponent<LineRenderer>();
                 polygonCollidersLines[j].gameObject.transform
                     .SetParent(gameObject.transform, worldPositionStays: false);
                 Vector3[] array3 = new Vector3[polygonColliders[j].points.Length];
@@ -354,8 +354,8 @@ public class HitboxRenderer : MonoBehaviour {
                 color.a = hitboxTransparency;
                 polygonCollidersLines[j].startColor = color;
                 polygonCollidersLines[j].endColor = color;
-                polygonCollidersLines[j].startWidth = ((Map.Current != null) ? 0.05f : 5f);
-                polygonCollidersLines[j].endWidth = ((Map.Current != null) ? 0.05f : 5f);
+                polygonCollidersLines[j].startWidth = Map.Current != null ? 0.05f : 5f;
+                polygonCollidersLines[j].endWidth = Map.Current != null ? 0.05f : 5f;
                 polygonCollidersLines[j].sortingLayerName = renderLayer.ToString();
                 polygonCollidersLines[j].sortingOrder = 20000;
                 polygonCollidersLines[j].material.renderQueue = 5000;
@@ -386,9 +386,9 @@ public class HitboxRenderer : MonoBehaviour {
             if (!(edgeColliders[j] != null)) {
                 edgeColliders[j] = components[j];
                 edgeCollidersLines[j] =
-                    ((gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1)
+                    gameObject.GetComponents<Collider2D>().Length == 1 && components.Length == 1
                         ? gameObject.AddComponent<LineRenderer>()
-                        : new GameObject().AddComponent<LineRenderer>());
+                        : new GameObject().AddComponent<LineRenderer>();
                 edgeCollidersLines[j].gameObject.transform
                     .SetParent(gameObject.transform, worldPositionStays: false);
                 Vector3[] array3 = new Vector3[edgeColliders[j].points.Length];
@@ -404,8 +404,8 @@ public class HitboxRenderer : MonoBehaviour {
                 color.a = hitboxTransparency;
                 edgeCollidersLines[j].startColor = color;
                 edgeCollidersLines[j].endColor = color;
-                edgeCollidersLines[j].startWidth = ((Map.Current != null) ? 0.05f : 5f);
-                edgeCollidersLines[j].endWidth = ((Map.Current != null) ? 0.05f : 5f);
+                edgeCollidersLines[j].startWidth = Map.Current != null ? 0.05f : 5f;
+                edgeCollidersLines[j].endWidth = Map.Current != null ? 0.05f : 5f;
                 edgeCollidersLines[j].sortingLayerName = renderLayer.ToString();
                 edgeCollidersLines[j].sortingOrder = 20000;
                 edgeCollidersLines[j].material.renderQueue = 5000;
@@ -471,8 +471,8 @@ public class HitboxRenderer : MonoBehaviour {
             if (lineUpdate) {
                 Vector3[] array =
                     new Vector3[(int) circleColliders[i].radius /
-                                ((Time.deltaTime > 1f / (float) Application.targetFrameRate * 1.1f) ? 6 : 3) +
-                                5 * ((!(Map.Current != null)) ? 1 : 6)];
+                                (Time.deltaTime > 1f / (float) Application.targetFrameRate * 1.1f ? 6 : 3) +
+                                5 * (!(Map.Current != null) ? 1 : 6)];
                 for (int j = 1; j < array.Length + 1; j++) {
                     float f = (float) Math.PI / 180f * ((float) j * (360f / (float) array.Length));
                     array[j - 1] = new Vector3(circleColliders[i].offset.x + Mathf.Sin(f) * circleColliders[i].radius,
@@ -672,10 +672,10 @@ public class HitboxRenderer : MonoBehaviour {
 
     private bool HitboxParryEnemy() {
         if (gameObject.tag == "Enemy" || gameObject.GetComponent<Collider2D>().attachedRigidbody != null ||
-            (transform.parent != null && transform.parent.gameObject.tag == "Enemy") ||
-            ((bool) gameObject.GetComponent<AbstractCollidableObject>() &&
-             gameObject.GetComponent<AbstractCollidableObject>().allowCollisionPlayer &&
-             (gameObject.tag == "EnemyProjectile" || gameObject.tag == "Enemy"))) {
+            transform.parent != null && transform.parent.gameObject.tag == "Enemy" ||
+            (bool) gameObject.GetComponent<AbstractCollidableObject>() &&
+            gameObject.GetComponent<AbstractCollidableObject>().allowCollisionPlayer &&
+            (gameObject.tag == "EnemyProjectile" || gameObject.tag == "Enemy")) {
             return !gameObject.GetComponent<AbstractParryEffect>();
         }
 
@@ -703,8 +703,8 @@ public class HitboxRenderer : MonoBehaviour {
 
     private bool HitboxPlatformElement() {
         if (!gameObject.GetComponent<LevelPlatform>() &&
-            !gameObject.GetComponent<PlatformingLevelEditorPlatform>() && !(gameObject.tag == "Wall") &&
-            !(gameObject.tag == "Ground") && !(gameObject.tag == "Ceiling") && gameObject.layer != 18 &&
+            !gameObject.GetComponent<PlatformingLevelEditorPlatform>() && gameObject.tag != "Wall" &&
+            gameObject.tag != "Ground" && gameObject.tag != "Ceiling" && gameObject.layer != 18 &&
             gameObject.layer != 19) {
             return gameObject.layer == 20;
         }
@@ -714,21 +714,21 @@ public class HitboxRenderer : MonoBehaviour {
 
     private bool HitboxBulletBlocker(Collider2D collider) {
         if (gameObject.tag != "EnemyProjectile" && collider.attachedRigidbody != null &&
-            ((collider.attachedRigidbody.gameObject.tag != "Wall" &&
-              collider.attachedRigidbody.gameObject.tag != "Ceiling" &&
-              collider.attachedRigidbody.gameObject.tag != "Ground" &&
-              collider.attachedRigidbody.gameObject.tag != "Enemy" &&
-              collider.attachedRigidbody.gameObject.tag != "EnemyProjectile" &&
-              collider.attachedRigidbody.gameObject.tag != "Player" &&
-              collider.attachedRigidbody.gameObject.tag != "PlayerProjectile" &&
-              collider.attachedRigidbody.gameObject.layer == 0) ||
-             (collider.attachedRigidbody.gameObject.tag != "EnemyProjectile" &&
-              collider.attachedRigidbody.gameObject.layer == 12) ||
-             (collider.attachedRigidbody.gameObject.tag == "Enemy" &&
-              collider.attachedRigidbody.gameObject.layer != 13) ||
-             (collider.attachedRigidbody.gameObject.transform.parent != null &&
-              collider.attachedRigidbody.gameObject.transform.parent.gameObject.tag == "Enemy" &&
-              collider.attachedRigidbody.gameObject.transform.parent.gameObject.layer != 13)) &&
+            (collider.attachedRigidbody.gameObject.tag != "Wall" &&
+             collider.attachedRigidbody.gameObject.tag != "Ceiling" &&
+             collider.attachedRigidbody.gameObject.tag != "Ground" &&
+             collider.attachedRigidbody.gameObject.tag != "Enemy" &&
+             collider.attachedRigidbody.gameObject.tag != "EnemyProjectile" &&
+             collider.attachedRigidbody.gameObject.tag != "Player" &&
+             collider.attachedRigidbody.gameObject.tag != "PlayerProjectile" &&
+             collider.attachedRigidbody.gameObject.layer == 0 ||
+             collider.attachedRigidbody.gameObject.tag != "EnemyProjectile" &&
+             collider.attachedRigidbody.gameObject.layer == 12 ||
+             collider.attachedRigidbody.gameObject.tag == "Enemy" &&
+             collider.attachedRigidbody.gameObject.layer != 13 ||
+             collider.attachedRigidbody.gameObject.transform.parent != null &&
+             collider.attachedRigidbody.gameObject.transform.parent.gameObject.tag == "Enemy" &&
+             collider.attachedRigidbody.gameObject.transform.parent.gameObject.layer != 13) &&
             collider.gameObject.layer != 13) {
             if (Level.Current.playerMode == PlayerMode.Plane) {
                 if (Level.Current.playerMode == PlayerMode.Plane) {
@@ -751,15 +751,15 @@ public class HitboxRenderer : MonoBehaviour {
 
     private bool HitboxOtherBulletBlocker(Collider2D collider) {
         if (collider.attachedRigidbody != null &&
-            ((collider.gameObject.tag != "Wall" && collider.gameObject.tag != "Ceiling" &&
-              collider.gameObject.tag != "Ground" && collider.gameObject.tag != "Enemy" &&
-              collider.gameObject.tag != "EnemyProjectile" && collider.gameObject.tag != "Player" &&
-              collider.gameObject.tag != "PlayerProjectile" && gameObject.layer == 0) ||
-             (collider.gameObject.tag != "EnemyProjectile" && collider.gameObject.layer == 12) ||
-             (collider.gameObject.tag == "Enemy" && collider.gameObject.layer != 13) ||
-             (collider.gameObject.transform.parent != null &&
-              collider.gameObject.transform.parent.gameObject.tag == "Enemy" &&
-              collider.gameObject.transform.parent.gameObject.layer != 13))) {
+            (collider.gameObject.tag != "Wall" && collider.gameObject.tag != "Ceiling" &&
+             collider.gameObject.tag != "Ground" && collider.gameObject.tag != "Enemy" &&
+             collider.gameObject.tag != "EnemyProjectile" && collider.gameObject.tag != "Player" &&
+             collider.gameObject.tag != "PlayerProjectile" && gameObject.layer == 0 ||
+             collider.gameObject.tag != "EnemyProjectile" && collider.gameObject.layer == 12 ||
+             collider.gameObject.tag == "Enemy" && collider.gameObject.layer != 13 ||
+             collider.gameObject.transform.parent != null &&
+             collider.gameObject.transform.parent.gameObject.tag == "Enemy" &&
+             collider.gameObject.transform.parent.gameObject.layer != 13)) {
             if (Level.Current.playerMode == PlayerMode.Plane) {
                 if (Level.Current.playerMode == PlayerMode.Plane) {
                     if (!collider.isTrigger &&
@@ -837,8 +837,8 @@ public class HitboxRenderer : MonoBehaviour {
             compParrySwitch != null && compParrySwitch.IsParryable) {
 #endif
             if ((gameObject.tag == "Enemy" || collider.attachedRigidbody != null ||
-                 (compAbstractCollidableObject != null && compAbstractCollidableObject.allowCollisionPlayer &&
-                  (gameObject.tag == "EnemyProjectile" || gameObject.tag == "Enemy"))) &&
+                 compAbstractCollidableObject != null && compAbstractCollidableObject.allowCollisionPlayer &&
+                 (gameObject.tag == "EnemyProjectile" || gameObject.tag == "Enemy")) &&
                 compAbstractParryEffect == null) {
                 return Colors.ParryEnemy;
             }
@@ -859,10 +859,10 @@ public class HitboxRenderer : MonoBehaviour {
         }
 
         if (tag == "EnemyProjectile" ||
-            (compCollisionChild != null && compCollisionChild.collisionParent != null &&
-             compCollisionChild.collisionParent.allowCollisionPlayer) || (compAbstractCollidableObject != null &&
-                                                                          compAbstractCollidableObject
-                                                                              .allowCollisionPlayer)) {
+            compCollisionChild != null && compCollisionChild.collisionParent != null &&
+            compCollisionChild.collisionParent.allowCollisionPlayer || compAbstractCollidableObject != null &&
+            compAbstractCollidableObject
+                .allowCollisionPlayer) {
             return Colors.Hurt;
         }
 
@@ -874,8 +874,8 @@ public class HitboxRenderer : MonoBehaviour {
     }
 
     private Color UpdateColorDamageable(Collider2D collider) {
-        if ((compAbstractLevelEntity != null && compAbstractLevelEntity.canParry) || compAbstractParryEffect != null ||
-            (compAbstractProjectile != null && compAbstractProjectile.CanParry) || compParrySwitch != null) {
+        if (compAbstractLevelEntity != null && compAbstractLevelEntity.canParry || compAbstractParryEffect != null ||
+            compAbstractProjectile != null && compAbstractProjectile.CanParry || compParrySwitch != null) {
             updateType = UpdateType.Parryable;
             return UpdateColorParry(collider);
         }
@@ -958,7 +958,7 @@ public class HitboxRenderer : MonoBehaviour {
 
         if (HitboxOther(collider)) {
             hitboxTransparency =
-                ((collider.attachedRigidbody != null && collider.gameObject.layer != 11) ? 0.75f : 0.375f);
+                collider.attachedRigidbody != null && collider.gameObject.layer != 11 ? 0.75f : 0.375f;
             colorUpdate = false;
             return Colors.Other;
         }
@@ -998,7 +998,7 @@ public class HitboxRenderer : MonoBehaviour {
             isPlatformElement = true;
             lineUpdate = false;
             colorUpdate = false;
-            hitboxTransparency = ((collider.attachedRigidbody != null) ? 1f : 0.65f);
+            hitboxTransparency = collider.attachedRigidbody != null ? 1f : 0.65f;
             if (collider.gameObject.GetComponent<BasicDamageDealingObject>() != null) {
                 return Colors.HurtSolid;
             }
@@ -1065,7 +1065,7 @@ public class HitboxRenderer : MonoBehaviour {
         if (blackScreen == null && ShopScene.Current == null && (Level.Current != null || Map.Current != null)) {
             blackScreen = new GameObject().AddComponent<LineRenderer>();
             blackScreen.gameObject.transform.SetParent(camera.gameObject.transform, worldPositionStays: false);
-            float num = 2000f / ((Map.Current != null) ? 100f : 1f);
+            float num = 2000f / (Map.Current != null ? 100f : 1f);
             Vector3[] array2 = new Vector3[2] {
                 new Vector3(0f - num, 0f, 0f),
                 new Vector3(num, 0f, 0f)
