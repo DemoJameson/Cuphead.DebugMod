@@ -71,9 +71,6 @@
             <HintPath>libs\$(Configuration)\Assembly-CSharp-nstrip.dll</HintPath>
             <Private>False</Private>
         </Reference>
-        <Reference Include="UniverseLib.Mono">
-            <HintPath>libs\$(Configuration)\UniverseLib.Mono.dll</HintPath>
-        </Reference>
         <Reference Include="Rewired_Core">
             <HintPath>libs\$(Configuration)\Rewired_Core.dll</HintPath>
             <Private>False</Private>
@@ -83,6 +80,7 @@
     <ItemGroup>
         <Compile Remove="libs\**" />
         <Compile Condition=" '$(Configuration)' != '1.0~1.1' " Remove="Components\EnableDebugConsole.cs" />
+        <Compile Condition=" '$(Configuration)' != '1.3+' " Remove="Components\LevelSelectorFixer.cs" />
     </ItemGroup>
 
     <ItemGroup>
