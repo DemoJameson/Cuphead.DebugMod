@@ -538,14 +538,27 @@ public class HitboxRenderer : MonoBehaviour {
     }
 
     private void OnDestroy() {
-        if (!(Level.Current != null) || Level.Current.CurrentLevel != 0) {
-            return;
+        if (boxCollidersLines != null) {
+            foreach (LineRenderer renderer in boxCollidersLines) {
+                Destroy(renderer);
+            }
         }
 
-        Collider2D[] array = FindObjectsOfType<Collider2D>();
-        foreach (Collider2D collider2D in array) {
-            if (!collider2D.gameObject.GetComponent<HitboxRenderer>()) {
-                collider2D.gameObject.AddComponent<HitboxRenderer>();
+        if (edgeCollidersLines != null) {
+            foreach (LineRenderer renderer in edgeCollidersLines) {
+                Destroy(renderer);
+            }
+        }
+
+        if (polygonCollidersLines != null) {
+            foreach (LineRenderer renderer in polygonCollidersLines) {
+                Destroy(renderer);
+            }
+        }
+
+        if (circleCollidersLines != null) {
+            foreach (LineRenderer renderer in circleCollidersLines) {
+                Destroy(renderer);
             }
         }
     }
