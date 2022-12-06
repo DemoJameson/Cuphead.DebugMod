@@ -14,6 +14,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<bool> MuteInBackground;
     public static ConfigEntry<bool> RunInBackground;
     public static ConfigEntry<bool> IgnoreInputWhenLoseFocus;
+    public static ConfigEntry<bool> SkipTitleScreen;
     public static ConfigEntry<KeyboardShortcut> InvincibilityOneFight;
     public static ConfigEntry<KeyboardShortcut> Gain5ExCards;
     public static ConfigEntry<KeyboardShortcut> Gain1ExCard;
@@ -69,6 +70,7 @@ public class Settings : PluginComponent {
         MuteInBackground = config.Bind("Misc", "Mute In Background",false, --order);
         RunInBackground = config.Bind("Misc", "Run In Background",false, --order);
         IgnoreInputWhenLoseFocus = config.Bind("Misc", "Ignore Input When Lose Focus",false, --order);
+        SkipTitleScreen = config.Bind("Misc", "Skip Title Screen",true, --order);
         QuickRestart = config.Bind("Misc", "Quick Restart", new KeyboardShortcut(KeyCode.R), --order);
         LevelSelector = config.Bind("Misc", "Level Selector", new KeyboardShortcut(KeyCode.BackQuote), --order);
         Gain5ExCards = config.Bind("Misc", "Gain 5 Ex Cards", new KeyboardShortcut(KeyCode.Alpha1), --order);

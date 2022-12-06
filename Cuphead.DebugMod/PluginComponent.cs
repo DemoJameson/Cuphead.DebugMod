@@ -5,7 +5,6 @@ using System.Reflection;
 using BepInEx.CupheadDebugMod.Components;
 using BepInEx.Logging;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace BepInEx.CupheadDebugMod;
 

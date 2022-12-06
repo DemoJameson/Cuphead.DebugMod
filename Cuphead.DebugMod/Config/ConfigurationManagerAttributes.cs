@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
 
@@ -40,7 +41,7 @@ internal sealed class ConfigurationManagerAttributes
     /// Custom setting editor (OnGUI code that replaces the default editor provided by ConfigurationManager).
     /// See below for a deeper explanation. Using a custom drawer will cause many of the other fields to do nothing.
     /// </summary>
-    public System.Action<BepInEx.Configuration.ConfigEntryBase> CustomDrawer;
+    public Action<ConfigEntryBase> CustomDrawer;
 
     /// <summary>
     /// Show this setting in the settings screen at all? If false, don't show.
@@ -98,12 +99,12 @@ internal sealed class ConfigurationManagerAttributes
     /// <summary>
     /// Custom converter from setting type to string for the built-in editor textboxes.
     /// </summary>
-    public System.Func<object, string> ObjToStr;
+    public Func<object, string> ObjToStr;
 
     /// <summary>
     /// Custom converter from string to setting type for the built-in editor textboxes.
     /// </summary>
-    public System.Func<string, object> StrToObj;
+    public Func<string, object> StrToObj;
 }
 
 internal static class ConfigExtensions {
