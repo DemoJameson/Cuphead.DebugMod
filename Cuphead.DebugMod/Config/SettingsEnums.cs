@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
@@ -55,9 +56,15 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DevilPhaseOnePitchforkTypes {
             Random,
-            Pinwheel,
             Bouncer,
+            Pinwheel,
             Ring
+        }
+
+        public enum DevilPhaseOneDragonDirections {
+            Random,
+            Left,
+            Right
         }
 
         public enum FlyingMermaidPhaseOnePatterns {
@@ -70,7 +77,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 
 #if v1_3
 
-        private enum RelicLevels {
+        public enum RelicLevels {
             Default,
             BrokenRelic,
             [Description("Cursed Relic 1")]

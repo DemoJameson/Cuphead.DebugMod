@@ -42,7 +42,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> FrameAdvance;
 
     #if v1_3
-    private static ConfigEntry<RelicLevels> RelicLevel;
+    public static ConfigEntry<RelicLevels> RelicLevel;
     #endif
 
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
@@ -52,6 +52,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<DevilPhaseOnePatterns> DevilPhaseOnePattern;
     public static ConfigEntry<DevilPhaseOneHeadTypes> DevilPhaseOneHeadType;
     public static ConfigEntry<DevilPhaseOnePitchforkTypes> DevilPhaseOnePitchforkType;
+    public static ConfigEntry<DevilPhaseOneDragonDirections> DevilPhaseOneDragonDirection;
     public static ConfigEntry<FlyingMermaidPhaseOnePatterns> FlyingMermaidPhaseOnePattern;
     
 
@@ -106,6 +107,7 @@ public class Settings : PluginComponent {
         DevilPhaseOnePattern = config.Bind("RNG", "The Devil Phase One", DevilPhaseOnePatterns.Random, --order);
         DevilPhaseOneHeadType = config.Bind("RNG", "The Devil Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
         DevilPhaseOnePitchforkType = config.Bind("RNG", "The Devil Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
+        DevilPhaseOneDragonDirection = config.Bind("RNG", "The Devil Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
         FlyingMermaidPhaseOnePattern = config.Bind("RNG", "Cala Maria Phase One", FlyingMermaidPhaseOnePatterns.Random, --order);
         
 

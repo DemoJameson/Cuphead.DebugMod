@@ -5,6 +5,8 @@ using System.ComponentModel;
 using System.Linq;
 using BepInEx.Configuration;
 using HarmonyLib;
+using static BepInEx.CupheadDebugMod.Config.Settings;
+using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
 namespace BepInEx.CupheadDebugMod.Components; 
 
