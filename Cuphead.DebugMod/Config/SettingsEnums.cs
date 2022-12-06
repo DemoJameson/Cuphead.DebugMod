@@ -67,6 +67,35 @@ namespace BepInEx.CupheadDebugMod.Config {
             Right
         }
 
+        public enum DevilPhaseTwoPatterns {
+            Random,
+            BombEye01,
+            SkullEye01,
+            BombEye02,
+            SkullEye02,
+            BombEye03,
+            SkullEye03,
+            SkullEye04,
+            BombEye04,
+            SkullEye05,
+            SkullEye06,
+            SkullEye07,
+            BombEye05,
+            SkullEye08,
+            BombEye06,
+            SkullEye09,
+            BombEye07,
+            SkullEye10,
+            SkullEye11
+        }
+
+        public enum DevilPhaseTwoBombEyeDirections { 
+            Random,
+            Left,
+            Right
+        }
+
+
         public enum FlyingMermaidPhaseOnePatterns {
             Random,
             Ghosts,

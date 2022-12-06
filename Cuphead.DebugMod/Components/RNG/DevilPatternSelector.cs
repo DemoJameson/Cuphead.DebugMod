@@ -66,9 +66,9 @@ internal class DevilPatternSelector : PluginComponent {
     public static void PhaseOneDragonDirectionManipulator(ILContext il) {
         ILCursor ilCursor = new(il);
         while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<isLeft>"))) {
-            // I am checking for Settings.FrogsPhaseFinalPattern.Value dynamically during this function call.
+            // I am checking for Settings.DevilPhaseOneDragonDirection.Value dynamically during this function call.
             // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
-            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.FrogsPhaseFinalPattern.Value
+            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.DevilPhaseOneDragonDirection.Value
             ilCursor.EmitDelegate<Func<bool, bool>>(isLeft =>
                 DevilPhaseOneDragonDirection.Value == DevilPhaseOneDragonDirections.Random ?
                 Rand.Bool()
@@ -77,6 +77,42 @@ internal class DevilPatternSelector : PluginComponent {
             );
             ilCursor.Index++; // avoid infinite loops
         }
+    }
+
+    [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.OnStateChanged))]
+    [HarmonyPrefix]
+    public static void PhaseTwoPatternManipulator(ref DevilLevel __instance) {
+        if (DevilPhaseTwoPattern.Value != DevilPhaseTwoPatterns.Random) {
+            if (DevilPhaseTwoPattern.Value == DevilPhaseTwoPatterns.BombEye01) {
+                __instance.properties.CurrentState.patternIndex = 17;
+            } else {
+                __instance.properties.CurrentState.patternIndex = (int) DevilPhaseTwoPattern.Value - 2;
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseTwoBombEyeDirectionManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("bombOnLeft"))) {
+            ilCursor.EmitDelegate<Func<bool, bool>>(bombOnLeft =>
+                DevilPhaseTwoBombEyeDirection.Value == DevilPhaseTwoBombEyeDirections.Random ?
+                Rand.Bool()
+                :
+                DevilPhaseTwoBombEyeDirection.Value == DevilPhaseTwoBombEyeDirections.Left
+            );
+            ilCursor.Index++; // avoid infinite loops
+        }
+    }
+
+
+    // debug
+
+    [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.OnStateChanged))]
+    [HarmonyPrefix]
+    public static void PrintPatternIndex(ref DevilLevel __instance) {
+        Logger.LogInfo(__instance.properties.CurrentState.patternIndex);
     }
 }
 
