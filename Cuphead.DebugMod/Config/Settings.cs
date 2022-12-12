@@ -50,6 +50,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<FrogsPhaseFinalPatterns> FrogsPhaseFinalPattern;
     public static ConfigEntry<FlyingBlimpPhaseBlimp2Patterns> FlyingBlimpPhaseBlimp2Pattern;
     public static ConfigEntry<FlyingBlimpPhaseBlimp3Patterns> FlyingBlimpPhaseBlimp3Pattern;
+    public static ConfigEntry<ClownDashDelays> ClownDashDelay;
     public static ConfigEntry<DevilPhaseOnePatterns> DevilPhaseOnePattern;
     public static ConfigEntry<DevilPhaseOneHeadTypes> DevilPhaseOneHeadType;
     public static ConfigEntry<DevilPhaseOneDragonDirections> DevilPhaseOneDragonDirection;
@@ -108,6 +109,7 @@ public class Settings : PluginComponent {
         FrogsPhaseFinalPattern = config.Bind("RNG", "Ribby and Croaks Final Phase", FrogsPhaseFinalPatterns.Random, --order);
         FlyingBlimpPhaseBlimp2Pattern = config.Bind("RNG", "Hilda Berg Second Blimp Phase", FlyingBlimpPhaseBlimp2Patterns.Random, --order);
         FlyingBlimpPhaseBlimp3Pattern = config.Bind("RNG", "Hilda Berg Third Blimp Phase", FlyingBlimpPhaseBlimp3Patterns.Random, --order);
+        ClownDashDelay = config.Bind("RNG", "Beppi The Clown Phase One Bumper Delays", ClownDashDelays.Random, --order);
         DevilPhaseOnePattern = config.Bind("RNG", "The Devil Phase One", DevilPhaseOnePatterns.Random, --order);
         DevilPhaseOneHeadType = config.Bind("RNG", "The Devil Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
         DevilPhaseOneDragonDirection = config.Bind("RNG", "The Devil Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
@@ -115,7 +117,7 @@ public class Settings : PluginComponent {
         DevilPhaseTwoPattern = config.Bind("RNG", "The Devil Phase Two", DevilPhaseTwoPatterns.Random, --order);
         DevilPhaseTwoBombEyeDirection = config.Bind("RNG", "The Devil Phase Two Bomb Direction", DevilPhaseTwoBombEyeDirections.Random, --order);
         FlyingMermaidPhaseOnePattern = config.Bind("RNG", "Cala Maria Phase One", FlyingMermaidPhaseOnePatterns.Random, --order);
-        
+
 
     }
 
