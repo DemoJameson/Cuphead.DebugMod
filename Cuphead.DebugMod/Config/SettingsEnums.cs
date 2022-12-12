@@ -54,17 +54,17 @@ namespace BepInEx.CupheadDebugMod.Config {
             Spider
         }
 
+        public enum DevilPhaseOneDragonDirections {
+            Random,
+            Left,
+            Right
+        }
+
         public enum DevilPhaseOnePitchforkTypes {
             Random,
             Bouncer,
             Pinwheel,
             Ring
-        }
-
-        public enum DevilPhaseOneDragonDirections {
-            Random,
-            Left,
-            Right
         }
 
         public enum DevilPhaseTwoPatterns {
