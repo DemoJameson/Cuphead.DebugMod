@@ -37,6 +37,31 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tornado2,
         }
 
+        // this one refers to regular mode only
+        public enum ClownDashDelays {
+            Random,
+            [Description("5B")]
+            A_3_3,
+            [Description("3B++")]
+            B_2_4,
+            [Description("5B")]
+            C_3_5,
+            [Description("4B+")]
+            D_3,
+            [Description("2B+")]
+            E_1_5,
+            [Description("5B")]
+            F_3_5,
+            [Description("4B+")]
+            G_3,
+            [Description("5B+")]
+            H_3_8,
+            [Description("3B")]
+            J_2,
+            [Description("2B+")]
+            K_1_5
+        }
+
         public enum DevilPhaseOnePatterns {
             Random,
             Head1,
@@ -54,17 +79,17 @@ namespace BepInEx.CupheadDebugMod.Config {
             Spider
         }
 
+        public enum DevilPhaseOneDragonDirections {
+            Random,
+            Left,
+            Right
+        }
+
         public enum DevilPhaseOnePitchforkTypes {
             Random,
             Bouncer,
             Pinwheel,
             Ring
-        }
-
-        public enum DevilPhaseOneDragonDirections {
-            Random,
-            Left,
-            Right
         }
 
         public enum DevilPhaseOneSpiderOffsets {

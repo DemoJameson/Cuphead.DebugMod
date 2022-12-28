@@ -39,6 +39,24 @@ internal class DevilPatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseOneDragonDirectionManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<isLeft>"))) {
+            // I am checking for Settings.DevilPhaseOneDragonDirection.Value dynamically during this function call.
+            // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
+            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.DevilPhaseOneDragonDirection.Value
+            ilCursor.EmitDelegate<Func<bool, bool>>(isLeft =>
+                DevilPhaseOneDragonDirection.Value == DevilPhaseOneDragonDirections.Random ?
+                Rand.Bool()
+                :
+                DevilPhaseOneDragonDirection.Value == DevilPhaseOneDragonDirections.Left
+            );
+            ilCursor.Index++; // avoid infinite loops
+        }
+    }
+
     // The pitchfork attack gets decided in a bit of a peculiar way.
     // There are 3 pattern strings in LevelProperties.
     // The game randomly picks from one of these 3 pattern strings, and then also randomly picks an index to start from.
@@ -58,24 +76,6 @@ internal class DevilPatternSelector : PluginComponent {
                     __instance.pitchforkPatternIndex = i - 1;
                 }
             }
-        }
-    }
-
-    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
-    [HarmonyILManipulator]
-    public static void PhaseOneDragonDirectionManipulator(ILContext il) {
-        ILCursor ilCursor = new(il);
-        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<isLeft>"))) {
-            // I am checking for Settings.DevilPhaseOneDragonDirection.Value dynamically during this function call.
-            // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
-            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.DevilPhaseOneDragonDirection.Value
-            ilCursor.EmitDelegate<Func<bool, bool>>(isLeft =>
-                DevilPhaseOneDragonDirection.Value == DevilPhaseOneDragonDirections.Random ?
-                Rand.Bool()
-                :
-                DevilPhaseOneDragonDirection.Value == DevilPhaseOneDragonDirections.Left
-            );
-            ilCursor.Index++; // avoid infinite loops
         }
     }
 
