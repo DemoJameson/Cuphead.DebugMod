@@ -1,4 +1,4 @@
-using BepInEx.CupheadDebugMod.Config;
+﻿using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
 
 namespace BepInEx.CupheadDebugMod.Components;
@@ -74,11 +74,18 @@ public class DebugInfo : PluginComponent {
         GUI.depth = 1;
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
         GUISetDefColors();
-        if (!guiShowAll) {
-            return;
-        }
-
         if (CurrentLevel != null && CurrentLevel.type is Level.Type.Battle or Level.Type.Platforming) {
+            if (!guiShowAll) {
+                GUISetDefElements();
+                GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
+                GUILayout.BeginVertical("box");
+                GUILayout.Label("Cuphead Debug Mod, RNG fork ALPHA 1");
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.EndArea();
+                return;
+            }
+
             if (guiPanelState == 0) {
                 GUISetDefElements();
                 GUI.skin.label.fontSize = 20;

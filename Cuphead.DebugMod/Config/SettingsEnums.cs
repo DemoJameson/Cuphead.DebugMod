@@ -67,6 +67,30 @@ namespace BepInEx.CupheadDebugMod.Config {
             Right
         }
 
+        public enum DevilPhaseOneSpiderOffsets {
+            Random,
+            A_Neg150,
+            B_50,
+            C_Neg50,
+            D_300,
+            E_Neg200,
+            F_50,
+            G_150,
+            H_Neg300,
+            I_0,
+            J_100,
+            K_Neg50,
+            L_200,
+            M_50,
+            N_0,
+            O_100,
+            P_Neg150,
+            Q_50,
+            R_Neg250,
+            S_200,
+            T_0
+        }
+
         public enum DevilPhaseTwoPatterns {
             Random,
             BombEye01,
