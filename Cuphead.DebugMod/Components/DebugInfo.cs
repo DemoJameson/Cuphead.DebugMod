@@ -79,7 +79,7 @@ public class DebugInfo : PluginComponent {
                 GUISetDefElements();
                 GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
-                GUILayout.Label("Cuphead Debug Mod, RNG fork ALPHA 1");
+                GUILayout.Label("Cuphead Debug Mod, RNG fork ALPHA 2");
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndArea();

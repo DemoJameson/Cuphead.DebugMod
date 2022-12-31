@@ -94,25 +94,45 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DevilPhaseOneSpiderOffsets {
             Random,
+            [Description("-150")]
             A_Neg150,
+            [Description("50")]
             B_50,
+            [Description("-50")]
             C_Neg50,
+            [Description("300")]
             D_300,
+            [Description("-200")]
             E_Neg200,
+            [Description("50")]
             F_50,
+            [Description("150")]
             G_150,
+            [Description("-300")]
             H_Neg300,
+            [Description("0")]
             I_0,
+            [Description("100")]
             J_100,
+            [Description("-50")]
             K_Neg50,
+            [Description("200")]
             L_200,
+            [Description("50")]
             M_50,
+            [Description("0")]
             N_0,
+            [Description("100")]
             O_100,
+            [Description("-150")]
             P_Neg150,
+            [Description("50")]
             Q_50,
+            [Description("-250")]
             R_Neg250,
+            [Description("200")]
             S_200,
+            [Description("0")]
             T_0
         }
 

@@ -57,6 +57,22 @@ internal class DevilPatternSelector : PluginComponent {
         }
     }
 
+    // Sets the leading attack. Subsequent attacks work as normal.
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
+    [HarmonyPostfix]
+
+    public static void PhaseOneSpiderOffsetManipulator(ref DevilLevelSittingDevil __instance) {
+        if (DevilPhaseOneSpiderOffset.Value != DevilPhaseOneSpiderOffsets.Random) {
+            if (DevilPhaseOneSpiderOffset.Value == DevilPhaseOneSpiderOffsets.A_Neg150) {
+                __instance.spiderOffsetIndex = 19;
+            } else {
+                __instance.spiderOffsetIndex = (int) DevilPhaseOneSpiderOffset.Value - 2;
+            }
+        }
+        Logger.LogInfo(__instance.spiderOffsetIndex);
+    }
+
+
     // The pitchfork attack gets decided in a bit of a peculiar way.
     // There are 3 pattern strings in LevelProperties.
     // The game randomly picks from one of these 3 pattern strings, and then also randomly picks an index to start from.
