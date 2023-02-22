@@ -18,7 +18,26 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tiger,
             Bison
         }
-        public enum FlyingBlimpPhaseBlimp2Patterns {
+
+        public enum FlyingBlimpPhaseBlimp2PatternsEasy {
+            Random,
+            Tornado1,
+            Shoot1,
+            Shoot2,
+        }
+
+        public enum FlyingBlimpPhaseBlimp3PatternsEasy {
+            Random,
+            Shoot1,
+            Shoot2,
+            Tornado1,
+            Shoot3,
+            Shoot4,
+            Shoot5,
+            Tornado2,
+        }
+
+        public enum FlyingBlimpPhaseBlimp2PatternsNormal {
             Random,
             Tornado1,
             Shoot1,
@@ -28,7 +47,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Shoot4,
             Shoot5
         }
-        public enum FlyingBlimpPhaseBlimp3Patterns {
+        public enum FlyingBlimpPhaseBlimp3PatternsNormal {
             Random,
             Shoot1,
             Tornado1,
@@ -37,8 +56,49 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tornado2,
         }
 
-        // this one refers to regular mode only
-        public enum ClownDashDelays {
+        public enum FlyingBlimpPhaseBlimp2PatternsHard {
+            Random,
+            Shoot1,
+            Tornado1,
+            Shoot2,
+            Shoot3,
+            Tornado2,
+        }
+
+        public enum FlyingBlimpPhaseBlimp3PatternsHard {
+            Random,
+            Shoot1,
+            Shoot2,
+            Tornado1,
+            Shoot3,
+            Shoot4,
+            Shoot5,
+            Tornado2
+        }
+
+        public enum ClownDashDelaysEasy {
+            Random,
+            [Description("5B")]
+            A_3_3,
+            [Description("3B")]
+            B_1_8,
+            [Description("5B")]
+            C_3_5,
+            [Description("4B+")]
+            D_3,
+            [Description("2B")]
+            E_1_5,
+            [Description("4B")]
+            F_2_7,
+            [Description("4B+")]
+            G_3,
+            [Description("3B")]
+            H_2,
+            [Description("2B")]
+            J_1_5
+        }
+
+        public enum ClownDashDelaysNormal {
             Random,
             [Description("5B")]
             A_3_3,
@@ -60,6 +120,52 @@ namespace BepInEx.CupheadDebugMod.Config {
             J_2,
             [Description("2B+")]
             K_1_5
+        }
+
+        public enum ClownDashDelaysHard {
+            Random,
+            [Description("5B")]
+            A_3_3,
+            [Description("5B")]
+            B_3_6,
+            [Description("3B")]
+            C_2_2,
+            [Description("5B")]
+            D_3_5,
+            [Description("4B+")]
+            E_3,
+            [Description("2B")]
+            F_1_5,
+            [Description("5B")]
+            G_3_5,
+            [Description("3B")]
+            H_2,
+            [Description("5B+")]
+            J_3_8,
+            [Description("3B")]
+            K_2,
+            [Description("2B")]
+            L_1_5
+        }
+
+        public enum FlyingMermaidPhaseOneFirstPatternsEasy {
+            Random,
+            Ghosts,
+            Summon,
+        }
+
+        public enum FlyingMermaidPhaseOneSecondPatternsEasy {
+            Random,
+            Fish,
+            Summon
+        }
+
+        public enum FlyingMermaidPhaseOnePatternsNormalHard {
+            Random,
+            Ghosts,
+            Summon1,
+            Fish,
+            Summon2
         }
 
         public enum DevilPhaseOnePatterns {
@@ -136,7 +242,8 @@ namespace BepInEx.CupheadDebugMod.Config {
             T_0
         }
 
-        public enum DevilPhaseTwoPatterns {
+        // different on expert
+        public enum DevilPhaseTwoPatternsNormal {
             Random,
             BombEye01,
             SkullEye01,
@@ -158,19 +265,32 @@ namespace BepInEx.CupheadDebugMod.Config {
             SkullEye11
         }
 
+        public enum DevilPhaseTwoPatternsHard {
+            Random,
+            BombEye01,
+            SkullEye01,
+            BombEye02,
+            BombEye03,
+            SkullEye02,
+            BombEye04,
+            SkullEye03,
+            SkullEye04,
+            BombEye05,
+            SkullEye05,
+            BombEye06,
+            BombEye07,
+            SkullEye06,
+            BombEye08,
+            SkullEye07,
+            BombEye09,
+            SkullEye08,
+            SkullEye09,
+        }
+
         public enum DevilPhaseTwoBombEyeDirections { 
             Random,
             Left,
             Right
-        }
-
-
-        public enum FlyingMermaidPhaseOnePatterns {
-            Random,
-            Ghosts,
-            Summon1,
-            Fish,
-            Summon2
         }
 
 #if v1_3

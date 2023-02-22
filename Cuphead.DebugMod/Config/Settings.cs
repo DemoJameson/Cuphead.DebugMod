@@ -48,17 +48,26 @@ public class Settings : PluginComponent {
 
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
     public static ConfigEntry<FrogsPhaseFinalPatterns> FrogsPhaseFinalPattern;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp2Patterns> FlyingBlimpPhaseBlimp2Pattern;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp3Patterns> FlyingBlimpPhaseBlimp3Pattern;
-    public static ConfigEntry<ClownDashDelays> ClownDashDelay;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsEasy> FlyingBlimpPhaseBlimp2PatternEasy;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsEasy> FlyingBlimpPhaseBlimp3PatternEasy;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsNormal> FlyingBlimpPhaseBlimp2PatternNormal;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsNormal> FlyingBlimpPhaseBlimp3PatternNormal;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsHard> FlyingBlimpPhaseBlimp2PatternHard;
+    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsHard> FlyingBlimpPhaseBlimp3PatternHard;
+    public static ConfigEntry<ClownDashDelaysEasy> ClownDashDelayEasy;
+    public static ConfigEntry<ClownDashDelaysNormal> ClownDashDelayNormal;
+    public static ConfigEntry<ClownDashDelaysHard> ClownDashDelayHard;
+    public static ConfigEntry<FlyingMermaidPhaseOneFirstPatternsEasy> FlyingMermaidPhaseOneFirstPatternEasy;
+    public static ConfigEntry<FlyingMermaidPhaseOneSecondPatternsEasy> FlyingMermaidPhaseOneSecondPatternEasy;
+    public static ConfigEntry<FlyingMermaidPhaseOnePatternsNormalHard> FlyingMermaidPhaseOnePatternNormalHard;
     public static ConfigEntry<DevilPhaseOnePatterns> DevilPhaseOnePattern;
     public static ConfigEntry<DevilPhaseOneHeadTypes> DevilPhaseOneHeadType;
     public static ConfigEntry<DevilPhaseOneDragonDirections> DevilPhaseOneDragonDirection;
     public static ConfigEntry<DevilPhaseOneSpiderOffsets> DevilPhaseOneSpiderOffset;
     public static ConfigEntry<DevilPhaseOnePitchforkTypes> DevilPhaseOnePitchforkType;
-    public static ConfigEntry<DevilPhaseTwoPatterns> DevilPhaseTwoPattern;
+    public static ConfigEntry<DevilPhaseTwoPatternsNormal> DevilPhaseTwoPatternNormal;
+    public static ConfigEntry<DevilPhaseTwoPatternsHard> DevilPhaseTwoPatternHard;
     public static ConfigEntry<DevilPhaseTwoBombEyeDirections> DevilPhaseTwoBombEyeDirection;
-    public static ConfigEntry<FlyingMermaidPhaseOnePatterns> FlyingMermaidPhaseOnePattern;
 
 
     public static event Action OnKeyUpdate;
@@ -102,23 +111,33 @@ public class Settings : PluginComponent {
         PauseResume = config.Bind("Game Speed", "Pause or Resume", new KeyboardShortcut(KeyCode.RightBracket), --order);
         FrameAdvance = config.Bind("Game Speed", "Frame Advance", new KeyboardShortcut(KeyCode.LeftBracket), --order);
 
-        #if v1_3
-        RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
-        #endif
 
-        FrogsPhaseOnePattern = config.Bind("RNG", "Ribby and Croaks Phase One", FrogsPhaseOnePatterns.Random, --order);
-        FrogsPhaseFinalPattern = config.Bind("RNG", "Ribby and Croaks Final Phase", FrogsPhaseFinalPatterns.Random, --order);
-        FlyingBlimpPhaseBlimp2Pattern = config.Bind("RNG", "Hilda Berg Second Blimp Phase", FlyingBlimpPhaseBlimp2Patterns.Random, --order);
-        FlyingBlimpPhaseBlimp3Pattern = config.Bind("RNG", "Hilda Berg Third Blimp Phase", FlyingBlimpPhaseBlimp3Patterns.Random, --order);
-        ClownDashDelay = config.Bind("RNG", "Beppi The Clown Phase One Bumper Delays", ClownDashDelays.Random, --order);
-        DevilPhaseOnePattern = config.Bind("RNG", "The Devil Phase One", DevilPhaseOnePatterns.Random, --order);
-        DevilPhaseOneHeadType = config.Bind("RNG", "The Devil Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
-        DevilPhaseOneDragonDirection = config.Bind("RNG", "The Devil Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
-        DevilPhaseOneSpiderOffset = config.Bind("RNG", "The Devil Phase One Spider Offset", DevilPhaseOneSpiderOffsets.Random, --order);
-        DevilPhaseOnePitchforkType = config.Bind("RNG", "The Devil Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
-        DevilPhaseTwoPattern = config.Bind("RNG", "The Devil Phase Two", DevilPhaseTwoPatterns.Random, --order);
-        DevilPhaseTwoBombEyeDirection = config.Bind("RNG", "The Devil Phase Two Bomb Direction", DevilPhaseTwoBombEyeDirections.Random, --order);
-        FlyingMermaidPhaseOnePattern = config.Bind("RNG", "Cala Maria Phase One", FlyingMermaidPhaseOnePatterns.Random, --order);
+#if v1_3
+        RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
+#endif
+
+        FrogsPhaseOnePattern = config.Bind("RNG Ribby And Croaks", "Phase One", FrogsPhaseOnePatterns.Random, --order);
+        FrogsPhaseFinalPattern = config.Bind("RNG Ribby And Croaks", "Final Phase", FrogsPhaseFinalPatterns.Random, --order);
+        FlyingBlimpPhaseBlimp2PatternEasy = config.Bind("RNG Hilda Berg", "Second Blimp Phase Simple", FlyingBlimpPhaseBlimp2PatternsEasy.Random, --order);
+        FlyingBlimpPhaseBlimp3PatternEasy = config.Bind("RNG Hilda Berg", "Third Blimp Phase Simple", FlyingBlimpPhaseBlimp3PatternsEasy.Random, --order);
+        FlyingBlimpPhaseBlimp2PatternNormal = config.Bind("RNG Hilda Berg", "Second Blimp Phase Regular", FlyingBlimpPhaseBlimp2PatternsNormal.Random, --order);
+        FlyingBlimpPhaseBlimp3PatternNormal = config.Bind("RNG Hilda Berg", "Third Blimp Phase Regular", FlyingBlimpPhaseBlimp3PatternsNormal.Random, --order);
+        FlyingBlimpPhaseBlimp2PatternHard = config.Bind("RNG Hilda Berg", "Second Blimp Phase Expert", FlyingBlimpPhaseBlimp2PatternsHard.Random, --order);
+        FlyingBlimpPhaseBlimp3PatternHard = config.Bind("RNG Hilda Berg", "Third Blimp Phase Expert", FlyingBlimpPhaseBlimp3PatternsHard.Random, --order);
+        ClownDashDelayEasy = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Simple", ClownDashDelaysEasy.Random, --order);
+        ClownDashDelayNormal = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Regular", ClownDashDelaysNormal.Random, --order);
+        ClownDashDelayHard = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Expert", ClownDashDelaysHard.Random, --order);
+        FlyingMermaidPhaseOneFirstPatternEasy = config.Bind("RNG Cala Maria", "Phase One First Simple", FlyingMermaidPhaseOneFirstPatternsEasy.Random, --order);
+        FlyingMermaidPhaseOneSecondPatternEasy = config.Bind("RNG Cala Maria", "Phase One Second Simple", FlyingMermaidPhaseOneSecondPatternsEasy.Random, --order);
+        FlyingMermaidPhaseOnePatternNormalHard = config.Bind("RNG Cala Maria", "Phase One Regular/Expert", FlyingMermaidPhaseOnePatternsNormalHard.Random, --order);
+        DevilPhaseOnePattern = config.Bind("RNG The Devil", "Phase One", DevilPhaseOnePatterns.Random, --order);
+        DevilPhaseOneHeadType = config.Bind("RNG The Devil", "Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
+        DevilPhaseOneDragonDirection = config.Bind("RNG The Devil", "Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
+        DevilPhaseOneSpiderOffset = config.Bind("RNG The Devil", "Phase One Spider Offset", DevilPhaseOneSpiderOffsets.Random, --order);
+        DevilPhaseOnePitchforkType = config.Bind("RNG The Devil", "Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
+        DevilPhaseTwoPatternNormal = config.Bind("RNG The Devil", "Phase Two Regular", DevilPhaseTwoPatternsNormal.Random, --order);
+        DevilPhaseTwoPatternHard = config.Bind("RNG The Devil", "Phase Two Expert", DevilPhaseTwoPatternsHard.Random, --order);
+        DevilPhaseTwoBombEyeDirection = config.Bind("RNG The Devil", "Phase Two Bomb Direction", DevilPhaseTwoBombEyeDirections.Random, --order);
 
 
     }

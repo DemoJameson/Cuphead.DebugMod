@@ -79,7 +79,7 @@ public class DebugInfo : PluginComponent {
                 GUISetDefElements();
                 GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
-                GUILayout.Label("Cuphead Debug Mod, RNG fork ALPHA 2");
+                GUILayout.Label("Cuphead Debug Mod, RNG fork ALPHA 3");
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndArea();
@@ -89,7 +89,14 @@ public class DebugInfo : PluginComponent {
             if (guiPanelState == 0) {
                 GUISetDefElements();
                 GUI.skin.label.fontSize = 20;
-                GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press F2 to toggle elements");
+                try {
+                    GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press " + Settings.ToggleBetweenPanels.Value.ToString() + " to toggle elements");
+                }
+                // idk if this is actually necessary
+                catch {
+                    GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press ? to toggle elements");
+                }
+
             }
 
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
@@ -121,6 +128,12 @@ public class DebugInfo : PluginComponent {
                 GUI.Label(new Rect(110f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
                 GUISetDefElements();
             }
+
+            // TODO: need to come up with a better way of not leaving an empty space on run n guns, this is going to mess with people's settings
+            if (guiPanelState == 1 && CurrentLevel.type != Level.Type.Battle) {
+                guiPanelState++;
+            }
+
 
             if (guiPanelState == 2) {
                 GUISetDefElements();

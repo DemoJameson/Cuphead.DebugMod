@@ -22,13 +22,9 @@ internal class DevilPatternSelector : PluginComponent {
     [HarmonyPrefix]
 
     public static void PhaseOnePatternManipulator(ref DevilLevel __instance) {
-        if (DevilPhaseOnePattern.Value != DevilPhaseOnePatterns.Random) {
-            if (DevilPhaseOnePattern.Value == DevilPhaseOnePatterns.Head1) {
-                __instance.properties.CurrentState.patternIndex = 6;
-            } else {
-                __instance.properties.CurrentState.patternIndex = (int) DevilPhaseOnePattern.Value - 2;
+            if (DevilPhaseOnePattern.Value != DevilPhaseOnePatterns.Random) {
+                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DevilPhaseOnePatterns>((int) DevilPhaseOnePattern.Value);
             }
-        }
     }
 
     [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
@@ -63,13 +59,8 @@ internal class DevilPatternSelector : PluginComponent {
 
     public static void PhaseOneSpiderOffsetManipulator(ref DevilLevelSittingDevil __instance) {
         if (DevilPhaseOneSpiderOffset.Value != DevilPhaseOneSpiderOffsets.Random) {
-            if (DevilPhaseOneSpiderOffset.Value == DevilPhaseOneSpiderOffsets.A_Neg150) {
-                __instance.spiderOffsetIndex = 19;
-            } else {
-                __instance.spiderOffsetIndex = (int) DevilPhaseOneSpiderOffset.Value - 2;
-            }
+            __instance.spiderOffsetIndex = Utility.GetUserPattern<DevilPhaseOneSpiderOffsets>((int) DevilPhaseOneSpiderOffset.Value);
         }
-        Logger.LogInfo(__instance.spiderOffsetIndex);
     }
 
 
@@ -98,13 +89,17 @@ internal class DevilPatternSelector : PluginComponent {
     [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.OnStateChanged))]
     [HarmonyPrefix]
     public static void PhaseTwoPatternManipulator(ref DevilLevel __instance) {
-        if (DevilPhaseTwoPattern.Value != DevilPhaseTwoPatterns.Random) {
-            if (DevilPhaseTwoPattern.Value == DevilPhaseTwoPatterns.BombEye01) {
-                __instance.properties.CurrentState.patternIndex = 17;
-            } else {
-                __instance.properties.CurrentState.patternIndex = (int) DevilPhaseTwoPattern.Value - 2;
+        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
+            if (DevilPhaseTwoPatternNormal.Value != DevilPhaseTwoPatternsNormal.Random) {
+                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DevilPhaseTwoPatternsNormal>((int) DevilPhaseTwoPatternNormal.Value);
             }
         }
+        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+            if (DevilPhaseTwoPatternHard.Value != DevilPhaseTwoPatternsHard.Random) {
+                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DevilPhaseTwoPatternsHard>((int) DevilPhaseTwoPatternHard.Value);
+            }
+        }
+
     }
 
     [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
