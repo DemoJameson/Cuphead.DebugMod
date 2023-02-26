@@ -76,6 +76,13 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tornado2
         }
 
+        public enum FlyingGeniePhaseOneTreasurePatterns {
+            Random,
+            Swords,
+            Gems,
+            Sphinx
+        }
+
         public enum ClownDashDelaysEasy {
             Random,
             [Description("5B")]
@@ -166,6 +173,19 @@ namespace BepInEx.CupheadDebugMod.Config {
             Summon1,
             Fish,
             Summon2
+        }
+
+        public enum FlyingMermaidPhaseOneFishPatterns {
+            Random,
+            Yellow,
+            Red
+        }
+
+        public enum FlyingMermaidPhaseOneSummonPatterns {
+            Random,
+            Seahorse,
+            Pufferfish,
+            Turtle
         }
 
         public enum DevilPhaseOnePatterns {

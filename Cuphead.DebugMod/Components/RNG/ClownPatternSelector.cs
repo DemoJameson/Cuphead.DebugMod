@@ -17,8 +17,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 [HarmonyPatch]
 internal class ClownPatternSelector : PluginComponent {
 
-    //public delegate int ClownDashDelayCalc();
-
     [HarmonyPatch(typeof(ClownLevelClown), nameof(ClownLevelClown.bumper_car_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
     private static void PhaseOneBumperDelayForcer(ILContext il) {

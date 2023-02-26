@@ -60,6 +60,37 @@ internal class FlyingMermaidPatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(FlyingMermaidLevelMermaid), nameof(FlyingMermaidLevelMermaid.LevelInit))]
+    [HarmonyPostfix]
+    public static void PhaseOneFishManipulator(ref FlyingMermaidLevelMermaid __instance) {
+        if (FlyingMermaidPhaseOneFishPattern.Value != FlyingMermaidPhaseOneFishPatterns.Random) {
+            FlyingMermaidLevelMermaid.FishPossibility[] array = new FlyingMermaidLevelMermaid.FishPossibility[2];
+            array[0] = FlyingMermaidLevelMermaid.FishPossibility.Homer;
+            __instance.fishPattern = array;
+            __instance.fishIndex = Utility.GetUserPattern<FlyingMermaidPhaseOneFishPatterns>((int) FlyingMermaidPhaseOneFishPattern.Value);
+        }
+            
+    }
+
+    [HarmonyPatch(typeof(FlyingMermaidLevelMermaid), nameof(FlyingMermaidLevelMermaid.LevelInit))]
+    [HarmonyPostfix]
+    public static void PhaseOneSummonManipulator(ref FlyingMermaidLevelMermaid __instance) {
+        if (FlyingMermaidPhaseOneSummonPattern.Value != FlyingMermaidPhaseOneSummonPatterns.Random) {
+            FlyingMermaidLevelMermaid.SummonPossibility[] array = new FlyingMermaidLevelMermaid.SummonPossibility[] {
+                FlyingMermaidLevelMermaid.SummonPossibility.Seahorse,
+                FlyingMermaidLevelMermaid.SummonPossibility.Pufferfish,
+                FlyingMermaidLevelMermaid.SummonPossibility.Turtle
+            };
+
+            __instance.summonPattern = array;
+            __instance.summonIndex = Utility.GetUserPattern<FlyingMermaidPhaseOneSummonPatterns>((int) FlyingMermaidPhaseOneSummonPattern.Value);
+        }
+
+    }
+
+
+
+
     protected static bool IsWithinPhase(float phaseStart, float phaseEnd, FlyingMermaidLevel __instance) {
         return (__instance.properties.CurrentState.stateName == LevelProperties.FlyingMermaid.States.Generic &&
         (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health < phaseStart &&
