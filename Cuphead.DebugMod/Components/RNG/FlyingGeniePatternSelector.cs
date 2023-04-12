@@ -16,7 +16,7 @@ namespace BepInEx.CupheadDebugMod.Components.RNG {
 
         [HarmonyPatch(typeof(FlyingGenieLevelGenie), nameof(FlyingGenieLevelGenie.StartTreasure))]
         [HarmonyILManipulator]
-        private static void PhaseOneBumperDelayForcer(ILContext il) {
+        private static void PhaseOneTreasureForcer(ILContext il) {
             ILCursor ilCursor = new(il);
             while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("treasureAttacks"))) {
                 ilCursor.Index++;

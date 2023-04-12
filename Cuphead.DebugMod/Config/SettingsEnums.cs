@@ -7,6 +7,22 @@ using System.Text;
 namespace BepInEx.CupheadDebugMod.Config {
     public static class SettingsEnums {
 
+        #if v1_3
+        public enum RelicLevels {
+            Default,
+            BrokenRelic,
+            [Description("Cursed Relic 1")]
+            CursedRelic1,
+            [Description("Cursed Relic 2")]
+            CursedRelic2,
+            [Description("Cursed Relic 3")]
+            CursedRelic3,
+            [Description("Cursed Relic 4")]
+            CursedRelic4,
+            DivineRelic
+        }
+        #endif
+
         public enum FrogsPhaseOnePatterns {
             Random,
             Punches,
@@ -75,6 +91,43 @@ namespace BepInEx.CupheadDebugMod.Config {
             Shoot5,
             Tornado2
         }
+
+        public enum FlowerPhaseGeneric1PatternsNormal {
+            Random,
+            HeadLunge,
+            GatlingGun
+        }
+
+        public enum FlowerPhaseGeneric2PatternsNormal {
+            Random,
+            HeadLunge,
+            PodHands
+        }
+
+        public enum FlowerPhaseGeneric3PatternsNormal {
+            Random,
+            PodHands,
+            GatlingGun
+        }
+
+        public enum FlowerPhaseGenericHeadLungePatternsNormal {
+            Random,
+            Top1,
+            Bottom1,
+            Bottom2,
+            Top2,
+            Bottom3,
+            Bottom4,
+            Top3,
+            Bottom5,
+            Bottom6
+        }
+
+        //public enum FlowerPhaseGeneric1HeadLungePatternsNormal {
+        //    Random,
+        //    PodHands,
+        //    GatlingGun
+        //}
 
         public enum FlyingGeniePhaseOneTreasurePatterns {
             Random,
@@ -155,6 +208,15 @@ namespace BepInEx.CupheadDebugMod.Config {
             L_1_5
         }
 
+        public enum PiratePhaseOneGunPatternsNormal {
+            Random,
+            [Description("3-Pause-1")]
+            ThreePOne,
+            [Description("2-Pause-2")]
+            TwoPTwo,
+            [Description("1-Pause-3")]
+            OnePThree
+        }
         public enum FlyingMermaidPhaseOneFirstPatternsEasy {
             Random,
             Ghosts,
@@ -261,8 +323,6 @@ namespace BepInEx.CupheadDebugMod.Config {
             [Description("0")]
             T_0
         }
-
-        // different on expert
         public enum DevilPhaseTwoPatternsNormal {
             Random,
             BombEye01,
@@ -315,18 +375,35 @@ namespace BepInEx.CupheadDebugMod.Config {
 
 #if v1_3
 
-        public enum RelicLevels {
-            Default,
-            BrokenRelic,
-            [Description("Cursed Relic 1")]
-            CursedRelic1,
-            [Description("Cursed Relic 2")]
-            CursedRelic2,
-            [Description("Cursed Relic 3")]
-            CursedRelic3,
-            [Description("Cursed Relic 4")]
-            CursedRelic4,
-            DivineRelic
+        public enum SaltbakerPhaseOnePatterns {
+            Random,
+            Dough01,
+            Limes01,
+            Strawberries01,
+            Sugarcubes01,
+            Limes02,
+            Dough02,
+            Sugarcubes02,
+            Strawberries02,
+            Limes03,
+            Dough03,
+            Strawberries03,
+            Sugarcubes03,
+            Dough04,
+            Limes04,
+            Sugarcubes04,
+            Strawberries04,
+            Limes05,
+            Sugarcubes05,
+            Limes06,
+            Strawberries05,
+            Limes07
+        }
+
+        public enum SaltbakerPhaseThreeSawPatterns {
+            Random,
+            Left,
+            Right
         }
 
 #endif

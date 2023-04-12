@@ -23,7 +23,6 @@ public class FlyingBlimpPatternSelector : PluginComponent {
 
     // pattern index seems to get regenerated in phases 2 and 3
     public static void PhaseBlimpPatternManipulator(ref FlyingBlimpLevel __instance) {
-        // TODO: need to figure out where i need to use < and > vs <= and >=
         if (Level.ScoringData.difficulty == Level.Mode.Easy) {
             if (IsWithinPhase(0.62f, 0.46f, __instance)) {
                 if (FlyingBlimpPhaseBlimp2PatternEasy.Value != FlyingBlimpPhaseBlimp2PatternsEasy.Random) {
@@ -67,8 +66,9 @@ public class FlyingBlimpPatternSelector : PluginComponent {
 
     protected static bool IsWithinPhase(float phaseStart, float phaseEnd, FlyingBlimpLevel __instance)
     {
+        // i'm not actually sure on the inclusivity of values here ( <, > vs <=, >=). i'm taking a guess.
         return (__instance.properties.CurrentState.stateName == LevelProperties.FlyingBlimp.States.Generic &&
-        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health < phaseStart &&
+        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health <= phaseStart &&
         (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health > phaseEnd);
     }
 

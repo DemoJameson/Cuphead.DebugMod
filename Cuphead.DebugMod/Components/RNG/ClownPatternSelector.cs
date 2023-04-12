@@ -19,7 +19,7 @@ internal class ClownPatternSelector : PluginComponent {
 
     [HarmonyPatch(typeof(ClownLevelClown), nameof(ClownLevelClown.bumper_car_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
-    private static void PhaseOneBumperDelayForcer(ILContext il) {
+    private static void PhaseOneBumperDelayManipulator(ILContext il) {
         ILCursor ilCursor = new(il);
         while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("timerIndex"))) {
             ilCursor.EmitDelegate<Func<int, int>>(dash => GetDashPattern());
