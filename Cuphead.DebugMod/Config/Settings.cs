@@ -58,6 +58,8 @@ public class Settings : PluginComponent {
     public static ConfigEntry<FlowerPhaseGeneric2PatternsNormal> FlowerPhaseGeneric2PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric3PatternsNormal> FlowerPhaseGeneric3PatternNormal;
     public static ConfigEntry<FlowerPhaseGenericHeadLungePatternsNormal> FlowerPhaseGenericHeadLungePatternNormal;
+    public static ConfigEntry<FlyingBirdPhaseFinalPatterns> FlyingBirdPhaseFinalPattern;
+    public static ConfigEntry<FlyingBirdPhaseFinalDirections> FlyingBirdPhaseFinalDirection;
     public static ConfigEntry<FlyingGeniePhaseOneTreasurePatterns> FlyingGeniePhaseOneTreasurePattern;
     public static ConfigEntry<ClownDashDelaysEasy> ClownDashDelayEasy;
     public static ConfigEntry<ClownDashDelaysNormal> ClownDashDelayNormal;
@@ -141,6 +143,8 @@ public class Settings : PluginComponent {
         FlowerPhaseGeneric2PatternNormal = config.Bind("RNG Cagney Carnation", "Second Generic Phase Regular", FlowerPhaseGeneric2PatternsNormal.Random, --order);
         FlowerPhaseGeneric3PatternNormal = config.Bind("RNG Cagney Carnation", "Third Generic Phase Regular", FlowerPhaseGeneric3PatternsNormal.Random, --order);
         FlowerPhaseGenericHeadLungePatternNormal = config.Bind("RNG Cagney Carnation", "Generic Phase Head Lunge Regular", FlowerPhaseGenericHeadLungePatternsNormal.Random, --order);
+        FlyingBirdPhaseFinalPattern = config.Bind("RNG Wally Warbles", "Final Phase Pattern", FlyingBirdPhaseFinalPatterns.Random, --order);
+        FlyingBirdPhaseFinalDirection = config.Bind("RNG Wally Warbles", "Final Phase Direction", FlyingBirdPhaseFinalDirections.Random, --order);
         FlyingGeniePhaseOneTreasurePattern = config.Bind("RNG Djimmi The Great", "First Phase Treasure", FlyingGeniePhaseOneTreasurePatterns.Random, --order);
         ClownDashDelayEasy = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Simple", ClownDashDelaysEasy.Random, --order);
         ClownDashDelayNormal = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Regular", ClownDashDelaysNormal.Random, --order);

@@ -123,11 +123,17 @@ namespace BepInEx.CupheadDebugMod.Config {
             Bottom6
         }
 
-        //public enum FlowerPhaseGeneric1HeadLungePatternsNormal {
-        //    Random,
-        //    PodHands,
-        //    GatlingGun
-        //}
+        public enum FlyingBirdPhaseFinalPatterns {
+            Random,
+            Garbage,
+            Heart
+        }
+
+        public enum FlyingBirdPhaseFinalDirections {
+            Random,
+            Right,
+            Left
+        }
 
         public enum FlyingGeniePhaseOneTreasurePatterns {
             Random,
