@@ -29,34 +29,34 @@ public class FlyingBlimpPatternSelector : PluginComponent {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsEasy>((int) FlyingBlimpPhaseBlimp2PatternEasy.Value);
                 }
             }
-            if (IsWithinPhase(0.23f, 0.00f, __instance)) {
+            else if (IsWithinPhase(0.23f, 0.00f, __instance)) {
                 if (FlyingBlimpPhaseBlimp3PatternNormal.Value != FlyingBlimpPhaseBlimp3PatternsNormal.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsNormal>((int) FlyingBlimpPhaseBlimp3PatternNormal.Value);
                 }
             }
         }
 
-        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
+        else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
             if (IsWithinPhase(0.77f, 0.64f, __instance))
             {
                 if (FlyingBlimpPhaseBlimp2PatternNormal.Value != FlyingBlimpPhaseBlimp2PatternsNormal.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsNormal>((int) FlyingBlimpPhaseBlimp2PatternNormal.Value);
                 }
             }
-            if (IsWithinPhase(0.46f, 0.34f, __instance)) {
+            else if (IsWithinPhase(0.46f, 0.34f, __instance)) {
                 if (FlyingBlimpPhaseBlimp3PatternNormal.Value != FlyingBlimpPhaseBlimp3PatternsNormal.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsNormal>((int) FlyingBlimpPhaseBlimp3PatternNormal.Value);
                 }
             }
         }
 
-        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+        else if (Level.ScoringData.difficulty == Level.Mode.Hard) {
             if (IsWithinPhase(0.8f, 0.67f, __instance)) {
                 if (FlyingBlimpPhaseBlimp2PatternHard.Value != FlyingBlimpPhaseBlimp2PatternsHard.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsHard>((int) FlyingBlimpPhaseBlimp2PatternHard.Value);
                 }
             }
-            if (IsWithinPhase(0.51f, 0.39f, __instance)) {
+            else if (IsWithinPhase(0.51f, 0.39f, __instance)) {
                 if (FlyingBlimpPhaseBlimp3PatternHard.Value != FlyingBlimpPhaseBlimp3PatternsHard.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsHard>((int) FlyingBlimpPhaseBlimp3PatternHard.Value);
                 }

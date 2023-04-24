@@ -214,6 +214,36 @@ namespace BepInEx.CupheadDebugMod.Config {
             L_1_5
         }
 
+        public enum BeePhaseTwoPatternsEasy {
+            Random,
+            Orbs1,
+            Triangles1,
+            Orbs2,
+            Triangles2,
+            Triangles3,
+            Orbs3,
+            Triangles4,
+            Orbs4,
+            Triangles5,
+            Orbs5,
+            Orbs6
+        }
+
+        public enum BeePhaseTwoPatternsNormal {
+            Random,
+            Orbs,
+            Triangles,
+            Chain
+        }
+
+        public enum BeePhaseTwoPatternsHard {
+            Random,
+            Orbs,
+            Chain1,
+            Triangles,
+            Chain2
+        }
+
         public enum PiratePhaseOneGunPatternsNormal {
             Random,
             [Description("3-Pause-1")]
