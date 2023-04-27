@@ -22,7 +22,6 @@ internal class BeePatternSelector : PluginComponent {
     [HarmonyPrefix]
 
     public static void PhaseTwoFirstPatternManipulator(ref BeeLevel __instance) {
-        Logger.LogInfo(__instance.properties.CurrentState.stateName);
         if (__instance.properties.CurrentState.stateName == LevelProperties.Bee.States.Generic) {
             if (Level.ScoringData.difficulty == Level.Mode.Easy && IsWithinPhase(0.75f, 0.45f, __instance)) {
                 if (BeePhaseTwoPatternEasy.Value != BeePhaseTwoPatternsEasy.Random) {

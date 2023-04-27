@@ -244,6 +244,50 @@ namespace BepInEx.CupheadDebugMod.Config {
             Chain2
         }
 
+        public enum MousePhaseOnePatternsEasy {
+            Random,
+            Dash1,
+            Catapult1,
+            CherryBomb1,
+            Dash2,
+            CherryBomb2,
+            Catapult2,
+            Dash3,
+            Catapult3
+        }
+
+        public enum MousePhaseOnePatternsNormal {
+            Random,
+            CherryBomb1,
+            Dash1,
+            Catapult1,
+            Dash2,
+            CherryBomb2,
+            Catapult2,
+            Dash3,
+            CherryBomb3,
+            Catapult3,
+            CherryBomb4,
+            Dash4,
+            CherryBomb5,
+            Catapult4,
+            Dash5
+        }
+
+        public enum MousePhaseOnePatternsHard {
+            Random,
+            CherryBomb1,
+            Catapult1,
+            Dash1,
+            CherryBomb2,
+            Dash2,
+            Catapult2,
+            Dash3,
+            Catapult3,
+            CherryBomb3,
+            Dash4
+        }
+
         public enum PiratePhaseOneGunPatternsNormal {
             Random,
             [Description("3-Pause-1")]

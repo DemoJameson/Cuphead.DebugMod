@@ -67,6 +67,9 @@ public class Settings : PluginComponent {
     public static ConfigEntry<BeePhaseTwoPatternsEasy> BeePhaseTwoPatternEasy;
     public static ConfigEntry<BeePhaseTwoPatternsNormal> BeePhaseTwoPatternNormal;
     public static ConfigEntry<BeePhaseTwoPatternsHard> BeePhaseTwoPatternHard;
+    public static ConfigEntry<MousePhaseOnePatternsEasy> MousePhaseOnePatternEasy;
+    public static ConfigEntry<MousePhaseOnePatternsNormal> MousePhaseOnePatternNormal;
+    public static ConfigEntry<MousePhaseOnePatternsHard> MousePhaseOnePatternHard;
     public static ConfigEntry<PiratePhaseOneGunPatternsNormal> PiratePhaseOneGunPatternNormal;
     public static ConfigEntry<FlyingMermaidPhaseOneFirstPatternsEasy> FlyingMermaidPhaseOneFirstPatternEasy;
     public static ConfigEntry<FlyingMermaidPhaseOneSecondPatternsEasy> FlyingMermaidPhaseOneSecondPatternEasy;
@@ -155,6 +158,9 @@ public class Settings : PluginComponent {
         BeePhaseTwoPatternEasy = config.Bind("RNG Rumor Honeybottoms", "Phase Two Simple", BeePhaseTwoPatternsEasy.Random, --order);
         BeePhaseTwoPatternNormal = config.Bind("RNG Rumor Honeybottoms", "Phase Two Regular", BeePhaseTwoPatternsNormal.Random, --order);
         BeePhaseTwoPatternHard = config.Bind("RNG Rumor Honeybottoms", "Phase Two Expert", BeePhaseTwoPatternsHard.Random, --order);
+        MousePhaseOnePatternEasy = config.Bind("RNG Werner Werman", "Phase One Simple", MousePhaseOnePatternsEasy.Random, --order);
+        MousePhaseOnePatternNormal = config.Bind("RNG Werner Werman", "Phase One Regular", MousePhaseOnePatternsNormal.Random, --order);
+        MousePhaseOnePatternHard = config.Bind("RNG Werner Werman", "Phase One Expert", MousePhaseOnePatternsHard.Random, --order);
         PiratePhaseOneGunPatternNormal = config.Bind("RNG Captain Brineybeard", "Phase One Gun Regular", PiratePhaseOneGunPatternsNormal.Random, --order);
         FlyingMermaidPhaseOneFirstPatternEasy = config.Bind("RNG Cala Maria", "Phase One First Simple", FlyingMermaidPhaseOneFirstPatternsEasy.Random, --order);
         FlyingMermaidPhaseOneSecondPatternEasy = config.Bind("RNG Cala Maria", "Phase One Second Simple", FlyingMermaidPhaseOneSecondPatternsEasy.Random, --order);
