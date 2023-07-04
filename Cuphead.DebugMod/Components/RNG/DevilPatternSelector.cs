@@ -116,14 +116,5 @@ internal class DevilPatternSelector : PluginComponent {
             ilCursor.Index++; // avoid infinite loops
         }
     }
-
-
-    // debug
-
-    [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.OnStateChanged))]
-    [HarmonyPrefix]
-    public static void PrintPatternIndex(ref DevilLevel __instance) {
-        Logger.LogInfo(__instance.properties.CurrentState.patternIndex);
-    }
 }
 

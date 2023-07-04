@@ -26,7 +26,6 @@ public class FrogsPatternSelector : PluginComponent {
         } else if (Settings.FrogsPhaseOnePattern.Value == FrogsPhaseOnePatterns.Fireflies) {
             __instance.properties.CurrentState.patternIndex = 0;
         }
-        Logger.LogInfo((int) Settings.FrogsPhaseFinalPattern.Value - 1);
     }
 
     // Forces the attack to be the selected one every time.

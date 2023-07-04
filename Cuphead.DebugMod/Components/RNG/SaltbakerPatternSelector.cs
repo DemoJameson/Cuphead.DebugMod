@@ -36,7 +36,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG {
                 );
                 ilCursor.Index++; // avoid infinite loops
             }
-            //Logger.LogInfo(il.ToString());
         }
 
     }
