@@ -288,15 +288,6 @@ namespace BepInEx.CupheadDebugMod.Config {
             Dash4
         }
 
-        public enum PiratePhaseOneGunPatternsNormal {
-            Random,
-            [Description("3-Pause-1")]
-            ThreePOne,
-            [Description("2-Pause-2")]
-            TwoPTwo,
-            [Description("1-Pause-3")]
-            OnePThree
-        }
         public enum FlyingMermaidPhaseOneFirstPatternsEasy {
             Random,
             Ghosts,
