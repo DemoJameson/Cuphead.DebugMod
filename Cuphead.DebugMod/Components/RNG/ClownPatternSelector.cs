@@ -28,7 +28,6 @@ internal class ClownPatternSelector : PluginComponent {
     }
 
     static int GetDashPattern() {
-
         // I am checking for Settings.ClownDashDelay.Value dynamically during this function call.
         // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
         // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.ClownDashDelay.Value
