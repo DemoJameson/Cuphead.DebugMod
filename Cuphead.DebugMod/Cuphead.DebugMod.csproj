@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>net35</TargetFramework>
@@ -17,6 +17,7 @@
         <Optimize>true</Optimize>
         <PathMap>$(MSBuildProjectDirectory)=CupheadDebugMod/</PathMap>
         <PackageVersion>1.1.2</PackageVersion>
+        <RunPostBuildEvent>Always</RunPostBuildEvent>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == '1.0~1.1' ">

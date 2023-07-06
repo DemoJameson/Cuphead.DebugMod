@@ -1,4 +1,4 @@
-using BepInEx.CupheadDebugMod.Config;
+﻿using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
 
 namespace BepInEx.CupheadDebugMod.Components;
@@ -74,15 +74,23 @@ public class DebugInfo : PluginComponent {
         GUI.depth = 1;
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
         GUISetDefColors();
-        if (!guiShowAll) {
-            return;
-        }
-
         if (CurrentLevel != null && CurrentLevel.type is Level.Type.Battle or Level.Type.Platforming) {
+            if (!guiShowAll) {
+                GUISetDefElements();
+                GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
+                GUILayout.BeginVertical("box");
+                GUILayout.Label("Cuphead Debug Mod");
+                GUILayout.EndVertical();
+                GUILayout.FlexibleSpace();
+                GUILayout.EndArea();
+                return;
+            }
+
             if (guiPanelState == 0) {
                 GUISetDefElements();
                 GUI.skin.label.fontSize = 20;
-                GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press F2 to toggle elements");
+                GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press " + Settings.ToggleBetweenPanels.Value.ToString() + " to toggle elements");
+
             }
 
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
@@ -114,6 +122,14 @@ public class DebugInfo : PluginComponent {
                 GUI.Label(new Rect(110f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
                 GUISetDefElements();
             }
+
+            // to avoid having an ampty GUI on run n guns, this increments the panel state to the next valid one
+            // this means that if someone comes from a boss fight with guiPanelState == 1, then plays a run n gun, it will get auto-incremeneted to 2
+            // which is a minor inconvenience, but i think it's a fine solution to avoid showing an empty space 
+            if (guiPanelState == 1 && CurrentLevel.type != Level.Type.Battle) {
+                guiPanelState++;
+            }
+
 
             if (guiPanelState == 2) {
                 GUISetDefElements();
