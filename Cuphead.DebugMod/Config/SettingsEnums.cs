@@ -394,6 +394,18 @@ namespace BepInEx.CupheadDebugMod.Config {
             [Description("0")]
             T_0
         }
+
+        public enum DevilPhaseOneSpiderHopCounts {
+            Random,
+            [Description("3")]
+            Num_3,
+            [Description("4")]
+            Num_4,
+            [Description("5")]
+            Num_5
+
+        }
+
         public enum DevilPhaseTwoPatternsNormal {
             Random,
             BombEye01,

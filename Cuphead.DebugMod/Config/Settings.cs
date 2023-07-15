@@ -79,6 +79,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<DevilPhaseOneHeadTypes> DevilPhaseOneHeadType;
     public static ConfigEntry<DevilPhaseOneDragonDirections> DevilPhaseOneDragonDirection;
     public static ConfigEntry<DevilPhaseOneSpiderOffsets> DevilPhaseOneSpiderOffset;
+    public static ConfigEntry<DevilPhaseOneSpiderHopCounts> DevilPhaseOneSpiderHopCount;
     public static ConfigEntry<DevilPhaseOnePitchforkTypes> DevilPhaseOnePitchforkType;
     public static ConfigEntry<DevilPhaseTwoPatternsNormal> DevilPhaseTwoPatternNormal;
     public static ConfigEntry<DevilPhaseTwoPatternsHard> DevilPhaseTwoPatternHard;
@@ -169,6 +170,7 @@ public class Settings : PluginComponent {
         DevilPhaseOneHeadType = config.Bind("RNG The Devil", "Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
         DevilPhaseOneDragonDirection = config.Bind("RNG The Devil", "Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
         DevilPhaseOneSpiderOffset = config.Bind("RNG The Devil", "Phase One Spider Offset", DevilPhaseOneSpiderOffsets.Random, --order);
+        DevilPhaseOneSpiderHopCount = config.Bind("RNG The Devil", "Phase One Spider Hop Count", DevilPhaseOneSpiderHopCounts.Random, --order);
         DevilPhaseOnePitchforkType = config.Bind("RNG The Devil", "Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
         DevilPhaseTwoPatternNormal = config.Bind("RNG The Devil", "Phase Two Regular", DevilPhaseTwoPatternsNormal.Random, --order);
         DevilPhaseTwoPatternHard = config.Bind("RNG The Devil", "Phase Two Expert", DevilPhaseTwoPatternsHard.Random, --order);
