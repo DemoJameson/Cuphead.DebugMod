@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using HarmonyLib;
-using UnityEngine;
 
 namespace BepInEx.CupheadDebugMod.Components;
 
 [HarmonyPatch]
 internal class GuaranteeLobberExSweetSpot {
+
 
     // A Lobber Ex Sweet Spot is when a Lobber Ex collides in-between an enemy and a floor.
     // Roughly half the times, it cause the explosion to happen twice. The other half, if will only happen once.
@@ -18,7 +18,7 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPrefix]
     public static void StartFix(ref WeaponBouncerProjectile __instance) {
         if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx) {
-            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", false);
+            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", false);
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", false);
         }
     }
@@ -27,7 +27,7 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPrefix]
     public static void OnCollisionGroundFix(ref WeaponBouncerProjectile __instance) {
         if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && !__instance.dead) {
-            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", true);
+            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", true);
         }
     }
 
@@ -35,17 +35,9 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPrefix]
     public static void OnCollisionEnemyFix(ref WeaponBouncerProjectile __instance) {
         // Actual fix is here. If another collision type has been hit first, cause a second Lobber Ex explosion
-        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && (bool)weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionGroundOther") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
+        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && (bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionGround") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
             __instance.Die();
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", true);
-        }
-    }
-
-    [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionOther))]
-    [HarmonyPrefix]
-    public static void OnCollisionOtherFix(ref WeaponBouncerProjectile __instance) {
-        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && !__instance.dead) {
-            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", true);
         }
     }
 
