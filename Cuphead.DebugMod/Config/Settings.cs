@@ -1,5 +1,6 @@
 ﻿using System;
 using BepInEx.Configuration;
+using BepInEx.CupheadDebugMod.Components;
 using UnityEngine;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
@@ -15,6 +16,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<bool> RunInBackground;
     public static ConfigEntry<bool> IgnoreInputWhenLoseFocus;
     public static ConfigEntry<bool> SkipTitleScreen;
+    public static ConfigEntry<bool> GuaranteeLobberExSweetSpot;
     public static ConfigEntry<KeyboardShortcut> InvincibilityOneFight;
     public static ConfigEntry<KeyboardShortcut> Gain5ExCards;
     public static ConfigEntry<KeyboardShortcut> Gain1ExCard;
@@ -114,6 +116,7 @@ public class Settings : PluginComponent {
         InvincibilityOneFight = config.Bind("Misc", "Invincibility One Fight", new KeyboardShortcut(KeyCode.Alpha5), --order);
         ToggleFrameCounter = config.Bind("Misc", "Toggle FrameCounter", new KeyboardShortcut(KeyCode.F4), --order);
         SwapBetweenFrameLimit = config.Bind("Misc", "Swap Between Frame Limit", new KeyboardShortcut(KeyCode.F5), --order);
+        GuaranteeLobberExSweetSpot = config.Bind("Misc", "Guarantee Lobber Ex Sweet Spot", false, --order);
 
         ToggleAllPanels = config.Bind("Panel", "Toggle All Panels", new KeyboardShortcut(KeyCode.F2), --order);
         ToggleBetweenPanels = config.Bind("Panel", "Toggle Between Panels", new KeyboardShortcut(KeyCode.F3), --order);
