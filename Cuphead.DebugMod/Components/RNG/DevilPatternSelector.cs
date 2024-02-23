@@ -56,10 +56,26 @@ internal class DevilPatternSelector : PluginComponent {
     // Sets the leading attack. Subsequent attacks work as normal.
     [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
     [HarmonyPostfix]
-
     public static void PhaseOneSpiderOffsetManipulator(ref DevilLevelSittingDevil __instance) {
         if (DevilPhaseOneSpiderOffset.Value != DevilPhaseOneSpiderOffsets.Random) {
             __instance.spiderOffsetIndex = Utility.GetUserPattern<DevilPhaseOneSpiderOffsets>((int) DevilPhaseOneSpiderOffset.Value);
+        }
+    }
+
+    // Sets the leading attack. Subsequent attacks work as normal.
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.spider_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseOneSpiderHopCountManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<numAttacks>"))) {
+            ilCursor.EmitDelegate<Func<int, int>>(numAttacks =>
+                DevilPhaseOneSpiderHopCount.Value == DevilPhaseOneSpiderHopCounts.Random ?
+                // spider hop count is always between 3 and 5 on every difficulty so it can be hardcoded here for simplicity
+                UnityEngine.Random.Range(3, 6)
+                :
+                (int)DevilPhaseOneSpiderHopCount.Value + 2
+            );;
+            ilCursor.Index++; // avoid infinite loops
         }
     }
 
