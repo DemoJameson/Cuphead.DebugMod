@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
-using UnityEngine;
 using MonoMod.Cil;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
-using System.Collections;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
@@ -22,16 +15,16 @@ internal class DevilPatternSelector : PluginComponent {
     [HarmonyPrefix]
 
     public static void PhaseOnePatternManipulator(ref DevilLevel __instance) {
-            if (DevilPhaseOnePattern.Value != DevilPhaseOnePatterns.Random) {
-                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DevilPhaseOnePatterns>((int) DevilPhaseOnePattern.Value);
-            }
+        if (DevilPhaseOnePattern.Value != DevilPhaseOnePatterns.Random) {
+            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DevilPhaseOnePatterns>((int) DevilPhaseOnePattern.Value);
+        }
     }
 
     [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
     [HarmonyPostfix]
     public static void PhaseOneHeadManipulator(ref DevilLevelSittingDevil __instance) {
         if (DevilPhaseOneHeadType.Value != DevilPhaseOneHeadTypes.Random) {
-            __instance.isSpiderAttackNext = DevilPhaseOneHeadType.Value == DevilPhaseOneHeadTypes.Spider ? true : false; 
+            __instance.isSpiderAttackNext = DevilPhaseOneHeadType.Value == DevilPhaseOneHeadTypes.Spider ? true : false;
         }
     }
 
@@ -73,8 +66,9 @@ internal class DevilPatternSelector : PluginComponent {
                 // spider hop count is always between 3 and 5 on every difficulty so it can be hardcoded here for simplicity
                 UnityEngine.Random.Range(3, 6)
                 :
-                (int)DevilPhaseOneSpiderHopCount.Value + 2
-            );;
+                (int) DevilPhaseOneSpiderHopCount.Value + 2
+            );
+            ;
             ilCursor.Index++; // avoid infinite loops
         }
     }
@@ -94,8 +88,7 @@ internal class DevilPatternSelector : PluginComponent {
             if (pitchforkAttack == (int) DevilPhaseOnePitchforkType.Value + 3) {
                 if (i == 0) {
                     __instance.pitchforkPatternIndex = __instance.pitchforkPattern.Length - 1;
-                }
-                else {
+                } else {
                     __instance.pitchforkPatternIndex = i - 1;
                 }
             }
@@ -118,7 +111,7 @@ internal class DevilPatternSelector : PluginComponent {
 
     }
 
-    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
+    [HarmonyPatch(typeof(DevilLevelGiantHead), nameof(DevilLevelGiantHead.eye_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
     public static void PhaseTwoBombEyeDirectionManipulator(ILContext il) {
         ILCursor ilCursor = new(il);

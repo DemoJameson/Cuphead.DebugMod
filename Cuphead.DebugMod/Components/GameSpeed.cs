@@ -2,7 +2,7 @@
 using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
 
-namespace BepInEx.CupheadDebugMod.Components; 
+namespace BepInEx.CupheadDebugMod.Components;
 
 public class FrameAdvance : PluginComponent {
     private static string FormattedSpeed => (int) Math.Round(Time.timeScale * 100) + "%";

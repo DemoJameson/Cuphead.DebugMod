@@ -14,7 +14,7 @@ public class HookHelper : PluginComponent {
         Actions.Add(action);
         SceneManager.activeSceneChanged += action;
     }
-    
+
     public static void ActiveSceneChanged(Action action) {
         void UnityAction(Scene _, Scene __) => action();
         Actions.Add(UnityAction);

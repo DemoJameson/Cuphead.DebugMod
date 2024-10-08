@@ -1,8 +1,12 @@
 ﻿using BepInEx.CupheadDebugMod.Config;
+using HarmonyLib;
+using MonoMod.Cil;
 using UnityEngine;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
-namespace BepInEx.CupheadDebugMod.Components; 
+namespace BepInEx.CupheadDebugMod.Components;
 
+[HarmonyPatch]
 public class Misc : PluginComponent {
     private void Awake() {
         Settings.OnKeyUpdate += () => {
@@ -55,7 +59,7 @@ public class Misc : PluginComponent {
         };
     }
 
-     private static void TryQuickRetry() {
+    private static void TryQuickRetry() {
         if (PauseManager.state != PauseManager.State.Paused &&
             Level.Current.type is Level.Type.Battle or Level.Type.Platforming) {
             PlayerManager.SetPlayerCanSwitch(PlayerId.PlayerOne, canSwitch: false);
@@ -102,6 +106,18 @@ public class Misc : PluginComponent {
             Toast.Show("Enable Invincibility in One Fight");
         } else {
             Toast.Show("Disable Invincibility");
+        }
+    }
+
+    [HarmonyPatch(typeof(WinScreen), nameof(WinScreen.rotate_bg_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void FixWinScreen(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("speed"))) {
+            ilCursor.Index--;
+            ilCursor.Remove();
+            ilCursor.Emit(OpCodes.Ldc_R4, 53f);
+            break;
         }
     }
 

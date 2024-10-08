@@ -1,16 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using BepInEx.CupheadDebugMod.Config;
-using HarmonyLib;
-using UnityEngine;
-using MonoMod.Cil;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
+﻿using HarmonyLib;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
-using System.Collections;
-using System;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
