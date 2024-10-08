@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 using UnityEngine;
 
-namespace BepInEx.CupheadDebugMod.Components; 
+namespace BepInEx.CupheadDebugMod.Components;
 
 [HarmonyPatch]
 public class LevelSelectorEsc : PluginComponent {

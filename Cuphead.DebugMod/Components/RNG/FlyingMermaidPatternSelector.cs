@@ -1,16 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using BepInEx.CupheadDebugMod.Config;
-using HarmonyLib;
-using UnityEngine;
-using MonoMod.Cil;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
+﻿using HarmonyLib;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
-using System.Collections;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
@@ -27,8 +17,7 @@ internal class FlyingMermaidPatternSelector : PluginComponent {
             if (FlyingMermaidPhaseOneFirstPatternEasy.Value != FlyingMermaidPhaseOneFirstPatternsEasy.Random) {
                 __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingMermaidPhaseOneFirstPatternsEasy>((int) FlyingMermaidPhaseOneFirstPatternEasy.Value);
             }
-        }
-        else {
+        } else {
             if (FlyingMermaidPhaseOnePatternNormalHard.Value != FlyingMermaidPhaseOnePatternsNormalHard.Random) {
                 // little trick i'm doing behind the scenes here
                 // normal and hard mode don't QUITE have the same patterns list. their lists are ordered the same in the end, but the starting point is different
@@ -69,7 +58,7 @@ internal class FlyingMermaidPatternSelector : PluginComponent {
             __instance.fishPattern = array;
             __instance.fishIndex = Utility.GetUserPattern<FlyingMermaidPhaseOneFishPatterns>((int) FlyingMermaidPhaseOneFishPattern.Value);
         }
-            
+
     }
 
     [HarmonyPatch(typeof(FlyingMermaidLevelMermaid), nameof(FlyingMermaidLevelMermaid.LevelInit))]

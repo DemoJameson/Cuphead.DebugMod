@@ -1,5 +1,7 @@
-﻿using BepInEx.CupheadDebugMod.Config;
+﻿using System.Collections.Generic;
+using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
+using static PlayerData.PlayerLoadouts;
 
 namespace BepInEx.CupheadDebugMod.Components;
 
@@ -8,7 +10,6 @@ public class DebugInfo : PluginComponent {
 
     private Texture2D backgroundTexture;
     private GUIStyle textureStyle;
-    private bool guiShowAll;
     private int guiPanelState;
     private float pdPercentage;
     private int pdDeaths1;
@@ -17,6 +18,15 @@ public class DebugInfo : PluginComponent {
     public Vector3 guiScale;
     public float levelRealTime;
     public bool previousFrameWon;
+    public List<string> planeLevelNames = new() {
+        "scene_level_flying_blimp",
+        "scene_level_flying_bird",
+        "scene_level_flying_genie",
+        "scene_level_robot",
+        "scene_level_flying_mermaid",
+        "scene_level_dice_palace_flying_horse",
+        "scene_level_dice_palace_flying_memory"
+    };
 
     private void Awake() {
         GUISetMatrix();
@@ -30,9 +40,8 @@ public class DebugInfo : PluginComponent {
         guiScale.y = Screen.height / 1080f;
         guiScale.z = 1f;
     }
-    
+
     private void Init() {
-        guiShowAll = false;
         guiPanelState = 2;
         pdPercentage = 0f;
         pdDeaths1 = 0;
@@ -53,10 +62,6 @@ public class DebugInfo : PluginComponent {
 
     private void InitHotkeys() {
         Settings.OnKeyUpdate += () => {
-            if (Settings.ToggleAllPanels.IsDownEx()) {
-                guiShowAll = !guiShowAll;
-            }
-
             if (Settings.ToggleBetweenPanels.IsDownEx()) {
                 GUISwapPanels();
             }
@@ -75,24 +80,20 @@ public class DebugInfo : PluginComponent {
         GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
         GUISetDefColors();
         if (CurrentLevel != null && CurrentLevel.type is Level.Type.Battle or Level.Type.Platforming) {
-            if (!guiShowAll) {
+
+            if (guiPanelState == 0) {
                 GUISetDefElements();
                 GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("Cuphead Debug Mod");
+                GUILayout.Label("Mod Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndArea();
-                return;
-            }
-
-            if (guiPanelState == 0) {
-                GUISetDefElements();
-                GUI.skin.label.fontSize = 20;
-                GUI.Label(new Rect(10f, 10f, 300f, 30f), "Press " + Settings.ToggleBetweenPanels.Value.ToString() + " to toggle elements");
 
             }
 
+            // add health bar if available
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
                 GUISetDefElements();
                 float num = 200f;
@@ -130,43 +131,80 @@ public class DebugInfo : PluginComponent {
                 guiPanelState++;
             }
 
-
             if (guiPanelState == 2) {
                 GUISetDefElements();
                 GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("[LEVEL DATA]");
-                GUILayout.Label("RTA: " + levelRealTime.ToString("F2") + "s");
-                GUILayout.Label("IGT: " + CurrentLevel.LevelTime.ToString("F2") + "s");
-                GUILayout.EndVertical();
-                GUILayout.FlexibleSpace();
-                GUILayout.EndArea();
-            }
+                if (Settings.RTATime.Value) {
+                    GUILayout.Label("RTA: " + levelRealTime.ToString("F2") + "s");
+                }
+                if (Settings.IGTTime.Value) {
+                    GUILayout.Label("IGT: " + CurrentLevel.LevelTime.ToString("F2") + "s");
+                }
+                if (Settings.WeaponCooldowns.Value) {
 
-            if (guiPanelState > 2) {
-                GUISetDefElements();
-                GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
-                GUILayout.BeginVertical("box");
-                GUILayout.Label("[LEVEL DATA]");
-                GUILayout.Label("Time: " + CurrentLevel.LevelTime.ToString("F2") + "s");
-                GUILayout.Label("Goal: " + Level.ScoringData.goalTime + "s");
-                GUILayout.Label("Parries: " + Level.ScoringData.numParries);
-                GUILayout.Label("Supers: " + Level.ScoringData.superMeterUsed);
-                GUILayout.Label("Damage: " + Level.ScoringData.numTimesHit);
-                GUILayout.Label(
-                    "CurrRank: " + Level.PreviousGrade.ToString().Replace("Minus", "-").Replace("Plus", "+"));
-                if (CurrentLevel.type == Level.Type.Platforming) {
-                    GUILayout.Label("Pacifist?: " + Level.ScoringData.pacifistRun);
+                    string weaponInfo = $"";
+                    if (planeLevelNames.Contains(CurrentSceneName)) {
+                        weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+                    } else {
+                        PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
+
+                        if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.primaryWeapon, out int frame1)) {
+                            weaponInfo += $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
+                            if (loadOut.primaryWeapon == Weapon.level_weapon_charge) {
+                                weaponInfo += $" {GameInfoHelper.chargeFrames}";
+                            }
+                        }
+
+                        if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.secondaryWeapon, out int frame2)) {
+
+                            weaponInfo += $" {GameInfoHelper.GetWeaponName(loadOut.secondaryWeapon)}: {frame2}";
+
+                            if (loadOut.secondaryWeapon == Weapon.level_weapon_charge) {
+                                weaponInfo += $" {GameInfoHelper.chargeFrames}";
+                            }
+                        }
+                    }
+                    GUILayout.Label(weaponInfo);
+                }
+                if (Settings.OnEXWeaponCooldown.Value) {
+                    GUILayout.Label(GameInfoHelper.onEXWeaponName + ": " + GameInfoHelper.onEXWeaponCooldown.ToString());
                 }
 
-                GUILayout.Label("Difficulty: " + Level.ScoringData.difficulty);
-                GUILayout.Label("DmgMultiplier: " + PlayerManager.DamageMultiplier);
-                GUILayout.Label("Player Count: " + PlayerManager.Count);
-                GUILayout.Label("Current scene: " + CurrentSceneName);
+                if (Settings.Goal.Value) {
+                    GUILayout.Label("Goal: " + Level.ScoringData.goalTime + "s");
+                }
+                if (Settings.Parries.Value) {
+                    GUILayout.Label("Parries: " + Level.ScoringData.numParries);
+                }
+                if (Settings.Supers.Value) {
+                    GUILayout.Label("Supers: " + Level.ScoringData.superMeterUsed);
+                }
+                if (Settings.Damage.Value) {
+                    GUILayout.Label("Damage: " + Level.ScoringData.numTimesHit);
+                }
+                if (Settings.CurrentRank.Value) {
+                    GUILayout.Label("CurrRank: " + Level.PreviousGrade.ToString().Replace("Minus", "-").Replace("Plus", "+"));
+                    if (CurrentLevel.type == Level.Type.Platforming) {
+                        GUILayout.Label("Pacifist?: " + Level.ScoringData.pacifistRun);
+                    }
+                }
+                if (Settings.Difficulty.Value) {
+                    GUILayout.Label("Difficulty: " + Level.ScoringData.difficulty);
+                }
+                if (Settings.DmgMultiplier.Value) {
+                    GUILayout.Label("DmgMultiplier: " + PlayerManager.DamageMultiplier);
+                }
+                if (Settings.PlayerCount.Value) {
+                    GUILayout.Label("Player Count: " + PlayerManager.Count);
+                }
+                if (Settings.CurrentScene.Value) {
+                    GUILayout.Label("Current scene: " + CurrentSceneName);
+                }
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndArea();
-                GUISetDefElements();
             }
         }
 
@@ -218,7 +256,7 @@ public class DebugInfo : PluginComponent {
     }
 
     private void GUISwapPanels() {
-        if (guiPanelState + 1 < 4) {
+        if (guiPanelState + 1 < 3) {
             guiPanelState++;
         } else {
             guiPanelState = 0;

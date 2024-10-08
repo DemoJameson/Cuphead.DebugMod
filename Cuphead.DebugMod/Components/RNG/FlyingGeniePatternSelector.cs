@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
 using HarmonyLib;
 using MonoMod.Cil;
 using static BepInEx.CupheadDebugMod.Config.Settings;

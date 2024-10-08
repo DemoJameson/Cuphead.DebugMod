@@ -26,7 +26,7 @@ public abstract class PluginComponent : MonoBehaviour {
             PreviousSceneName = CurrentSceneName;
             CurrentSceneName = nextScene.name;
         });
-        
+
         List<Type> componentTypes = Assembly.GetExecutingAssembly().GetTypes()
             .Where(type => !type.IsAbstract && type.IsSubclassOf(typeof(PluginComponent))).ToList();
         componentTypes.Sort((type, otherType) => GetPriority(otherType) - GetPriority(type));

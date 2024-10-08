@@ -1,7 +1,7 @@
 ﻿using BepInEx.CupheadDebugMod.Config;
 using UnityEngine.SceneManagement;
 
-namespace BepInEx.CupheadDebugMod.Components; 
+namespace BepInEx.CupheadDebugMod.Components;
 
 public class CameraZoom : PluginComponent {
     private AbstractCupheadGameCamera Camera => FindObjectOfType<AbstractCupheadGameCamera>();

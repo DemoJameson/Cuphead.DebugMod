@@ -1,16 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Reflection.Emit;
-using BepInEx.CupheadDebugMod.Config;
+﻿using System;
 using HarmonyLib;
-using UnityEngine;
 using MonoMod.Cil;
-using OpCodes = Mono.Cecil.Cil.OpCodes;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
-using System.Collections;
-using System;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
@@ -18,20 +11,71 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class FlyingBirdPatternSelector : PluginComponent {
 
     // Sets the leading attack in the sequence.
+    [HarmonyPatch(typeof(FlyingBirdLevel), nameof(FlyingBirdLevel.Start))]
+    [HarmonyPrefix]
+    public static void PhaseOnePatternManipulator(ref FlyingBirdLevel __instance) {
+        if (Level.ScoringData.difficulty == Level.Mode.Easy && FlyingBirdPhaseOnePatternEasy.Value != FlyingBirdPhaseOnePatternsEasy.Random) {
+            int userPattern = (int) FlyingBirdPhaseOnePatternEasy.Value;
+            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseOnePatternsEasy>(userPattern);
+        } else if (Level.ScoringData.difficulty == Level.Mode.Normal && FlyingBirdPhaseOnePatternNormal.Value != FlyingBirdPhaseOnePatternsNormal.Random) {
+            int userPattern = (int) FlyingBirdPhaseOnePatternNormal.Value;
+            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseOnePatternsNormal>(userPattern);
+        } else if (Level.ScoringData.difficulty == Level.Mode.Hard && FlyingBirdPhaseOnePatternHard.Value != FlyingBirdPhaseOnePatternsHard.Random) {
+            int userPattern = (int) FlyingBirdPhaseOnePatternHard.Value;
+            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseOnePatternsHard>(userPattern);
+        }
+    }
+
     [HarmonyPatch(typeof(FlyingBirdLevel), nameof(FlyingBirdLevel.OnStateChanged))]
     [HarmonyPrefix]
-    public static void PhaseFinalPatternManipulator(ref FlyingBirdLevel __instance) {
-        if (Level.ScoringData.difficulty != Level.Mode.Easy && FlyingBirdPhaseFinalPattern.Value != FlyingBirdPhaseFinalPatterns.Random) {
-            // similarly to Cala Maria, Wally's final phase patterns end up being the same, but its pattern list is swapped around
-            // since having a different setting for this would be a little redundant for the user, i am just recalculating the pattern index behind the scenes here
-            int userPattern = (int) FlyingBirdPhaseFinalPattern.Value;
-            if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-                if (FlyingBirdPhaseFinalPattern.Value == FlyingBirdPhaseFinalPatterns.Garbage)
-                    userPattern = userPattern + 1;
-                else
-                    userPattern = userPattern - 1;
+    public static void SubsequentPhasesPatternManipulator(ref FlyingBirdLevel __instance) {
+        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
+            if (IsWithinPhase(0.85f, 0.5f)) {
+                if (FlyingBirdPhaseTwoPatternEasy.Value != FlyingBirdPhaseTwoPatternsEasy.Random) {
+                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseTwoPatternsEasy>((int) FlyingBirdPhaseTwoPatternEasy.Value);
+                }
             }
-            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseFinalPatterns>(userPattern);
+        }
+
+        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
+            if (IsWithinPhase(0.9f, 0.75f)) {
+                if (FlyingBirdPhaseTwoPatternNormal.Value != FlyingBirdPhaseTwoPatternsNormal.Random) {
+                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseTwoPatternsNormal>((int) FlyingBirdPhaseTwoPatternNormal.Value);
+                }
+            }
+            if (IsWithinPhase(0.29f, 0.0f)) {
+                if (FlyingBirdPhaseFinalPattern.Value != FlyingBirdPhaseFinalPatterns.Random) {
+                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseFinalPatterns>((int) FlyingBirdPhaseFinalPattern.Value);
+                }
+            }
+        }
+
+        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+            if (IsWithinPhase(0.31f, 0.0f)) {
+                if (FlyingBirdPhaseFinalPattern.Value != FlyingBirdPhaseFinalPatterns.Random) {
+                    int userPattern = (int) FlyingBirdPhaseFinalPattern.Value;
+                    if (FlyingBirdPhaseFinalPattern.Value == FlyingBirdPhaseFinalPatterns.Garbage)
+                        userPattern = userPattern + 1;
+                    else
+                        userPattern = userPattern - 1;
+                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBirdPhaseFinalPatterns>(userPattern);
+                }
+            }
+        }
+    }
+
+    [HarmonyPatch(typeof(FlyingBirdLevelBird), nameof(FlyingBirdLevelBird.float_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseOneDirectionManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<goUp>"))) {
+            ilCursor.EmitDelegate<Func<bool, bool>>(goUp =>
+                FlyingBirdPhaseOneDirection.Value == FlyingBirdPhaseOneDirections.Random ?
+                Rand.Bool()
+                :
+                FlyingBirdPhaseOneDirection.Value == FlyingBirdPhaseOneDirections.Up
+            );
+            break;
         }
     }
 
@@ -51,6 +95,13 @@ public class FlyingBirdPatternSelector : PluginComponent {
             );
             ilCursor.Index++; // avoid infinite loops
         }
+    }
+
+
+    protected static bool IsWithinPhase(float phaseStart, float phaseEnd) {
+        return
+        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health <= phaseStart &&
+        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health > phaseEnd;
     }
 
 }
