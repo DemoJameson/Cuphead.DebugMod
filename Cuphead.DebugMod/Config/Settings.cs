@@ -15,7 +15,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<bool> RunInBackground;
     public static ConfigEntry<bool> IgnoreInputWhenLoseFocus;
     public static ConfigEntry<bool> SkipTitleScreen;
-    public static ConfigEntry<bool> GuaranteeLobberExSweetSpot;
+    public static ConfigEntry<LobberCritSettings> GuaranteeLobberExCrit;
     public static ConfigEntry<KeyboardShortcut> InvincibilityOneFight;
     public static ConfigEntry<KeyboardShortcut> Gain5ExCards;
     public static ConfigEntry<KeyboardShortcut> Gain1ExCard;
@@ -55,10 +55,13 @@ public class Settings : PluginComponent {
     public static ConfigEntry<bool> CurrentScene;
     public static ConfigEntry<bool> WeaponCooldowns;
     public static ConfigEntry<bool> OnEXWeaponCooldown;
+    public static ConfigEntry<bool> SlimeEXOffset;
 
 #if v1_3
     public static ConfigEntry<RelicLevels> RelicLevel;
 #endif
+
+    public static ConfigEntry<bool> LoopWinScreen;
 
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
     public static ConfigEntry<FrogsPhaseOneFirefliesPatternsEasy> FrogsPhaseOneFirefliesPatternEasy;
@@ -171,7 +174,7 @@ public class Settings : PluginComponent {
         InvincibilityOneFight = config.Bind("Misc", "Invincibility One Fight", new KeyboardShortcut(KeyCode.Alpha5), --order);
         ToggleFrameCounter = config.Bind("Misc", "Toggle FrameCounter", new KeyboardShortcut(KeyCode.F4), --order);
         SwapBetweenFrameLimit = config.Bind("Misc", "Swap Between Frame Limit", new KeyboardShortcut(KeyCode.F5), --order);
-        GuaranteeLobberExSweetSpot = config.Bind("Misc", "Guarantee Lobber Ex Sweet Spot", false, --order);
+        GuaranteeLobberExCrit = config.Bind("Misc", "Lobber EX Crit", LobberCritSettings.Random, --order);
 
         ToggleBetweenPanels = config.Bind("Panel", "Toggle Between Panels", new KeyboardShortcut(KeyCode.F2), --order);
 
@@ -203,10 +206,13 @@ public class Settings : PluginComponent {
         DmgMultiplier = config.Bind("InfoHUD", "Damage Multiplier", false, --order);
         PlayerCount = config.Bind("InfoHUD", "Player Count", false, --order);
         CurrentScene = config.Bind("InfoHUD", "Current Scene", false, --order);
+        SlimeEXOffset = config.Bind("InfoHUD", "Goopy Quad Feedback", false, --order);
 
 #if v1_3
         RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
 #endif
+
+        LoopWinScreen = config.Bind("Scoreboard", "Loop Scoreboard", false, --order);
 
         FrogsPhaseOnePattern = config.Bind("RNG Ribby And Croaks", "Phase One Pattern", FrogsPhaseOnePatterns.Random, --order);
         FrogsPhaseOneFirefliesPatternEasy = config.Bind("RNG Ribby And Croaks", "Phase One Fireflies Pattern Simple", FrogsPhaseOneFirefliesPatternsEasy.Random, --order);

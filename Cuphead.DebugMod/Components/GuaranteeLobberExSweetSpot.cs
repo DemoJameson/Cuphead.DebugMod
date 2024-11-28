@@ -1,6 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using BepInEx.CupheadDebugMod.Components.RNG;
+using System.Reflection;
 using HarmonyLib;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using static BepInEx.CupheadDebugMod.Config.Settings;
+using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
 namespace BepInEx.CupheadDebugMod.Components;
 
@@ -17,8 +23,9 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.Start))]
     [HarmonyPrefix]
     public static void StartFix(ref WeaponBouncerProjectile __instance) {
-        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx) {
+        if (GuaranteeLobberExCrit.Value != LobberCritSettings.Random && __instance.isEx) {
             weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", false);
+            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionEnemy", false);
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", false);
         }
     }
@@ -26,16 +33,43 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionGround))]
     [HarmonyPrefix]
     public static void OnCollisionGroundFix(ref WeaponBouncerProjectile __instance) {
-        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && !__instance.dead) {
+        if (GuaranteeLobberExCrit.Value != LobberCritSettings.Random && __instance.isEx && !__instance.dead) {
             weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", true);
         }
     }
 
+    //[HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.HitGround))]
+    //[HarmonyILManipulator]
+    //public static void HitGroundFix(ILContext il) {
+    //    ILCursor ilCursor = new(il);
+    //    while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("isEx"))) {
+    //        ilCursor.Index++;
+    //        ilCursor.Emit(OpCodes.Ldarg_0);
+    //        ilCursor.Emit(OpCodes.Call, typeof(GuaranteeLobberExSweetSpot).GetMethod(nameof(alreadyRanNeverCrit), BindingFlags.Static | BindingFlags.Public));
+    //        ilCursor.Emit(OpCodes.);
+    //        break;
+    //        //if (GuaranteeLobberExCrit.Value != LobberCritSettings.Random && __instance.isEx) {
+    //        //    weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", true);
+    //        //}
+    //    }
+
+    //}
+
+    //public static bool alreadyRanNeverCrit() {
+    //    return true;
+    //}
+
+
+
+
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionEnemy))]
     [HarmonyPrefix]
     public static void OnCollisionEnemyFix(ref WeaponBouncerProjectile __instance) {
+        if (GuaranteeLobberExCrit.Value != LobberCritSettings.Random && __instance.isEx) {
+            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionEnemy", true);
+        }
         // Actual fix is here. If another collision type has been hit first, cause a second Lobber Ex explosion
-        if (Config.Settings.GuaranteeLobberExSweetSpot.Value && __instance.isEx && (bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionGround") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
+        if (GuaranteeLobberExCrit.Value == LobberCritSettings.Always && __instance.isEx && (bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionGround") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
             __instance.Die();
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", true);
         }

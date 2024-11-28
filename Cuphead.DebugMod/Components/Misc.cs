@@ -1,8 +1,11 @@
-﻿using BepInEx.CupheadDebugMod.Config;
+﻿using BepInEx.CupheadDebugMod.Components.RNG;
+using System.Reflection;
+using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
 using MonoMod.Cil;
 using UnityEngine;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
+using System.Collections.Generic;
 
 namespace BepInEx.CupheadDebugMod.Components;
 
@@ -158,4 +161,65 @@ public class Misc : PluginComponent {
 
         Toast.Show("Clear CHARMS and SUPERS");
     }
+
+    [HarmonyPatch(typeof(DicePalaceMainLevelGameManager), nameof(DicePalaceMainLevelGameManager.start_mini_boss_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void OnMinibossStart(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("time"))) {
+            ilCursor.Emit(OpCodes.Call, typeof(Misc).GetMethod(nameof(SetIsMinibossStartingKingDice), BindingFlags.Static | BindingFlags.Public));
+            break;
+        }
+    }
+
+    public static void SetIsMinibossStartingKingDice() {
+        DebugInfo.isMinibossStartingKingDice = true;
+    }
+
+    [HarmonyPatch(typeof(SlimeLevelSlime), nameof(SlimeLevelSlime.TurnBig))]
+    [HarmonyPrefix]
+    public static void SignalSpriteSwapSlime() {
+        DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
+    }
+
+    [HarmonyPatch(typeof(MouseLevelBrokenCanMouse), nameof(MouseLevelBrokenCanMouse.StartPattern))]
+    [HarmonyPrefix]
+    public static void SignalSpriteSwapMouse() {
+        DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
+    }
+
+    [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.Die))]
+    [HarmonyPrefix]
+    public static void OnLobberEXExplosion(ref WeaponBouncerProjectile __instance) {
+        if (__instance.isEx) {
+            DebugInfo.onLobberEXSlimeLevelRealTime = DebugInfo.levelRealTime;
+        }
+    }
+
+    [HarmonyPatch(typeof(WinScreenTicker), nameof(WinScreenTicker.stars_tally_up_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void OnStarSkipInput(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Ldstr && i.Operand.ToString().Contains("win_skill_lvl"))) {
+            ilCursor.Index++;
+            ilCursor.Emit(OpCodes.Call, typeof(Misc).GetMethod(nameof(SetStarSkipTime), BindingFlags.Static | BindingFlags.Public));
+            break;
+        }
+    }
+
+    public static void SetStarSkipTime() {
+        DebugInfo.onWinScreenStarFrame = DebugInfo.winScreenFrameCounter;
+    }
+
+    [HarmonyPatch(typeof(WinScreen), nameof(WinScreen.Awake))]
+    [HarmonyPrefix]
+    public static void OnAwake() {
+        DebugInfo.winScreenFrameCounter = 0;
+        DebugInfo.onWinScreenButtonPressFrame = 0;
+        DebugInfo.onWinScreenStarFrame = 0;
+        DebugInfo.winScreenStarSkipFrameOffset = 0;
+        DebugInfo.winScreenStarSkipFrameList = [ 0, 0 ];
+    }
+
+
 }

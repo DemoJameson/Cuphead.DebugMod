@@ -3,6 +3,12 @@
 namespace BepInEx.CupheadDebugMod.Config {
     public static class SettingsEnums {
 
+        public enum LobberCritSettings {
+            Random,
+            Always,
+            Never
+        }
+
 #if v1_3
         public enum RelicLevels {
             Default,
