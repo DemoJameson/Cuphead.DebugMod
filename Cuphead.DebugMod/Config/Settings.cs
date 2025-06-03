@@ -102,6 +102,9 @@ public class Settings : PluginComponent {
     public static ConfigEntry<BeePhaseTwoPatternsEasy> BeePhaseTwoPatternEasy;
     public static ConfigEntry<BeePhaseTwoPatternsNormal> BeePhaseTwoPatternNormal;
     public static ConfigEntry<BeePhaseTwoPatternsHard> BeePhaseTwoPatternHard;
+    public static ConfigEntry<BeePhaseTwoOrbsDirections> BeePhaseTwoOrbsDirection;
+    public static ConfigEntry<BeePhaseTwoTrianglesDirections> BeePhaseTwoTrianglesDirection;
+    public static ConfigEntry<bool> BeeMissingPlatformPattern;
     public static ConfigEntry<RobotPhaseFinalGemColors> RobotPhaseFinalGemColor;
     public static ConfigEntry<MousePhaseOnePatternsEasy> MousePhaseOnePatternEasy;
     public static ConfigEntry<MousePhaseOnePatternsNormal> MousePhaseOnePatternNormal;
@@ -253,6 +256,9 @@ public class Settings : PluginComponent {
         BeePhaseTwoPatternEasy = config.Bind("RNG Rumor Honeybottoms", "Phase Two Simple", BeePhaseTwoPatternsEasy.Random, --order);
         BeePhaseTwoPatternNormal = config.Bind("RNG Rumor Honeybottoms", "Phase Two Regular", BeePhaseTwoPatternsNormal.Random, --order);
         BeePhaseTwoPatternHard = config.Bind("RNG Rumor Honeybottoms", "Phase Two Expert", BeePhaseTwoPatternsHard.Random, --order);
+        BeePhaseTwoOrbsDirection = config.Bind("RNG Rumor Honeybottoms", "Phase Two Orbs Direction", BeePhaseTwoOrbsDirections.Random, --order);
+        BeePhaseTwoTrianglesDirection = config.Bind("RNG Rumor Honeybottoms", "Phase Two Triangles Direction", BeePhaseTwoTrianglesDirections.Random, --order);
+        BeeMissingPlatformPattern = config.Bind("RNG Rumor Honeybottoms", "Read Missing Platforms from file", false, --order);
         RobotPhaseFinalGemColor = config.Bind("RNG Dr. Kahls Robot", "Final Phase Gem Color", RobotPhaseFinalGemColors.Random, --order);
         MousePhaseOnePatternEasy = config.Bind("RNG Werner Werman", "Phase One Simple", MousePhaseOnePatternsEasy.Random, --order);
         MousePhaseOnePatternNormal = config.Bind("RNG Werner Werman", "Phase One Regular", MousePhaseOnePatternsNormal.Random, --order);

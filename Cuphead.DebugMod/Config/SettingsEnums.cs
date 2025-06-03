@@ -425,6 +425,18 @@ namespace BepInEx.CupheadDebugMod.Config {
             Chain2
         }
 
+        public enum BeePhaseTwoOrbsDirections {
+            Random,
+            Left,
+            Right
+        }
+
+        public enum BeePhaseTwoTrianglesDirections {
+            Random,
+            Left,
+            Right
+        }
+
         public enum RobotPhaseFinalGemColors {
             Random,
             Red,

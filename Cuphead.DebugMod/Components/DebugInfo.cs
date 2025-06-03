@@ -22,15 +22,18 @@ public class DebugInfo : PluginComponent {
     public static int onWinScreenStarFrame;
     public static int winScreenStarSkipFrameOffset;
     public static int[] winScreenStarSkipFrameList;
-    public static float onBigSlimeLevelRealTime;
-    public static float onLobberEXSlimeLevelRealTime;
-    public static int SlimeQuadFrameOffset;
+    public static int spriteSwapLevelFrameCounter;
+    public static int spriteSwapOnSpriteSwapFrameCounter;
+    public static int spriteSwapOnLobberEXFrameCounter;
+    //public static float onBigSlimeLevelRealTime;
+    //public static float onLobberEXSlimeLevelRealTime;
+    public static int spriteSwapQuadFrameOffset;
     public static float levelRealTime;
     public static float levelInGameTime;
     public static float levelRealTimeKingDice;
     public static float levelInGameTimeKingDice;
     public static bool isMinibossStartingKingDice;
-    public bool previousFrameWon;
+    public static bool previousFrameWon;
     public List<string> planeLevelNames = new() {
         "scene_level_flying_blimp",
         "scene_level_flying_bird",
@@ -152,11 +155,15 @@ public class DebugInfo : PluginComponent {
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
                     GUILayout.Label("RTA: " + levelRealTime.ToString("F2") + "s");
-                    
-                    //GUILayout.Label("RTA King Dice: " + levelRealTimeKingDice.ToString("F2") + "s");
+                    if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                        GUILayout.Label("RTA Total: " + levelRealTimeKingDice.ToString("F2") + "s");
+                    }
                 }
                 if (Settings.IGTTime.Value) {
                     GUILayout.Label("IGT: " + levelInGameTime.ToString("F2") + "s");
+                    if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                        GUILayout.Label("IGT Total: " + levelInGameTimeKingDice.ToString("F2") + "s");
+                    }
                     //GUILayout.Label("IGT True: " + Level.ScoringData.time.ToString("F2") + "s");
                     //GUILayout.Label("IGT True Current Time: " + CurrentLevel.LevelTime.ToString("F2") + "s");
                     //GUILayout.Label("IGT King Dice: " + levelInGameTimeKingDice.ToString("F2") + "s");
@@ -222,14 +229,22 @@ public class DebugInfo : PluginComponent {
                     GUILayout.Label("Current scene: " + CurrentSceneName);
                 }
                 if (Settings.SlimeEXOffset.Value) {
-                    if (SlimeQuadFrameOffset <= -7) {
-                        GUILayout.Label("EARLY by " + (-6 - SlimeQuadFrameOffset).ToString() + " frames");
-                    }
-                    if (SlimeQuadFrameOffset > -7 && SlimeQuadFrameOffset < 0) {
-                        GUILayout.Label("HIT on frame " + (SlimeQuadFrameOffset + 7).ToString() + "out of 6");
-                    }
-                    if (SlimeQuadFrameOffset >= 0) {
-                        GUILayout.Label("LATE by " + (1 + SlimeQuadFrameOffset).ToString() + " frames");
+                    if (CurrentSceneName.Equals("scene_level_slime") || CurrentSceneName.Equals("scene_level_mouse")) {
+                        if (spriteSwapQuadFrameOffset < -7) {
+                            GUILayout.Label("EARLY by " + (-6 - spriteSwapQuadFrameOffset).ToString() + " frames");
+                        }
+                        if (spriteSwapQuadFrameOffset == -7) {
+                            GUILayout.Label("EARLY by " + (-6 - spriteSwapQuadFrameOffset).ToString() + " frame");
+                        }
+                        if (spriteSwapQuadFrameOffset > -7 && spriteSwapQuadFrameOffset < 0) {
+                            GUILayout.Label("HIT on frame " + (spriteSwapQuadFrameOffset + 7).ToString() + " out of 6");
+                        }
+                        if (spriteSwapQuadFrameOffset == 0) {
+                            GUILayout.Label("LATE by " + (1 + spriteSwapQuadFrameOffset).ToString() + " frame");
+                        }
+                        if (spriteSwapQuadFrameOffset > 0) {
+                            GUILayout.Label("LATE by " + (1 + spriteSwapQuadFrameOffset).ToString() + " frames");
+                        }
                     }
                 }
                 GUILayout.EndVertical();
@@ -281,7 +296,7 @@ public class DebugInfo : PluginComponent {
                     levelRealTime += Time.deltaTime;
                 }
             }
-            else {
+            else if (CurrentLevel != null) {
                 levelRealTime += Time.deltaTime;
                 levelInGameTime = CurrentLevel.LevelTime;
             }
@@ -296,9 +311,9 @@ public class DebugInfo : PluginComponent {
             if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
                 if (!isMinibossStartingKingDice) {
                     levelInGameTime = CurrentLevel.LevelTime;
-                }
-                else if (hasExtraIGTTickBeenHandledKingDice == false) {
+                } else if (hasExtraIGTTickBeenHandledKingDice == false) {
                     levelInGameTime = CurrentLevel.LevelTime;
+                    levelInGameTimeKingDice = Level.ScoringData.time;
                     hasExtraIGTTickBeenHandledKingDice = true;
                 }
             }
@@ -332,11 +347,10 @@ public class DebugInfo : PluginComponent {
         }
 
         // TODO: generalize names, also use an igt frame counter instead and display feedback in a more intuitive way (HIT: 0-5) (EARLY: -x) (LATE: +x)
-        if (onLobberEXSlimeLevelRealTime != 0f && onBigSlimeLevelRealTime != 0f) {
-            SlimeQuadFrameOffset = (onLobberEXSlimeLevelRealTime - onBigSlimeLevelRealTime).ToCeilingFrames();
+        if (spriteSwapOnLobberEXFrameCounter != 0 && spriteSwapOnSpriteSwapFrameCounter != 0) {
+            spriteSwapQuadFrameOffset = spriteSwapOnLobberEXFrameCounter - spriteSwapOnSpriteSwapFrameCounter;
         }
-
-
+        spriteSwapLevelFrameCounter++;
 
         previousFrameWon = Level.Won;
 
@@ -344,9 +358,12 @@ public class DebugInfo : PluginComponent {
             if (Level.ScoringData.time == 0f) {
                 levelRealTimeKingDice = 0f;
                 levelInGameTimeKingDice = 0f;
-                onBigSlimeLevelRealTime = 0f;
-                onLobberEXSlimeLevelRealTime = 0f;
-                SlimeQuadFrameOffset = 0;
+                spriteSwapLevelFrameCounter = 0;
+                spriteSwapOnSpriteSwapFrameCounter = 0;
+                spriteSwapOnLobberEXFrameCounter = 0;
+                //onBigSlimeLevelRealTime = 0f;
+                //onLobberEXSlimeLevelRealTime = 0f;
+                spriteSwapQuadFrameOffset = 0;
             }
             isMinibossStartingKingDice = false;
             hasExtraIGTTickBeenHandledKingDice = false;

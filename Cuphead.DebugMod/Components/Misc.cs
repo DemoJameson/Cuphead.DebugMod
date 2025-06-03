@@ -179,20 +179,23 @@ public class Misc : PluginComponent {
     [HarmonyPatch(typeof(SlimeLevelSlime), nameof(SlimeLevelSlime.TurnBig))]
     [HarmonyPrefix]
     public static void SignalSpriteSwapSlime() {
-        DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
+        DebugInfo.spriteSwapOnSpriteSwapFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
+        //DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
     }
 
     [HarmonyPatch(typeof(MouseLevelBrokenCanMouse), nameof(MouseLevelBrokenCanMouse.StartPattern))]
     [HarmonyPrefix]
     public static void SignalSpriteSwapMouse() {
-        DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
+        DebugInfo.spriteSwapOnSpriteSwapFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
+        //DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
     }
 
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.Die))]
     [HarmonyPrefix]
     public static void OnLobberEXExplosion(ref WeaponBouncerProjectile __instance) {
         if (__instance.isEx) {
-            DebugInfo.onLobberEXSlimeLevelRealTime = DebugInfo.levelRealTime;
+            DebugInfo.spriteSwapOnLobberEXFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
+            //DebugInfo.onLobberEXSlimeLevelRealTime = DebugInfo.levelRealTime;
         }
     }
 
