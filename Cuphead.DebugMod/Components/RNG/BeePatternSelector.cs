@@ -95,6 +95,10 @@ internal class BeePatternSelector : PluginComponent {
             return platform;
         }
 
+        if (!File.Exists("BeePlatforms.txt")) {
+            return platform;
+        }
+
         string[] lines = File.ReadAllLines("BeePlatforms.txt");
         int lineIndex = platformChunkIndex * 4 + platformIndex;
 
@@ -102,8 +106,8 @@ internal class BeePatternSelector : PluginComponent {
             return platform;
         }
 
-        Debug.Log("platformIndex: " + platformIndex);
-        Debug.Log("platformChunkIndex: " + platformChunkIndex);
+        //Debug.Log("platformIndex: " + platformIndex);
+        //Debug.Log("platformChunkIndex: " + platformChunkIndex);
         if (!int.TryParse(lines[lineIndex], out int returnValue)) {
             Debug.Log("Couldn't parse int at line index " + platformIndex);
         }
@@ -113,7 +117,7 @@ internal class BeePatternSelector : PluginComponent {
             platformChunkIndex++;
         }
 
-        UnityEngine.Debug.Log(returnValue);
+        //UnityEngine.Debug.Log(returnValue);
         return returnValue;
     }
 
