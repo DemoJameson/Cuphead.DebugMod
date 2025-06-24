@@ -232,7 +232,7 @@ public class DebugInfo : PluginComponent {
                 if (Settings.CurrentScene.Value) {
                     GUILayout.Label("Current scene: " + CurrentSceneName);
                 }
-                if (Settings.SlimeEXOffset.Value) {
+                if (Settings.QuadEXOffset.Value) {
                     if (CurrentSceneName.Equals("scene_level_slime") || CurrentSceneName.Equals("scene_level_mouse")) {
                         if (spriteSwapQuadFrameOffset < -7) {
                             GUILayout.Label("EARLY by " + (-6 - spriteSwapQuadFrameOffset).ToString() + " frames");

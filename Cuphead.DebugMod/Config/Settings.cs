@@ -55,7 +55,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<bool> CurrentScene;
     public static ConfigEntry<bool> WeaponCooldowns;
     public static ConfigEntry<bool> OnEXWeaponCooldown;
-    public static ConfigEntry<bool> SlimeEXOffset;
+    public static ConfigEntry<bool> QuadEXOffset;
 
 #if v1_3
     public static ConfigEntry<RelicLevels> RelicLevel;
@@ -209,7 +209,7 @@ public class Settings : PluginComponent {
         DmgMultiplier = config.Bind("InfoHUD", "Damage Multiplier", false, --order);
         PlayerCount = config.Bind("InfoHUD", "Player Count", false, --order);
         CurrentScene = config.Bind("InfoHUD", "Current Scene", false, --order);
-        SlimeEXOffset = config.Bind("InfoHUD", "Goopy Quad Feedback", false, --order);
+        QuadEXOffset = config.Bind("InfoHUD", "Goopy/Werner Quad Feedback", false, --order);
 
 #if v1_3
         RelicLevel = config.Bind("DLC", "Relic Level", RelicLevels.Default);
