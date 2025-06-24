@@ -63,7 +63,6 @@ public class GameInfoHelper : PluginComponent {
     private static int exPlaneDelayFrames;
     private static readonly List<string> infos = new();
     private static readonly List<string> statuses = new();
-
 #if v1_3
     [HarmonyPatch(typeof(PlayerStatsManager), nameof(PlayerStatsManager.FixedUpdate))]
     [HarmonyPostfix]

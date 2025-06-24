@@ -179,7 +179,7 @@ public class DebugInfo : PluginComponent {
 #endif
                     } else {
                         PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
-
+                      
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.primaryWeapon, out int frame1)) {
                             weaponInfo += $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
                             if (loadOut.primaryWeapon == Weapon.level_weapon_charge) {
