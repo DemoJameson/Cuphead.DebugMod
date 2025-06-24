@@ -82,15 +82,17 @@ internal class GuaranteeLobberExSweetSpot {
 #if !v1_0
         weaponBouncerExtraProperties.SetProperty(__instance, "ranHitGround", true);
 #endif
-        if (GuaranteeLobberExCrit.Value != LobberCritSettings.Never) {
-            __instance.Die();
-        }
-        // if there was an attempt to make the lobber EX explode, and there's already been an enemy explosion and a ground explosion, then don't make this explosion happen
-        else if (triedToDie) {
-            if (!((bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranHitGround")) || !((bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionEnemy"))) {
+
+        if (triedToDie) {
+            if (GuaranteeLobberExCrit.Value != LobberCritSettings.Never) {
+                __instance.Die();
+            }
+            // if there was an attempt to make the lobber EX explode, and there's already been an enemy explosion and a ground explosion, then don't make this explosion happen
+            else if (!((bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranHitGround")) || !((bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionEnemy"))) {
                 __instance.Die();
             }
         }
+
         // if on v1.2+, we want the lobber to never explode when hitting the ground in this scenario, so set ranHitGround immediately.
         // if on v1.0/v1.1, we set this later so that one single Grond explosion occurs.
 #if v1_0

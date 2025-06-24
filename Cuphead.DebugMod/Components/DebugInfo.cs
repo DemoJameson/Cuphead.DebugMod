@@ -25,8 +25,6 @@ public class DebugInfo : PluginComponent {
     public static int spriteSwapLevelFrameCounter;
     public static int spriteSwapOnSpriteSwapFrameCounter;
     public static int spriteSwapOnLobberEXFrameCounter;
-    //public static float onBigSlimeLevelRealTime;
-    //public static float onLobberEXSlimeLevelRealTime;
     public static int spriteSwapQuadFrameOffset;
     public static float levelRealTime;
     public static float levelInGameTime;
@@ -48,7 +46,7 @@ public class DebugInfo : PluginComponent {
         GUISetMatrix();
         Init();
         InitHotkeys();
-        Cuphead.Init(false);
+        //Cuphead.Init(false);
         HookHelper.ActiveSceneChanged(RefPercentage);
     }
 
@@ -164,9 +162,6 @@ public class DebugInfo : PluginComponent {
                     if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
                         GUILayout.Label("IGT Total: " + levelInGameTimeKingDice.ToString("F2") + "s");
                     }
-                    //GUILayout.Label("IGT True: " + Level.ScoringData.time.ToString("F2") + "s");
-                    //GUILayout.Label("IGT True Current Time: " + CurrentLevel.LevelTime.ToString("F2") + "s");
-                    //GUILayout.Label("IGT King Dice: " + levelInGameTimeKingDice.ToString("F2") + "s");
                 }
                 if (Settings.WeaponCooldowns.Value) {
 
@@ -279,7 +274,7 @@ public class DebugInfo : PluginComponent {
             GUISetDefElements();
             GUILayout.BeginArea(new Rect(10f, 52f, 300f, 620f));
             GUILayout.BeginVertical("box");
-            GUILayout.Label("[Man is this really where we're at]");
+            GUILayout.Label("[Star Skip Info]");
             GUILayout.Label("Star skip offset: " + winScreenStarSkipFrameOffset.ToString());
             GUILayout.Label("Star skip plink: " + (winScreenStarSkipFrameList[1] - winScreenStarSkipFrameList[0]).ToString());
             GUILayout.EndVertical();
@@ -317,9 +312,6 @@ public class DebugInfo : PluginComponent {
                     hasExtraIGTTickBeenHandledKingDice = true;
                 }
             }
-            //else {
-                //levelInGameTime = CurrentLevel.LevelTime;
-            //}
         }
 
         if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
@@ -346,7 +338,6 @@ public class DebugInfo : PluginComponent {
             }
         }
 
-        // TODO: generalize names, also use an igt frame counter instead and display feedback in a more intuitive way (HIT: 0-5) (EARLY: -x) (LATE: +x)
         if (spriteSwapOnLobberEXFrameCounter != 0 && spriteSwapOnSpriteSwapFrameCounter != 0) {
             spriteSwapQuadFrameOffset = spriteSwapOnLobberEXFrameCounter - spriteSwapOnSpriteSwapFrameCounter;
         }
@@ -361,8 +352,6 @@ public class DebugInfo : PluginComponent {
                 spriteSwapLevelFrameCounter = 0;
                 spriteSwapOnSpriteSwapFrameCounter = 0;
                 spriteSwapOnLobberEXFrameCounter = 0;
-                //onBigSlimeLevelRealTime = 0f;
-                //onLobberEXSlimeLevelRealTime = 0f;
                 spriteSwapQuadFrameOffset = 0;
             }
             isMinibossStartingKingDice = false;
