@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using HarmonyLib;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
@@ -9,6 +10,7 @@ namespace BepInEx.CupheadDebugMod.Components;
 
 [HarmonyPatch]
 public class GameInfoHelper : PluginComponent {
+    public static bool isChalice = false;
     private static Vector3? lastPlayerPosition;
     private static string lastLevelName;
     private static string lastTime;
@@ -61,6 +63,13 @@ public class GameInfoHelper : PluginComponent {
     private static int exPlaneDelayFrames;
     private static readonly List<string> infos = new();
     private static readonly List<string> statuses = new();
+#if v1_3
+    [HarmonyPatch(typeof(PlayerStatsManager), nameof(PlayerStatsManager.FixedUpdate))]
+    [HarmonyPostfix]
+    private static void SetIsChalice(ref PlayerStatsManager __instance) {
+        isChalice = __instance.isChalice;
+    }
+#endif
 
     [HarmonyPatch(typeof(AbstractLevelWeapon), nameof(AbstractLevelWeapon.fireWeapon_cr), MethodType.Enumerator)]
     [HarmonyPatch(typeof(AbstractLevelWeapon), nameof(AbstractLevelWeapon.chargeFireWeapon_cr), MethodType.Enumerator)]
@@ -158,13 +167,13 @@ public class GameInfoHelper : PluginComponent {
         }
     }
 
-    [HarmonyPatch(typeof(AbstractPlaneWeapon), nameof(AbstractLevelWeapon.BeginEx))]
+    [HarmonyPatch(typeof(AbstractPlaneWeapon), nameof(AbstractPlaneWeapon.BeginEx))]
     [HarmonyPrefix]
     private static void PrepareForGetPlaneExWeaponCooldown() {
         canUpdateEXWeaponsTimer = true;
     }
 
-    [HarmonyPatch(typeof(AbstractPlaneWeapon), nameof(AbstractLevelWeapon.fireProjectile))]
+    [HarmonyPatch(typeof(AbstractPlaneWeapon), nameof(AbstractPlaneWeapon.fireProjectile))]
     [HarmonyPostfix]
     private static void GetPlaneExWeaponCooldown(AbstractPlaneWeapon.Mode mode, AbstractPlaneWeapon __instance) {
         if (mode == AbstractPlaneWeapon.Mode.Ex) {

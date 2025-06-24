@@ -15,15 +15,30 @@ public class DebugInfo : PluginComponent {
     private int pdDeaths1;
     private int pdDeaths2;
     private int pdCoins;
+    private bool hasExtraIGTTickBeenHandledKingDice;
     public Vector3 guiScale;
-    public float levelRealTime;
-    public bool previousFrameWon;
+    public static int winScreenFrameCounter;
+    public static int onWinScreenButtonPressFrame;
+    public static int onWinScreenStarFrame;
+    public static int winScreenStarSkipFrameOffset;
+    public static int[] winScreenStarSkipFrameList;
+    public static int spriteSwapLevelFrameCounter;
+    public static int spriteSwapOnSpriteSwapFrameCounter;
+    public static int spriteSwapOnLobberEXFrameCounter;
+    public static int spriteSwapQuadFrameOffset;
+    public static float levelRealTime;
+    public static float levelInGameTime;
+    public static float levelRealTimeKingDice;
+    public static float levelInGameTimeKingDice;
+    public static bool isMinibossStartingKingDice;
+    public static bool previousFrameWon;
     public List<string> planeLevelNames = new() {
         "scene_level_flying_blimp",
         "scene_level_flying_bird",
         "scene_level_flying_genie",
         "scene_level_robot",
         "scene_level_flying_mermaid",
+        "scene_level_flying_cowboy",
         "scene_level_dice_palace_flying_horse",
         "scene_level_dice_palace_flying_memory"
     };
@@ -138,18 +153,33 @@ public class DebugInfo : PluginComponent {
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
                     GUILayout.Label("RTA: " + levelRealTime.ToString("F2") + "s");
+                    if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                        GUILayout.Label("RTA Total: " + levelRealTimeKingDice.ToString("F2") + "s");
+                    }
                 }
                 if (Settings.IGTTime.Value) {
-                    GUILayout.Label("IGT: " + CurrentLevel.LevelTime.ToString("F2") + "s");
+                    GUILayout.Label("IGT: " + levelInGameTime.ToString("F2") + "s");
+                    if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                        GUILayout.Label("IGT Total: " + levelInGameTimeKingDice.ToString("F2") + "s");
+                    }
                 }
                 if (Settings.WeaponCooldowns.Value) {
 
                     string weaponInfo = $"";
                     if (planeLevelNames.Contains(CurrentSceneName)) {
-                        weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+#if v1_3
+                        if (GameInfoHelper.isChalice) {
+                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                        }
+                        else {
+#endif
+                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+#if v1_3
+                    }
+#endif
                     } else {
                         PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
-
+                      
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.primaryWeapon, out int frame1)) {
                             weaponInfo += $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
                             if (loadOut.primaryWeapon == Weapon.level_weapon_charge) {
@@ -202,6 +232,25 @@ public class DebugInfo : PluginComponent {
                 if (Settings.CurrentScene.Value) {
                     GUILayout.Label("Current scene: " + CurrentSceneName);
                 }
+                if (Settings.QuadEXOffset.Value) {
+                    if (CurrentSceneName.Equals("scene_level_slime") || CurrentSceneName.Equals("scene_level_mouse")) {
+                        if (spriteSwapQuadFrameOffset < -7) {
+                            GUILayout.Label("EARLY by " + (-6 - spriteSwapQuadFrameOffset).ToString() + " frames");
+                        }
+                        if (spriteSwapQuadFrameOffset == -7) {
+                            GUILayout.Label("EARLY by " + (-6 - spriteSwapQuadFrameOffset).ToString() + " frame");
+                        }
+                        if (spriteSwapQuadFrameOffset > -7 && spriteSwapQuadFrameOffset < 0) {
+                            GUILayout.Label("HIT on frame " + (spriteSwapQuadFrameOffset + 7).ToString() + " out of 6");
+                        }
+                        if (spriteSwapQuadFrameOffset == 0) {
+                            GUILayout.Label("LATE by " + (1 + spriteSwapQuadFrameOffset).ToString() + " frame");
+                        }
+                        if (spriteSwapQuadFrameOffset > 0) {
+                            GUILayout.Label("LATE by " + (1 + spriteSwapQuadFrameOffset).ToString() + " frames");
+                        }
+                    }
+                }
                 GUILayout.EndVertical();
                 GUILayout.FlexibleSpace();
                 GUILayout.EndArea();
@@ -229,16 +278,93 @@ public class DebugInfo : PluginComponent {
             GUILayout.EndArea();
             GUISetDefElements();
         }
+
+        if (IsWinScreen(CurrentSceneName)) {
+            GUISetDefElements();
+            GUILayout.BeginArea(new Rect(10f, 52f, 300f, 620f));
+            GUILayout.BeginVertical("box");
+            GUILayout.Label("[Star Skip Info]");
+            GUILayout.Label("Star skip offset: " + winScreenStarSkipFrameOffset.ToString());
+            GUILayout.Label("Star skip plink: " + (winScreenStarSkipFrameList[1] - winScreenStarSkipFrameList[0]).ToString());
+            GUILayout.EndVertical();
+            GUILayout.FlexibleSpace();
+            GUILayout.EndArea();
+            GUISetDefElements();
+        }
     }
 
     private void Update() {
         if (!previousFrameWon) {
-            levelRealTime += Time.deltaTime;
+            if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                if (!isMinibossStartingKingDice) {
+                    levelRealTime += Time.deltaTime;
+                }
+            }
+            else if (CurrentLevel != null) {
+                levelRealTime += Time.deltaTime;
+                levelInGameTime = CurrentLevel.LevelTime;
+            }
+
         }
+        else {
+            isMinibossStartingKingDice = false;
+            hasExtraIGTTickBeenHandledKingDice = false;
+        }
+
+        if (!Level.Won) {
+            if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+                if (!isMinibossStartingKingDice) {
+                    levelInGameTime = CurrentLevel.LevelTime;
+                } else if (hasExtraIGTTickBeenHandledKingDice == false) {
+                    levelInGameTime = CurrentLevel.LevelTime;
+                    levelInGameTimeKingDice = Level.ScoringData.time;
+                    hasExtraIGTTickBeenHandledKingDice = true;
+                }
+            }
+        }
+
+        if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
+            if (!isMinibossStartingKingDice && !previousFrameWon) {
+                levelRealTimeKingDice += Time.deltaTime;
+            }
+            if (!isMinibossStartingKingDice && !Level.Won) {
+                levelInGameTimeKingDice = Level.ScoringData.time + CurrentLevel.LevelTime;
+            }
+        }
+
+        if (IsWinScreen(CurrentSceneName)) {
+            CupheadInput.AnyPlayerInput controllerInput = ((WinScreen)Object.FindObjectOfType(typeof(WinScreen))).input;
+
+
+            winScreenFrameCounter++;
+            if (controllerInput.GetButtonDown(CupheadButton.Accept)) {
+                onWinScreenButtonPressFrame = winScreenFrameCounter;
+                winScreenStarSkipFrameList[0] = winScreenStarSkipFrameList[1];
+                winScreenStarSkipFrameList[1] = winScreenFrameCounter;
+            }
+            if (onWinScreenButtonPressFrame != 0 && onWinScreenStarFrame != 0) {
+                winScreenStarSkipFrameOffset = onWinScreenButtonPressFrame - onWinScreenStarFrame;
+            }
+        }
+
+        if (spriteSwapOnLobberEXFrameCounter != 0 && spriteSwapOnSpriteSwapFrameCounter != 0) {
+            spriteSwapQuadFrameOffset = spriteSwapOnLobberEXFrameCounter - spriteSwapOnSpriteSwapFrameCounter;
+        }
+        spriteSwapLevelFrameCounter++;
 
         previousFrameWon = Level.Won;
 
         if (CurrentLevel?.LevelTime == 0f) {
+            if (Level.ScoringData.time == 0f) {
+                levelRealTimeKingDice = 0f;
+                levelInGameTimeKingDice = 0f;
+                spriteSwapLevelFrameCounter = 0;
+                spriteSwapOnSpriteSwapFrameCounter = 0;
+                spriteSwapOnLobberEXFrameCounter = 0;
+                spriteSwapQuadFrameOffset = 0;
+            }
+            isMinibossStartingKingDice = false;
+            hasExtraIGTTickBeenHandledKingDice = false;
             levelRealTime = 0f;
         }
     }
@@ -265,6 +391,10 @@ public class DebugInfo : PluginComponent {
 
     private bool IsMapScene(string sceneName) {
         return sceneName.StartsWith("scene_map_");
+    }
+
+    private bool IsWinScreen(string sceneName) {
+        return sceneName == "scene_win";
     }
 
     private void RefPercentage() {

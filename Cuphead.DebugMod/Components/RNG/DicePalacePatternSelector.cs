@@ -79,7 +79,7 @@ internal class DicePalacePatternSelector : PluginComponent {
 
     static string[] GetTwirlPatternList() {
         if (Level.ScoringData.difficulty != Level.Mode.Normal) {
-            return ["5,6,3,6,4,5,6,3,4,7,4,3"];
+            return ["5","6","3","6","4","5","6","3","4","7","4","3"];
         }
 
         string[][] dicePalaceRouletteTwirlAmountsLists = [["4", "5", "3", "6", "4", "5", "4", "3", "4", "6", "4", "3"], ["5", "3", "4", "4", "3", "5", "4", "3", "6", "4", "3", "3"]];

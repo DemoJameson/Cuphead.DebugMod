@@ -3,6 +3,12 @@
 namespace BepInEx.CupheadDebugMod.Config {
     public static class SettingsEnums {
 
+        public enum LobberCritSettings {
+            Random,
+            Always,
+            Never
+        }
+
 #if v1_3
         public enum RelicLevels {
             Default,
@@ -417,6 +423,18 @@ namespace BepInEx.CupheadDebugMod.Config {
             Chain1,
             Triangles,
             Chain2
+        }
+
+        public enum BeePhaseTwoOrbsDirections {
+            Random,
+            Left,
+            Right
+        }
+
+        public enum BeePhaseTwoTrianglesDirections {
+            Random,
+            Left,
+            Right
         }
 
         public enum RobotPhaseFinalGemColors {
