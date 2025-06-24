@@ -38,6 +38,7 @@ public class DebugInfo : PluginComponent {
         "scene_level_flying_genie",
         "scene_level_robot",
         "scene_level_flying_mermaid",
+        "scene_level_flying_cowboy",
         "scene_level_dice_palace_flying_horse",
         "scene_level_dice_palace_flying_memory"
     };
@@ -46,7 +47,6 @@ public class DebugInfo : PluginComponent {
         GUISetMatrix();
         Init();
         InitHotkeys();
-        //Cuphead.Init(false);
         HookHelper.ActiveSceneChanged(RefPercentage);
     }
 
@@ -167,7 +167,16 @@ public class DebugInfo : PluginComponent {
 
                     string weaponInfo = $"";
                     if (planeLevelNames.Contains(CurrentSceneName)) {
-                        weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+#if v1_3
+                        if (GameInfoHelper.isChalice) {
+                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                        }
+                        else {
+#endif
+                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+#if v1_3
+                    }
+#endif
                     } else {
                         PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
 
