@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
 using MonoMod.Cil;
 using static BepInEx.CupheadDebugMod.Config.Settings;
@@ -52,6 +54,23 @@ internal class DevilPatternSelector : PluginComponent {
     public static void PhaseOneSpiderOffsetManipulator(ref DevilLevelSittingDevil __instance) {
         if (DevilPhaseOneSpiderOffset.Value != DevilPhaseOneSpiderOffsets.Random) {
             __instance.spiderOffsetIndex = Utility.GetUserPattern<DevilPhaseOneSpiderOffsets>((int) DevilPhaseOneSpiderOffset.Value);
+        }
+    }
+
+    // Experimental
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
+    [HarmonyPostfix]
+    public static void PhaseOneSpiderOffsetManipulatorExperimental(ref DevilLevelSittingDevil __instance) {
+        if (!string.IsNullOrEmpty(DevilTest.Value)) {
+            int[] values = DevilTest.Value
+                .Split(',')
+                .Select(s => int.Parse(s.Trim()))
+                .ToArray();
+            int randomIndex = (int) UnityEngine.Random.Range(0, values.Length);
+            if (values[randomIndex] == 0) {
+                __instance.spiderOffsetIndex = 19;
+            }
+            __instance.spiderOffsetIndex = values[randomIndex] - 1;
         }
     }
 

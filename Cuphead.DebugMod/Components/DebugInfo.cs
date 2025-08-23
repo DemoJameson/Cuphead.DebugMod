@@ -232,6 +232,31 @@ public class DebugInfo : PluginComponent {
                 if (Settings.CurrentScene.Value) {
                     GUILayout.Label("Current scene: " + CurrentSceneName);
                 }
+                if (Settings.ScreenCoordinates.Value) {
+                    if (!this.planeLevelNames.Contains(SceneLoader.SceneName)) {
+                        GUILayout.Label(string.Concat(new object[]
+                        {
+                        "X: ",
+                        GameInfoHelper.LevelPlayerControllerInstance.center.x,
+                        " Y: ",
+                        GameInfoHelper.LevelPlayerControllerInstance.center.y
+                        }));
+                    }
+                    else {
+                        GUILayout.Label(string.Concat(new object[]
+{
+                        "X: ",
+                        GameInfoHelper.PlanePlayerControllerInstance.center.x,
+                        " Y: ",
+                        GameInfoHelper.PlanePlayerControllerInstance.center.y
+}));
+                    }
+                }
+
+                if (Settings.JumpFrames.Value) {
+                    GUILayout.Label("Jump frames: " + GameInfoHelper.jumpFrames);
+                }
+
                 if (Settings.QuadEXOffset.Value) {
                     if (CurrentSceneName.Equals("scene_level_slime") || CurrentSceneName.Equals("scene_level_mouse")) {
                         if (spriteSwapQuadFrameOffset < -7) {
@@ -331,7 +356,7 @@ public class DebugInfo : PluginComponent {
                 levelInGameTimeKingDice = Level.ScoringData.time + CurrentLevel.LevelTime;
             }
         }
-
+      
         if (IsWinScreen(CurrentSceneName)) {
             CupheadInput.AnyPlayerInput controllerInput = ((WinScreen)Object.FindObjectOfType(typeof(WinScreen))).input;
 

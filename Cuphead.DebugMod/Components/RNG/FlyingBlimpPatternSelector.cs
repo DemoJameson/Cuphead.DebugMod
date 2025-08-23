@@ -1,11 +1,27 @@
-﻿using HarmonyLib;
+﻿using System.Net.Configuration;
+using System.Reflection;
+using HarmonyLib;
+using MonoMod.Cil;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
 [HarmonyPatch]
 public class FlyingBlimpPatternSelector : PluginComponent {
+
+    [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(BaronessLevel.OnStateChanged))]
+    [HarmonyILManipulator]
+    public static void ConstellationPatternManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("Rand::Bool"))) {
+            ilCursor.Remove();
+
+            ilCursor.Emit(OpCodes.Call, typeof(FlyingBlimpPatternSelector).GetMethod(nameof(SelectConstellation), BindingFlags.Static | BindingFlags.Public));
+
+        }
+    }
 
     // Sets the leading attack in the sequence.
     [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(FlyingBlimpLevel.OnStateChanged))]
@@ -43,6 +59,15 @@ public class FlyingBlimpPatternSelector : PluginComponent {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsHard>((int) FlyingBlimpPhaseBlimp3PatternHard.Value);
                 }
             }
+        }
+    }
+
+    public static bool SelectConstellation() {
+        if (FlyingBlimpConstellationPatternNormal.Value != FlyingBlimpConstellationPatternsNormal.Random) {
+            return FlyingBlimpConstellationPatternNormal.Value == FlyingBlimpConstellationPatternsNormal.Sagittarius;
+        }
+        else {
+            return Rand.Bool();
         }
     }
 

@@ -10,6 +10,8 @@ namespace BepInEx.CupheadDebugMod.Components;
 
 [HarmonyPatch]
 public class GameInfoHelper : PluginComponent {
+    public static LevelPlayerController LevelPlayerControllerInstance;
+    public static PlanePlayerController PlanePlayerControllerInstance;
     public static bool isChalice = false;
     private static Vector3? lastPlayerPosition;
     private static string lastLevelName;
@@ -63,6 +65,8 @@ public class GameInfoHelper : PluginComponent {
     private static int exPlaneDelayFrames;
     private static readonly List<string> infos = new();
     private static readonly List<string> statuses = new();
+    public static int jumpFrames;
+
 #if v1_3
     [HarmonyPatch(typeof(PlayerStatsManager), nameof(PlayerStatsManager.FixedUpdate))]
     [HarmonyPostfix]
@@ -194,6 +198,30 @@ public class GameInfoHelper : PluginComponent {
                 canUpdateEXWeaponsTimer = false;
             }
 
+        }
+    }
+
+    [HarmonyPatch(typeof(LevelPlayerController), nameof(LevelPlayerController.LevelInit))]
+    [HarmonyPostfix]
+    public static void SetLevelPlayerControllerInstance(ref LevelPlayerController __instance) {
+        LevelPlayerControllerInstance = __instance;
+    }
+
+    [HarmonyPatch(typeof(PlanePlayerController), nameof(PlanePlayerController.LevelInit))]
+    [HarmonyPostfix]
+    public static void SetPlanePlayerControllerInstance(ref PlanePlayerController __instance) {
+        PlanePlayerControllerInstance = __instance;
+    }
+
+    [HarmonyPatch(typeof(LevelPlayerMotor), nameof(LevelPlayerMotor.HandleJumping))]
+    [HarmonyPostfix]
+    public static void SetJumpFrames(ref LevelPlayerMotor __instance) {
+        if (__instance.jumpManager.state == LevelPlayerMotor.JumpManager.State.Hold) {
+            // If a jump has just been started, reset jumpFrames
+            if (__instance.jumpManager.timer == CupheadTime.FixedDelta * 2) {
+                jumpFrames = 0;
+            }
+            jumpFrames++;
         }
     }
 

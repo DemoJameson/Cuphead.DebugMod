@@ -95,6 +95,12 @@ namespace BepInEx.CupheadDebugMod.Config {
             Tornado2,
         }
 
+        public enum FlyingBlimpConstellationPatternsNormal {
+            Random,
+            Sagittarius,
+            Gemini,
+        }
+
         public enum FlyingBlimpPhaseBlimp2PatternsNormal {
             Random,
             Tornado1,
@@ -304,6 +310,12 @@ namespace BepInEx.CupheadDebugMod.Config {
             Lasers05,
         }
 
+        public enum FlyingBirdPhaseThreeDirections {
+            Random,
+            Up,
+            Down
+        }
+
         public enum FlyingBirdPhaseFinalPatterns {
             Random,
             Garbage,
@@ -322,6 +334,209 @@ namespace BepInEx.CupheadDebugMod.Config {
             Gems,
             Sphinx
         }
+
+        public enum FlyingGeniePhaseOneSwordTypesEasyNormal {
+            Random,
+            [Description("Parry")]
+            P_01,
+            [Description("Regular")]
+            R_01,
+            [Description("Regular")]
+            R_02,
+            [Description("Regular")]
+            R_03,
+            [Description("Regular")]
+            R_04,
+            [Description("Parry")]
+            P_02,
+            [Description("Regular")]
+            R_05,
+            [Description("Regular")]
+            R_06,
+            [Description("Regular")]
+            R_07,
+            [Description("Regular")]
+            R_08,
+            [Description("Regular")]
+            R_09
+        }
+
+        public enum FlyingGeniePhaseOneSwordTypesHard {
+            Random,
+            [Description("Parry")]
+            P_01,
+            [Description("Regular")]
+            R_01,
+            [Description("Regular")]
+            R_02,
+            [Description("Regular")]
+            R_03,
+            [Description("Regular")]
+            R_04,
+            [Description("Parry")]
+            P_02,
+            [Description("Regular")]
+            R_05,
+            [Description("Regular")]
+            R_06,
+            [Description("Regular")]
+            R_07,
+            [Description("Regular")]
+            R_08,
+            [Description("Regular")]
+            R_09,
+            [Description("Regular")]
+            R_10,
+        }
+
+        public enum FlyingGeniePhaseOneGemsTypesEasy {
+            Random,
+            [Description("Parry")]
+            P_01,
+            [Description("Regular")]
+            R_01,
+            [Description("Regular")]
+            R_02,
+            [Description("Regular")]
+            R_03,
+            [Description("Regular")]
+            R_04,
+            [Description("Regular")]
+            R_05,
+            [Description("Regular")]
+            R_06,
+            [Description("Regular")]
+            R_07,
+            [Description("Regular")]
+            R_08,
+            [Description("Regular")]
+            R_09,
+            [Description("Regular")]
+            R_10,
+            [Description("Regular")]
+            R_11,
+        }
+
+        public enum FlyingGeniePhaseOneGemsTypesNormalHard {
+            Random,
+            [Description("Parry")]
+            P_01,
+            [Description("Regular")]
+            R_01,
+            [Description("Regular")]
+            R_02,
+            [Description("Regular")]
+            R_03,
+            [Description("Regular")]
+            R_04,
+            [Description("Regular")]
+            R_05,
+            [Description("Regular")]
+            R_06,
+            [Description("Regular")]
+            R_07,
+            [Description("Regular")]
+            R_08,
+            [Description("Regular")]
+            R_09,
+            [Description("Regular")]
+            R_10,
+            [Description("Regular")]
+            R_11,
+            [Description("Regular")]
+            R_12
+        }
+
+        public enum FlyingGeniePhaseOneSphinxTypes {
+            Random,
+            [Description("Parry")]
+            P_01,
+            [Description("Regular")]
+            R_01,
+            [Description("Regular")]
+            R_02,
+            [Description("Regular")]
+            R_03,
+            [Description("Regular")]
+            R_04,
+            [Description("Regular")]
+            R_05,
+            [Description("Parry")]
+            P_02,
+            [Description("Regular")]
+            R_06,
+            [Description("Regular")]
+            R_07,
+            [Description("Regular")]
+            R_08,
+            [Description("Regular")]
+            R_09,
+            [Description("Regular")]
+            R_10,
+            [Description("Regular")]
+            R_11,
+            [Description("Regular")]
+            R_12
+        }
+
+        public enum FlyingGeniePhaseTwoObeliskPatterns {
+            Random,
+            [Description("1")]
+            AA_1,
+            [Description("4")]
+            AB_4,
+            [Description("2")]
+            AC_2,
+            [Description("5")]
+            AD_5,
+            [Description("1-4")]
+            AE_1_4,
+            [Description("5")]
+            AF_5,
+            [Description("1")]
+            AG_1,
+            [Description("3")]
+            AH_3,
+            [Description("2-5")]
+            AI_2_5,
+            [Description("3")]
+            AJ_3,
+            [Description("1")]
+            AK_1,
+            [Description("2-5")]
+            AL_2_5,
+            [Description("4")]
+            AM_4,
+            [Description("2")]
+            AN_2,
+            [Description("3")]
+            AO_3,
+            [Description("1-4")]
+            AP_1_4,
+            [Description("2")]
+            AQ_2,
+            [Description("5")]
+            AR_5,
+            [Description("4")]
+            AS_4,
+            [Description("1")]
+            AT_1,
+            [Description("2")]
+            AU_2,
+            [Description("1-4")]
+            AV_1_4,
+            [Description("3")]
+            AW_3,
+            [Description("5")]
+            AX_5,
+            [Description("1")]
+            AY_1,
+            [Description("3")]
+            AZ_3,
+            [Description("2-5")]
+            BA_2_5
+        }
+
 
         public enum ClownDashDelaysEasy {
             Random,

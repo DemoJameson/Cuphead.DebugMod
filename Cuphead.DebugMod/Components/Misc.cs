@@ -6,6 +6,7 @@ using MonoMod.Cil;
 using UnityEngine;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace BepInEx.CupheadDebugMod.Components;
 
@@ -49,6 +50,9 @@ public class Misc : PluginComponent {
 
                 if (Settings.X10Damage.IsDownEx()) {
                     ToggleMegaDamage();
+                }
+                if (Settings.NoDamage.IsDownEx()) {
+                    ToggleNoDamage();
                 }
 
                 if (Settings.ReduceCurrency.IsDownEx()) {
@@ -103,6 +107,15 @@ public class Misc : PluginComponent {
         }
     }
 
+    private static void ToggleNoDamage() {
+        Misc.Debug_ToggleNoDamage();
+        if (Misc.DEBUG_DO_NO_DAMAGE) {
+            Toast.Show("Enable No Damage");
+        } else {
+            Toast.Show("Disable No Damage");
+        }
+    }
+
     private static void ToggleInvincibility() {
         PlayerStatsManager.DebugToggleInvincible();
         if (PlayerStatsManager.DebugInvincible) {
@@ -122,6 +135,18 @@ public class Misc : PluginComponent {
             ilCursor.Emit(OpCodes.Ldc_R4, 53f);
             break;
         }
+    }
+
+    [HarmonyPatch(typeof(DamageReceiver), nameof(DamageReceiver.TakeDamage))]
+    [HarmonyPrefix]
+    public static void PatchNoDamage(ref DamageReceiver __instance, DamageDealer.DamageInfo info) {
+        if (Misc.DEBUG_DO_NO_DAMAGE && (__instance.type == DamageReceiver.Type.Enemy || __instance.type == DamageReceiver.Type.Other)) {
+            info.damage = 0f;
+        }   
+    }
+
+    private static void Debug_ToggleNoDamage() {
+        Misc.DEBUG_DO_NO_DAMAGE = !Misc.DEBUG_DO_NO_DAMAGE;
     }
 
     private static void Gain1ExCard() {
@@ -224,5 +249,5 @@ public class Misc : PluginComponent {
         DebugInfo.winScreenStarSkipFrameList = [ 0, 0 ];
     }
 
-
+    public static bool DEBUG_DO_NO_DAMAGE = false;
 }
