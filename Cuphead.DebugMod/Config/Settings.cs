@@ -323,7 +323,7 @@ public class Settings : PluginComponent {
         DevilPhaseTwoPatternNormal = config.Bind("RNG The Devil", "Phase Two Regular", DevilPhaseTwoPatternsNormal.Random, --order);
         DevilPhaseTwoPatternHard = config.Bind("RNG The Devil", "Phase Two Expert", DevilPhaseTwoPatternsHard.Random, --order);
         DevilPhaseTwoBombEyeDirection = config.Bind("RNG The Devil", "Phase Two Bomb Direction", DevilPhaseTwoBombEyeDirections.Random, --order);
-        DevilTest = config.Bind("RNG The Devil", "[EXPERIMENTAL] Spider Offset Selection", "", --order);
+        DevilTest = config.Bind("RNG The Devil", "EXPERIMENTAL - Spider Offset Selection", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19", --order);
 
 #if v1_3
         SaltbakerPhaseOnePattern = config.Bind("RNG Chef Saltbaker", "Phase One Pattern", SaltbakerPhaseOnePatterns.Random, --order);
