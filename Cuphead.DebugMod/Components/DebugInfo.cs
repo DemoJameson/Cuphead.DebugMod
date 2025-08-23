@@ -356,7 +356,7 @@ public class DebugInfo : PluginComponent {
                 levelInGameTimeKingDice = Level.ScoringData.time + CurrentLevel.LevelTime;
             }
         }
-
+      
         if (IsWinScreen(CurrentSceneName)) {
             CupheadInput.AnyPlayerInput controllerInput = ((WinScreen)Object.FindObjectOfType(typeof(WinScreen))).input;
 
