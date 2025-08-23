@@ -79,6 +79,25 @@ public class FlyingBirdPatternSelector : PluginComponent {
         }
     }
 
+
+    [HarmonyPatch(typeof(FlyingBirdLevelSmallBird), nameof(FlyingBirdLevelSmallBird.moveY_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseThreeDirectionManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("Rand::Bool"))) {
+            // I am checking for Settings.FlyingBirdPhaseFinalDirection.Value dynamically during this function call.
+            // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
+            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.FlyingBirdPhaseFinalDirection.Value
+            ilCursor.EmitDelegate<Func<bool, bool>>(movingDirection =>
+                FlyingBirdPhaseThreeDirection.Value == FlyingBirdPhaseThreeDirections.Random ?
+                Rand.Bool()
+                :
+                FlyingBirdPhaseThreeDirection.Value == FlyingBirdPhaseThreeDirections.Up
+            );
+            ilCursor.Index++; // avoid infinite loops
+        }
+    }
+
     [HarmonyPatch(typeof(FlyingBirdLevelBird), nameof(FlyingBirdLevelBird.stretcherMove_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
     public static void PhaseFinalDirectionManipulator(ILContext il) {
