@@ -84,7 +84,11 @@ internal class GuaranteeLobberExSweetSpot {
 #endif
 
         if (triedToDie) {
-            if (GuaranteeLobberExCrit.Value != LobberCritSettings.Never) {
+            // if this isn't an EX, then make the projectile die
+            if (!__instance.isEx) {
+                __instance.Die();
+            }
+            else if (GuaranteeLobberExCrit.Value != LobberCritSettings.Never) {
                 __instance.Die();
             }
             // if there was an attempt to make the lobber EX explode, and there's already been an enemy explosion and a ground explosion, then don't make this explosion happen
