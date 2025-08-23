@@ -62,12 +62,6 @@ public class Misc : PluginComponent {
                 if (Settings.AddCurrency.IsDownEx()) {
                     AddCurrency();
                 }
-                if (Settings.SaveState.IsDownEx()) {
-                    SaveManager.SaveGame();
-                }
-                if (Settings.LoadState.IsDownEx()) {
-                    SaveManager.LoadGame();
-                }
             }
         };
     }
