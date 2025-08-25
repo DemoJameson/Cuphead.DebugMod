@@ -173,7 +173,7 @@ This will make it so that, upon the start of the Devil level:
 * If it's been set to a different value, we will set `isSpiderAttackNext` to true if the user selected `Spider`, and `false` if they selected anything else (aka Dragon).
 
 # Building and Testing
-Once you have something you want to test, you can go and ahead build the mod by selectin `Build > Build Solution` within Visual studio. Make sure to also select the version of the game you want to build the mod for within the dropdown just below (should be a choice between `1.0~1.1`, `1.2`, and `1.3+`).
+Once you have something you want to test, you can go and ahead build the mod by selecting `Build > Build Solution` within Visual studio. Make sure to also select the version of the game you want to build the mod for within the dropdown just below (should be a choice between `1.0~1.1`, `1.2`, and `1.3+`).
 The mod will come in the form of a `Cuphead.DebugMod.dll` inside of the `bin` folder. You can drag and drop this inside of `BepInEx/plugins` inside of your Cuphead Directory, and it should be ready to test!
 
 # Enabling Debug Console
