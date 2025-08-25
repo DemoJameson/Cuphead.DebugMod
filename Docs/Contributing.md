@@ -11,9 +11,9 @@ It does not modify the game files directly. Instead, it uses Harmony to patch th
 
 # So how do I mod the game's code?
 The primary way is to use Harmony `Prefix`, `Postfix`, or `ILManipulator` methods.
-`Prefix` methods will run **prior* to the execution of one of the game's original methods.
-`Postfix` methods will run **after* the execution of one of the game's original methods.
-`ILManipulator` methods will alter a game's original method. This involves editing the game's IL code instead of tinkering with C# code, making these methods considerably harder to use.
+* `Prefix` methods will run **prior** to the execution of one of the game's original methods.
+* `Postfix` methods will run **after** the execution of one of the game's original methods.
+* `ILManipulator` methods will alter a game's original method. This involves editing the game's IL code instead of tinkering with C# code, making these methods considerably harder to use.
 
 Cuphead's code has been compiled into [IL](https://en.wikipedia.org/wiki/Common_Intermediate_Language) language. It also keeps most symbols (object, method, property etc. names) and by using a tool like [dnSpy](https://github.com/dnSpy/dnSpy/releases) it is possible to reverse this compilation to get something similar (though not exactly) to the original source code. You can use this to browse the game's code (most of it is inside of `Assembly-CSharp.dll`) and take a look at how a lot of things are programmed much more easily than the majority of other games.
 
