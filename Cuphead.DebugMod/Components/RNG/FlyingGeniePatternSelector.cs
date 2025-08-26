@@ -74,7 +74,7 @@ namespace BepInEx.CupheadDebugMod.Components.RNG {
 
         static int GetMainObeliskIndex() {
             if (FlyingGeniePhaseTwoObeliskPattern.Value == FlyingGeniePhaseTwoObeliskPatterns.Random) {
-                return UnityEngine.Random.Range(0, 27);
+                return UnityEngine.Random.Range(0, 3);
             }
             return ((int) FlyingGeniePhaseTwoObeliskPattern.Value - 1) / 9;
         }
