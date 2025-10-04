@@ -65,7 +65,7 @@ There's a few observations to be made here:
 * First of all, while this code technically supports the ability to remove more than 1 platform per row, in reality this method always gets called with `missingCount = 1`, meaning that always 1 platform per row will go missing.
 * The for loop is contains a couple conditions that will interrupt this method early if said conditions are met, skipping the removal of the platform (`list[num].gameObject.SetActive(false);`):
   * **1st Condition**: If the platform it attempted to remove is the 1st one, and the last platform removed was also the 1st one, then no platforms will be removed this time.
-  * **2nd Condition**: If the platform it attempted to remove is the 3rd one, and the last platform removed was the 2nd, then no platforms will be removed this time (also leaving `lastPlatform` at 2).
+  * **2nd Condition**: If the platform it attempted to remove is the 4th one, and the last platform removed was the 3rd, then no platforms will be removed this time (also leaving `lastPlatform` at 2).
 
 To add more complexity to it all, the 4 rows that spawn for each chunk are iterated on **from top to bottom**.
 If you think about it, this means that the game doesn't actually always work on rows that are right next to each other. Here's for example the order that the game works on the first 8 rows of platforms of the fight. On the left is the order the player will actually encounter the row during the fight, from the bottom to the top. On the right is the order the game actually follows to attempt to remove a platform from each row:
