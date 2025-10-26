@@ -18,6 +18,21 @@ public class Misc : PluginComponent {
                 SwapBetweenFrameLimit();
             }
 
+            if (Settings.FastForward.IsDownEx()) {
+                if (Settings.FastForwardToggle.Value && Time.timeScale != 1.0f) {
+                    NormalSpeed();
+                }
+                else {
+                    FastForward();
+                }
+            }
+
+            if (Settings.FastForward.IsUpEx()) {
+                if (!Settings.FastForwardToggle.Value) {
+                    NormalSpeed();
+                }
+            }
+
             if (Settings.ClearCharmsSupers.IsDownEx()) {
                 ClearCharmsSupers();
             }
@@ -173,6 +188,14 @@ public class Misc : PluginComponent {
         }
     }
 
+    private static void FastForward() {
+        Time.timeScale = Settings.FastForwardSpeed.Value;
+    }
+
+    private static void NormalSpeed() {
+        Time.timeScale = 1f;
+    }
+
     private static void ClearCharmsSupers() {
         if (PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne) is { } playerLoadout1) {
             playerLoadout1.charm = Charm.None;
@@ -205,14 +228,12 @@ public class Misc : PluginComponent {
     [HarmonyPrefix]
     public static void SignalSpriteSwapSlime() {
         DebugInfo.spriteSwapOnSpriteSwapFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
-        //DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
     }
 
     [HarmonyPatch(typeof(MouseLevelBrokenCanMouse), nameof(MouseLevelBrokenCanMouse.StartPattern))]
     [HarmonyPrefix]
     public static void SignalSpriteSwapMouse() {
         DebugInfo.spriteSwapOnSpriteSwapFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
-        //DebugInfo.onBigSlimeLevelRealTime = DebugInfo.levelRealTime;
     }
 
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.Die))]
@@ -220,7 +241,14 @@ public class Misc : PluginComponent {
     public static void OnLobberEXExplosion(ref WeaponBouncerProjectile __instance) {
         if (__instance.isEx) {
             DebugInfo.spriteSwapOnLobberEXFrameCounter = DebugInfo.spriteSwapLevelFrameCounter;
-            //DebugInfo.onLobberEXSlimeLevelRealTime = DebugInfo.levelRealTime;
+        }
+    }
+
+    [HarmonyPatch(typeof(DicePalaceMainLevelGameManager), nameof(DicePalaceMainLevelGameManager.LevelInit))]
+    [HarmonyPrefix]
+    public static void KindDiceCheckForSafeSpaceSkip(ref DicePalaceMainLevelGameManager __instance) {
+        if (Settings.SkipToLastSafeSpace.Value) {
+            DicePalaceMainLevelGameInfo.PLAYER_SPACES_MOVED = 12;
         }
     }
 

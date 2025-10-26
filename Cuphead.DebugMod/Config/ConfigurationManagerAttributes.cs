@@ -127,4 +127,20 @@ internal static class ConfigExtensions {
             return configEntry.Value.IsDown();
         }
     }
+
+    public static bool IsUpEx(this ConfigEntry<KeyboardShortcut> configEntry) {
+        if (configEntry.Value.Modifiers.Count() == 0) {
+            return UnityInput.Current.GetKeyUp(configEntry.Value.MainKey);
+        } else {
+            return configEntry.Value.IsUp();
+        }
+    }
+
+    public static bool IsHeldEx(this ConfigEntry<KeyboardShortcut> configEntry) {
+        if (configEntry.Value.Modifiers.Count() == 0) {
+            return UnityInput.Current.GetKey(configEntry.Value.MainKey);
+        } else {
+            return configEntry.Value.IsPressed();
+        }
+    }
 }

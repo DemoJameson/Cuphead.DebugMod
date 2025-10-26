@@ -610,6 +610,221 @@ namespace BepInEx.CupheadDebugMod.Config {
             L_1_5
         }
 
+        public enum ClownHorseTypes {
+            Random,
+            [Description("Green")]
+            Green1,
+            [Description("Yellow")]
+            Yellow1,
+            [Description("Yellow")]
+            Yellow2,
+            [Description("Green")]
+            Green2,
+            [Description("Yellow")]
+            Yellow3,
+            [Description("Green")]
+            Green3,
+            [Description("Green")]
+            Green4,
+            [Description("Yellow")]
+            Yellow4
+        }
+
+        public enum ClownHorseDirections {
+            Random,
+            Left,
+            Right
+        }
+
+        public enum DragonPhaseOnePatternsEasy {
+            Random,
+            Peashot1,
+            Meteor1,
+            Peashot2,
+            Peashot3,
+            Meteor2,
+            Peashot4,
+            Meteor3,
+            Peashot5,
+            Peashot6,
+            Peashot7,
+            Meteor4
+        }
+
+        public enum DragonPhaseTwoPatternsEasy {
+            Random,
+            Peashot1,
+            Meteor1,
+            Peashot2,
+            Peashot3,
+            Meteor2,
+            Peashot4,
+            Meteor3,
+            Peashot5,
+            Peashot6,
+            Meteor4
+        }
+
+        public enum DragonPhaseThreePatternsNormal {
+            Random,
+            Meteor,
+            Peashot
+        }
+
+        public enum DragonPhaseOnePatternsHard {
+            Random,            
+            Peashot,
+            Meteor
+        }
+
+        public enum DragonPhaseTwoPatternsHard {
+            Random,
+            Meteor,
+            Peashot
+        }
+
+        public enum DragonPhaseOneMeteorPatternsEasy {
+            Random,
+            [Description("Up-Down (Thrice as likely!)")]
+            UD,
+            [Description("Down-Up-Down (Thrice as likely!)")]
+            DUD,
+            [Description("Down-Up-Down (Double as likely!)")]
+            UDU,
+            [Description("Down-Down")]
+            DD,
+            [Description("Up-Up")]
+            UU,
+        }
+
+        public enum DragonPhaseTwoMeteorPatternsEasy {
+            Random,
+            [Description("Up-Down (Triple as likely!)")]
+            UD,
+            [Description("Down-Up-Down (Triple as likely!)")]
+            DUD,
+            [Description("Down-Up-Down (Double as likely!)")]
+            UDU,
+            [Description("Down-Down")]
+            DD,
+            [Description("Up-Up")]
+            UU,
+        }
+
+        public enum DragonPhaseTwoMeteorPatternsNormal {
+            Random,
+            [Description("Up-Down-Up-Down")]
+            UDUD,
+            [Description("Down-Up-Down")]
+            DUD,
+            [Description("Down-Up-Down-Up")]
+            DUDU,
+            [Description("Up-Down-Up")]
+            UDU
+        }
+
+        public enum DragonPhaseThreeMeteorPatternsNormal {
+            Random,
+            [Description("Up-Both")]
+            UB,
+            [Description("Both-Down")]
+            BD,
+            [Description("Down-Both")]
+            DB,
+            [Description("Both-Up")]
+            BU
+        }
+
+        public enum DragonPhaseOneMeteorPatternsHard {
+            Random,
+            [Description("Up-Down (Double as likely!)")]
+            UD,
+            [Description("Down-Up-Down")]
+            DUD,
+            [Description("Down-Up")]
+            DU,
+            [Description("Up-Down-Up")]
+            UDU
+        }
+
+        public enum DragonPhaseTwoMeteorPatternsHard {
+            Random,
+            [Description("Up-Up-Down (Double as likely!)")]
+            UUD,
+            [Description("Down-Up-Down (Double as likely!)")]
+            DUU,
+            [Description("Down-Up-Both")]
+            DUB
+        }
+
+        public enum DragonPhaseOneLaserPatternsEasy {
+            Random,
+            [Description("2 (Faster) #1")]
+            Two_1,
+            [Description("2 (Slower)")]
+            Two_2,
+            [Description("1 (Faster)")]
+            One_1,
+            [Description("2 (Faster) #2")]
+            Two_3,
+            [Description("1 (Slower)")]
+            One_2
+        }
+
+        public enum DragonPhaseTwoLaserPatternsEasy {
+            Random,
+            [Description("2 (Faster) #1")]
+            Two_1,
+            [Description("2 (Slower)")]
+            Two_2,
+            [Description("1 (Faster)")]
+            One_1,
+            [Description("2 (Faster) #2")]
+            Two_3,
+            [Description("1 (Slower)")]
+            One_2
+        }
+
+
+
+        public enum DragonPhaseOneLaserPatternsNormal {
+            Random,
+            [Description("3")]
+            Three,
+            [Description("2 (Slower)")]
+            Two_1,
+            [Description("2 (Faster)")]
+            Two_2
+        }
+
+        public enum DragonPhaseThreeLaserPatternsNormal {
+            Random,
+            [Description("2")]
+            Two,
+            [Description("1 (Double as likely!)")]
+            One
+        }
+
+        public enum DragonPhaseOneLaserPatternsHard {
+            Random,
+            [Description("2 #1")]
+            Two_1,
+            [Description("2 #2")]
+            Two_2,
+            [Description("3")]
+            Three
+        }
+
+        public enum DragonPhaseTwoLaserPatternsHard {
+            Random,
+            [Description("2 #1")]
+            Two_1,
+            [Description("2 #2")]
+            Two_2,
+            [Description("3")]
+            Three
+        }
+
         public enum BeePhaseTwoPatternsEasy {
             Random,
             Orbs1,
@@ -656,6 +871,176 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             Red,
             Blue
+        }
+
+        public enum SallyStageplayPatternsEasy {
+            Random,
+            [Description("Jump")]
+            Jump1,
+            [Description("Kiss")]
+            Kiss1,
+            [Description("Teleport")]
+            Teleport1,
+            [Description("Jump")]
+            Jump2,
+            [Description("Kiss")]
+            Kiss2,
+            [Description("Jump")]
+            Jump3,
+            [Description("Teleport")]
+            Teleport2,
+            [Description("Kiss")]
+            Kiss3,
+            [Description("Jump")]
+            Jump4,
+            [Description("Teleport")]
+            Teleport3
+        }
+
+        public enum SallyStageplayPatternsNormalHard {
+            Random,
+            [Description("Jump")]
+            Jump1,
+            [Description("Kiss")]
+            Kiss1,
+            [Description("Teleport")]
+            Teleport1,
+            [Description("Jump")]
+            Jump2,
+            [Description("Kiss")]
+            Kiss2,
+            [Description("Jump")]
+            Jump3,
+            [Description("Teleport")]
+            Teleport2
+        }
+
+        public enum SallyStageplayJumpTypesEasy {
+            Random,
+            [Description("DiveKick")]
+            DiveKick1,
+            [Description("DiveKick")]
+            DiveKick2,
+            [Description("DoubleJump")]
+            DoubleJump1,
+            [Description("DiveKick")]
+            DiveKick3,
+            [Description("DiveKick")]
+            DiveKick4,
+            [Description("DiveKick")]
+            DiveKick5,
+            [Description("DoubleJump")]
+            DoubleJump2
+        }
+
+        public enum SallyStageplayJumpTypesNormalHard {
+            Random,
+            [Description("DiveKick")]
+            DiveKick1,
+            [Description("DiveKick")]
+            DiveKick2,
+            [Description("DoubleJump")]
+            DoubleJump1,
+            [Description("DiveKick")]
+            DiveKick3,
+            [Description("DoubleJump")]
+            DoubleJump2,
+            [Description("DiveKick")]
+            DiveKick4,
+            [Description("DiveKick")]
+            DiveKick5,
+            [Description("DiveKick")]
+            DiveKick6,
+            [Description("DoubleJump")]
+            DoubleJump3
+        }
+
+        public enum SallyStageplayJumpCountsEasy {
+            Random,
+            [Description("1")]
+            One_1,
+            [Description("3")]
+            Three_1,
+            [Description("2")]
+            Two_1,
+            [Description("3")]
+            Three_2,
+            [Description("1")]
+            One_2,
+            [Description("2")]
+            Two_2,
+            [Description("3")]
+            Three_3,
+            [Description("2")]
+            Two_3,
+            [Description("2")]
+            Two_4
+        }
+
+        public enum SallyStageplayJumpCountsNormalHard {
+            Random,
+            [Description("1")]
+            One_1,
+            [Description("3")]
+            Three_1,
+            [Description("2")]
+            Two_1,
+            [Description("3")]
+            Three_2,
+            [Description("1")]
+            One_2,
+            [Description("2")]
+            Two_2,
+            [Description("3")]
+            Three_3,
+            [Description("2")]
+            Two_3,
+            [Description("2")]
+            Two_4,
+            [Description("3")]
+            Three_4
+        }
+
+        public enum SallyStageplayTeleportOffsetsEasy {
+            Random,
+            [Description("0")]
+            A_0,
+            [Description("100")]
+            B_100,
+            [Description("-100")]
+            C_Neg100,
+            [Description("0")]
+            D_0,
+            [Description("50")]
+            E_50,
+            [Description("0")]
+            F_0,
+            [Description("-50")]
+            G_Neg50
+        }
+
+        public enum SallyStageplayTeleportOffsetsNormalHard {
+            Random,
+            [Description("0")]
+            A_0,
+            [Description("100")]
+            B_100,
+            [Description("-100")]
+            C_Neg100,
+            [Description("0")]
+            D_0,
+            [Description("200")]
+            E_200,
+            [Description("-200")]
+            F_Neg200,
+            [Description("50")]
+            G_50,
+            [Description("-200")]
+            H_Neg100,
+            [Description("0")]
+            I_0,
+            [Description("150")]
+            J_150
         }
 
         public enum MousePhaseOnePatternsEasy {
@@ -1083,6 +1468,80 @@ namespace BepInEx.CupheadDebugMod.Config {
             Bouncer,
             Pinwheel,
             Ring
+        }
+
+        public enum DevilPhaseOneBouncerAnglesNormal {
+            Random,
+            [Description("55 (Standard)")]
+            A_55,
+            [Description("30 (Standard)")]
+            B_30,
+            [Description("35 (Standard)")]
+            C_35,
+            [Description("60 (Standard)")]
+            D_60,
+            [Description("40 (Standard)")]
+            E_40,
+            [Description("70 (1.5s slower)")]
+            F_70,
+            [Description("20 (1.5s slower)")]
+            G_20,
+            [Description("35 (Standard)")]
+            H_35,
+            [Description("50 (Standard)")]
+            I_50,
+            [Description("100 (3s slower)")]
+            J_100,
+            [Description("200 (1.5s slower)")]
+            K_200,
+        }
+
+        public enum DevilPhaseOneBouncerAnglesHard {
+            Random,
+            [Description("55")]
+            A_55,
+            [Description("30")]
+            B_30,
+            [Description("35")]
+            C_35,
+            [Description("60")]
+            D_60,
+            [Description("40")]
+            E_40,
+            [Description("70")]
+            F_70,
+            [Description("20")]
+            G_20,
+            [Description("35")]
+            H_35,
+            [Description("50")]
+            I_50,
+            [Description("100")]
+            J_100,
+            [Description("200")]
+            K_200,
+            [Description("35")]
+            L_35,
+            [Description("60")]
+            M_60,
+            [Description("35")]
+            N_35,
+            [Description("55")]
+            O_55,
+            [Description("100")]
+            P_100,
+            [Description("70")]
+            Q_70,
+            [Description("20")]
+            R_20,
+            [Description("30")]
+            S_30,
+            [Description("50")]
+            T_50,
+            [Description("40")]
+            U_40,
+            [Description("200")]
+            V_200
         }
 
         public enum DevilPhaseOneSpiderOffsets {

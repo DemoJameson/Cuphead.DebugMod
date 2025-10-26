@@ -20,6 +20,32 @@ internal class ClownPatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(ClownLevelClownHorse), nameof(ClownLevelClownHorse.select_horse_cr), MethodType.Enumerator)]
+    [HarmonyPrefix]
+    private static void PhaseThreeHorseTypeManipulator(ClownLevelClownHorse __instance) {
+        if (Settings.ClownHorseType.Value != ClownHorseTypes.Random) {
+            __instance.horseTypeIndex = (int) Settings.ClownHorseType.Value - 1;
+        }
+    }
+
+    [HarmonyPatch(typeof(ClownLevelClownHorse), nameof(ClownLevelClownHorse.SelectStartPos))]
+    [HarmonyPostfix]
+    private static void PhaseThreeHorseDirectionManipulator(ClownLevelClownHorse __instance) {
+        if (Settings.ClownHorseDirection.Value == ClownHorseDirections.Random) {
+            return;
+        }
+        else if (Settings.ClownHorseDirection.Value == ClownHorseDirections.Left) {
+            __instance.startPos.x = -640f + __instance.properties.CurrentState.horse.HorseXPosOffset;
+            __instance.transform.position = __instance.startPos;
+            __instance.transform.SetScale(new float?(-1f), new float?(1f), new float?(1f));
+        }
+        else if (Settings.ClownHorseDirection.Value == ClownHorseDirections.Right) {
+            __instance.startPos.x = 640f - __instance.properties.CurrentState.horse.HorseXPosOffset;
+            __instance.transform.position = __instance.startPos;
+            __instance.transform.SetScale(new float?(1f), new float?(1f), new float?(1f));
+        }
+    }
+
     static int GetDashPattern() {
         // I am checking for Settings.ClownDashDelay.Value dynamically during this function call.
         // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...

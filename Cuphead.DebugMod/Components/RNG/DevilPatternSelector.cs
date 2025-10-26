@@ -114,6 +114,21 @@ internal class DevilPatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(DevilLevelPitchforkProjectileSpawner), MethodType.Constructor, new Type[] { typeof(int), typeof(string) })]
+    [HarmonyPostfix]
+    public static void PhaseOneBouncerAnglesManipulator(ref DevilLevelPitchforkProjectileSpawner __instance) {
+        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
+            if (DevilPhaseOneBouncerAngleNormal.Value != DevilPhaseOneBouncerAnglesNormal.Random) {
+                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesNormal>((int) DevilPhaseOneBouncerAngleNormal.Value);
+            }
+        }
+        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+            if (DevilPhaseOneBouncerAngleHard.Value != DevilPhaseOneBouncerAnglesHard.Random) {
+                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesHard>((int) DevilPhaseOneBouncerAngleHard.Value);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.OnStateChanged))]
     [HarmonyPrefix]
     public static void PhaseTwoPatternManipulator(ref DevilLevel __instance) {

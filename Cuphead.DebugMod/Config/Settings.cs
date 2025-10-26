@@ -26,6 +26,9 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> LevelSelector;
     public static ConfigEntry<KeyboardShortcut> ToggleFrameCounter;
     public static ConfigEntry<KeyboardShortcut> SwapBetweenFrameLimit;
+    public static ConfigEntry<KeyboardShortcut> FastForward;
+    public static ConfigEntry<bool> FastForwardToggle;
+    public static ConfigEntry<float> FastForwardSpeed;
     public static ConfigEntry<KeyboardShortcut> ClearCharmsSupers;
     public static ConfigEntry<KeyboardShortcut> QuickRestart;
 
@@ -65,6 +68,8 @@ public class Settings : PluginComponent {
 #endif
 
     public static ConfigEntry<bool> LoopWinScreen;
+
+    public static ConfigEntry<bool> SkipToLastSafeSpace;
 
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
     public static ConfigEntry<FrogsPhaseOneFirefliesPatternsEasy> FrogsPhaseOneFirefliesPatternEasy;
@@ -110,6 +115,25 @@ public class Settings : PluginComponent {
     public static ConfigEntry<ClownDashDelaysEasy> ClownDashDelayEasy;
     public static ConfigEntry<ClownDashDelaysNormal> ClownDashDelayNormal;
     public static ConfigEntry<ClownDashDelaysHard> ClownDashDelayHard;
+    public static ConfigEntry<ClownHorseTypes> ClownHorseType;
+    public static ConfigEntry<ClownHorseDirections> ClownHorseDirection;
+    public static ConfigEntry<DragonPhaseOnePatternsEasy> DragonPhaseOnePatternEasy;
+    public static ConfigEntry<DragonPhaseTwoPatternsEasy> DragonPhaseTwoPatternEasy;
+    public static ConfigEntry<DragonPhaseThreePatternsNormal> DragonPhaseThreePatternNormal;
+    public static ConfigEntry<DragonPhaseOnePatternsHard> DragonPhaseOnePatternHard;
+    public static ConfigEntry<DragonPhaseTwoPatternsHard> DragonPhaseTwoPatternHard;
+    public static ConfigEntry<DragonPhaseOneLaserPatternsEasy> DragonPhaseOneLaserPatternEasy;
+    public static ConfigEntry<DragonPhaseTwoLaserPatternsEasy> DragonPhaseTwoLaserPatternEasy;
+    public static ConfigEntry<DragonPhaseOneLaserPatternsNormal> DragonPhaseOneLaserPatternNormal;
+    public static ConfigEntry<DragonPhaseThreeLaserPatternsNormal> DragonPhaseThreeLaserPatternNormal;
+    public static ConfigEntry<DragonPhaseOneLaserPatternsHard> DragonPhaseOneLaserPatternHard;
+    public static ConfigEntry<DragonPhaseTwoLaserPatternsHard> DragonPhaseTwoLaserPatternHard;
+    public static ConfigEntry<DragonPhaseOneMeteorPatternsEasy> DragonPhaseOneMeteorPatternEasy;
+    public static ConfigEntry<DragonPhaseTwoMeteorPatternsEasy> DragonPhaseTwoMeteorPatternEasy;
+    public static ConfigEntry<DragonPhaseTwoMeteorPatternsNormal> DragonPhaseTwoMeteorPatternNormal;
+    public static ConfigEntry<DragonPhaseThreeMeteorPatternsNormal> DragonPhaseThreeMeteorPatternNormal;
+    public static ConfigEntry<DragonPhaseOneMeteorPatternsHard> DragonPhaseOneMeteorPatternHard;
+    public static ConfigEntry<DragonPhaseTwoMeteorPatternsHard> DragonPhaseTwoMeteorPatternHard;
     public static ConfigEntry<BeePhaseTwoPatternsEasy> BeePhaseTwoPatternEasy;
     public static ConfigEntry<BeePhaseTwoPatternsNormal> BeePhaseTwoPatternNormal;
     public static ConfigEntry<BeePhaseTwoPatternsHard> BeePhaseTwoPatternHard;
@@ -117,6 +141,14 @@ public class Settings : PluginComponent {
     public static ConfigEntry<BeePhaseTwoTrianglesDirections> BeePhaseTwoTrianglesDirection;
     public static ConfigEntry<bool> BeeMissingPlatformPattern;
     public static ConfigEntry<RobotPhaseFinalGemColors> RobotPhaseFinalGemColor;
+    public static ConfigEntry<SallyStageplayPatternsEasy> SallyStageplayPatternEasy;
+    public static ConfigEntry<SallyStageplayPatternsNormalHard> SallyStageplayPatternNormalHard;
+    public static ConfigEntry<SallyStageplayJumpCountsEasy> SallyStageplayJumpCountEasy;
+    public static ConfigEntry<SallyStageplayJumpCountsNormalHard> SallyStageplayJumpCountNormalHard;
+    public static ConfigEntry<SallyStageplayJumpTypesEasy> SallyStageplayJumpTypeEasy;
+    public static ConfigEntry<SallyStageplayJumpTypesNormalHard> SallyStageplayJumpTypeNormalHard;
+    public static ConfigEntry<SallyStageplayTeleportOffsetsEasy> SallyStageplayTeleportOffsetEasy;
+    public static ConfigEntry<SallyStageplayTeleportOffsetsNormalHard> SallyStageplayTeleportOffsetNormalHard;
     public static ConfigEntry<MousePhaseOnePatternsEasy> MousePhaseOnePatternEasy;
     public static ConfigEntry<MousePhaseOnePatternsNormal> MousePhaseOnePatternNormal;
     public static ConfigEntry<MousePhaseOnePatternsHard> MousePhaseOnePatternHard;
@@ -155,6 +187,8 @@ public class Settings : PluginComponent {
     public static ConfigEntry<DevilPhaseOneSpiderOffsets> DevilPhaseOneSpiderOffset;
     public static ConfigEntry<DevilPhaseOneSpiderHopCounts> DevilPhaseOneSpiderHopCount;
     public static ConfigEntry<DevilPhaseOnePitchforkTypes> DevilPhaseOnePitchforkType;
+    public static ConfigEntry<DevilPhaseOneBouncerAnglesNormal> DevilPhaseOneBouncerAngleNormal;
+    public static ConfigEntry<DevilPhaseOneBouncerAnglesHard> DevilPhaseOneBouncerAngleHard;
     public static ConfigEntry<DevilPhaseTwoPatternsNormal> DevilPhaseTwoPatternNormal;
     public static ConfigEntry<DevilPhaseTwoPatternsHard> DevilPhaseTwoPatternHard;
     public static ConfigEntry<DevilPhaseTwoBombEyeDirections> DevilPhaseTwoBombEyeDirection;
@@ -190,6 +224,9 @@ public class Settings : PluginComponent {
         InvincibilityOneFight = config.Bind("Misc", "Invincibility One Fight", new KeyboardShortcut(KeyCode.Alpha5), --order);
         ToggleFrameCounter = config.Bind("Misc", "Toggle FrameCounter", new KeyboardShortcut(KeyCode.F4), --order);
         SwapBetweenFrameLimit = config.Bind("Misc", "Swap Between Frame Limit", new KeyboardShortcut(KeyCode.F5), --order);
+        FastForward = config.Bind("Misc", "Fast Forward", new KeyboardShortcut(KeyCode.F6), --order);
+        FastForwardToggle = config.Bind("Misc", "Toggle Fast Forward?", false, --order);
+        FastForwardSpeed = config.Bind("Misc", "Fast Forward Speed (0-100, decimals allowed)", 5.0f, --order);
         GuaranteeLobberExCrit = config.Bind("Misc", "Lobber EX Crit", LobberCritSettings.Random, --order);
 
         ToggleBetweenPanels = config.Bind("Panel", "Toggle Between Panels", new KeyboardShortcut(KeyCode.F2), --order);
@@ -230,6 +267,8 @@ public class Settings : PluginComponent {
 #endif
 
         LoopWinScreen = config.Bind("Scoreboard", "Loop Scoreboard", false, --order);
+
+        SkipToLastSafeSpace = config.Bind("King Dice", "Skip To Last Safe Space", false, --order);
 
         FrogsPhaseOnePattern = config.Bind("RNG Ribby And Croaks", "Phase One Pattern", FrogsPhaseOnePatterns.Random, --order);
         FrogsPhaseOneFirefliesPatternEasy = config.Bind("RNG Ribby And Croaks", "Phase One Fireflies Pattern Simple", FrogsPhaseOneFirefliesPatternsEasy.Random, --order);
@@ -275,6 +314,25 @@ public class Settings : PluginComponent {
         ClownDashDelayEasy = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Simple", ClownDashDelaysEasy.Random, --order);
         ClownDashDelayNormal = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Regular", ClownDashDelaysNormal.Random, --order);
         ClownDashDelayHard = config.Bind("RNG Beppi The Clown", "Phase One Bumper Delays Expert", ClownDashDelaysHard.Random, --order);
+        ClownHorseType = config.Bind("RNG Beppi The Clown", "Phase Three Horse Type", ClownHorseTypes.Random, --order);
+        ClownHorseDirection = config.Bind("RNG Beppi The Clown", "Phase Three Horse Direction", ClownHorseDirections.Random, --order);
+        DragonPhaseOnePatternEasy = config.Bind("RNG Grim Matchstick", "Phase One Pattern Simple", DragonPhaseOnePatternsEasy.Random, --order);
+        DragonPhaseTwoPatternEasy = config.Bind("RNG Grim Matchstick", "Phase Two Pattern Simple", DragonPhaseTwoPatternsEasy.Random, --order);
+        DragonPhaseThreePatternNormal = config.Bind("RNG Grim Matchstick", "Phase Three Pattern Regular", DragonPhaseThreePatternsNormal.Random, --order);
+        DragonPhaseOnePatternHard = config.Bind("RNG Grim Matchstick", "Phase One Pattern Expert", DragonPhaseOnePatternsHard.Random, --order);
+        DragonPhaseTwoPatternHard = config.Bind("RNG Grim Matchstick", "Phase Two Pattern Expert", DragonPhaseTwoPatternsHard.Random, --order);
+        DragonPhaseOneLaserPatternEasy = config.Bind("RNG Grim Matchstick", "Phase One Laser Pattern Simple", DragonPhaseOneLaserPatternsEasy.Random, --order);
+        DragonPhaseTwoLaserPatternEasy = config.Bind("RNG Grim Matchstick", "Phase Two Laser Pattern Simple", DragonPhaseTwoLaserPatternsEasy.Random, --order);
+        DragonPhaseOneLaserPatternNormal = config.Bind("RNG Grim Matchstick", "Phase One Laser Pattern Regular", DragonPhaseOneLaserPatternsNormal.Random, --order);
+        DragonPhaseThreeLaserPatternNormal = config.Bind("RNG Grim Matchstick", "Phase Three Laser Pattern Regular", DragonPhaseThreeLaserPatternsNormal.Random, --order);
+        DragonPhaseOneLaserPatternHard = config.Bind("RNG Grim Matchstick", "Phase One Laser Pattern Expert", DragonPhaseOneLaserPatternsHard.Random, --order);
+        DragonPhaseTwoLaserPatternHard = config.Bind("RNG Grim Matchstick", "Phase Two Laser Pattern Expert", DragonPhaseTwoLaserPatternsHard.Random, --order);
+        DragonPhaseOneMeteorPatternEasy = config.Bind("RNG Grim Matchstick", "Phase One Meteor Pattern Simple", DragonPhaseOneMeteorPatternsEasy.Random, --order);
+        DragonPhaseTwoMeteorPatternEasy = config.Bind("RNG Grim Matchstick", "Phase Two Meteor Pattern Simple", DragonPhaseTwoMeteorPatternsEasy.Random, --order);
+        DragonPhaseTwoMeteorPatternNormal = config.Bind("RNG Grim Matchstick", "Phase Two Meteor Pattern Regular", DragonPhaseTwoMeteorPatternsNormal.Random, --order);
+        DragonPhaseThreeMeteorPatternNormal = config.Bind("RNG Grim Matchstick", "Phase Three Meteor Pattern Regular", DragonPhaseThreeMeteorPatternsNormal.Random, --order);
+        DragonPhaseOneMeteorPatternHard = config.Bind("RNG Grim Matchstick", "Phase One Meteor Pattern Expert", DragonPhaseOneMeteorPatternsHard.Random, --order);
+        DragonPhaseTwoMeteorPatternHard = config.Bind("RNG Grim Matchstick", "Phase Two Meteor Pattern Expert", DragonPhaseTwoMeteorPatternsHard.Random, --order);
         BeePhaseTwoPatternEasy = config.Bind("RNG Rumor Honeybottoms", "Phase Two Simple", BeePhaseTwoPatternsEasy.Random, --order);
         BeePhaseTwoPatternNormal = config.Bind("RNG Rumor Honeybottoms", "Phase Two Regular", BeePhaseTwoPatternsNormal.Random, --order);
         BeePhaseTwoPatternHard = config.Bind("RNG Rumor Honeybottoms", "Phase Two Expert", BeePhaseTwoPatternsHard.Random, --order);
@@ -282,6 +340,14 @@ public class Settings : PluginComponent {
         BeePhaseTwoTrianglesDirection = config.Bind("RNG Rumor Honeybottoms", "Phase Two Triangles Direction", BeePhaseTwoTrianglesDirections.Random, --order);
         BeeMissingPlatformPattern = config.Bind("RNG Rumor Honeybottoms", "Read Missing Platforms from file", false, --order);
         RobotPhaseFinalGemColor = config.Bind("RNG Dr. Kahls Robot", "Final Phase Gem Color", RobotPhaseFinalGemColors.Random, --order);
+        SallyStageplayPatternEasy = config.Bind("RNG Sally Stageplay", "Phase One Simple", SallyStageplayPatternsEasy.Random, --order);
+        SallyStageplayPatternNormalHard = config.Bind("RNG Sally Stageplay", "Phase One Regular/Expert", SallyStageplayPatternsNormalHard.Random, --order);
+        SallyStageplayJumpCountEasy = config.Bind("RNG Sally Stageplay", "Phase One Jump Count Simple", SallyStageplayJumpCountsEasy.Random, --order);
+        SallyStageplayJumpCountNormalHard = config.Bind("RNG Sally Stageplay", "Phase One Jump Count Regular/Expert", SallyStageplayJumpCountsNormalHard.Random, --order);
+        SallyStageplayJumpTypeEasy = config.Bind("RNG Sally Stageplay", "Phase One Jump Type Simple", SallyStageplayJumpTypesEasy.Random, --order);
+        SallyStageplayJumpTypeNormalHard = config.Bind("RNG Sally Stageplay", "Phase One Jump Type Regular/Expert", SallyStageplayJumpTypesNormalHard.Random, --order);
+        SallyStageplayTeleportOffsetEasy = config.Bind("RNG Sally Stageplay", "Phase One Teleport Offset Simple", SallyStageplayTeleportOffsetsEasy.Random, --order);
+        SallyStageplayTeleportOffsetNormalHard = config.Bind("RNG Sally Stageplay", "Phase One Teleport Offset Regular/Expert", SallyStageplayTeleportOffsetsNormalHard.Random, --order);
         MousePhaseOnePatternEasy = config.Bind("RNG Werner Werman", "Phase One Simple", MousePhaseOnePatternsEasy.Random, --order);
         MousePhaseOnePatternNormal = config.Bind("RNG Werner Werman", "Phase One Regular", MousePhaseOnePatternsNormal.Random, --order);
         MousePhaseOnePatternHard = config.Bind("RNG Werner Werman", "Phase One Expert", MousePhaseOnePatternsHard.Random, --order);
@@ -310,8 +376,8 @@ public class Settings : PluginComponent {
         DicePalaceHeartPosition3 = config.Bind("RNG King Dice", "Third Heart", DicePalaceHeartPositions3.Random, --order);
         DicePalaceCigarSpitAttackCountNormal = config.Bind("RNG King Dice", "Mr. Wheezy Attack Count Regular", DicePalaceCigarSpitAttackCountsNormal.Random, --order);
         DicePalaceCigarSpitAttackCountHard = config.Bind("RNG King Dice", "Mr. Wheezy Attack Count Expert", DicePalaceCigarSpitAttackCountsHard.Random, --order);
-        DicePalaceRabbitPattern = config.Bind("RNG King Dice", "Mangosteen Pattern", DicePalaceRabbitPatterns.Random, --order);
-        DicePalaceRabbitParryDirection = config.Bind("RNG King Dice", "Mangosteen Parry Direction", DicePalaceRabbitParryDirections.Random, --order);
+        DicePalaceRabbitPattern = config.Bind("RNG King Dice", "Hocus Pocus Pattern", DicePalaceRabbitPatterns.Random, --order);
+        DicePalaceRabbitParryDirection = config.Bind("RNG King Dice", "Hocus Pocus Parry Direction", DicePalaceRabbitParryDirections.Random, --order);
         DicePalaceRoulettePattern = config.Bind("RNG King Dice", "Pirouletta Pattern", DicePalaceRoulettePatterns.Random, --order);
         DicePalaceRouletteTwirlAmountNormal = config.Bind("RNG King Dice", "Pirouletta Twirl Amount Regular", DicePalaceRouletteTwirlAmountsNormal.Random, --order);
         DevilPhaseOnePattern = config.Bind("RNG The Devil", "Phase One Pattern", DevilPhaseOnePatterns.Random, --order);
@@ -320,6 +386,8 @@ public class Settings : PluginComponent {
         DevilPhaseOneSpiderOffset = config.Bind("RNG The Devil", "Phase One Spider Offset", DevilPhaseOneSpiderOffsets.Random, --order);
         DevilPhaseOneSpiderHopCount = config.Bind("RNG The Devil", "Phase One Spider Hop Count", DevilPhaseOneSpiderHopCounts.Random, --order);
         DevilPhaseOnePitchforkType = config.Bind("RNG The Devil", "Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
+        DevilPhaseOneBouncerAngleNormal = config.Bind("RNG The Devil", "Phase One Bouncer Angle Regular", DevilPhaseOneBouncerAnglesNormal.Random, --order);
+        DevilPhaseOneBouncerAngleHard = config.Bind("RNG The Devil", "Phase One Bouncer Angle Expert", DevilPhaseOneBouncerAnglesHard.Random, --order);
         DevilPhaseTwoPatternNormal = config.Bind("RNG The Devil", "Phase Two Regular", DevilPhaseTwoPatternsNormal.Random, --order);
         DevilPhaseTwoPatternHard = config.Bind("RNG The Devil", "Phase Two Expert", DevilPhaseTwoPatternsHard.Random, --order);
         DevilPhaseTwoBombEyeDirection = config.Bind("RNG The Devil", "Phase Two Bomb Direction", DevilPhaseTwoBombEyeDirections.Random, --order);
