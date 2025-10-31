@@ -18,8 +18,10 @@ internal class WinScreenLoop : PluginComponent {
     public static void WinScreenLooper(ILContext il) {
         ILCursor ilCursor = new(il);
         ILLabel newLabel = null;
+        int advanceDelayIndex = 0;
 
         while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("advanceDelay"))) {
+            advanceDelayIndex = ilCursor.Index;
             ilCursor.Index++;
 
 
@@ -40,8 +42,10 @@ internal class WinScreenLoop : PluginComponent {
 
         // One of the instructions that's being removed has a label attached that a previous br instruction relies on. This fixes that.
         ilCursor.Index = 0;
-        while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Callvirt && i.Operand.ToString().Contains("GetActionButtonDown"))) {
-            ilCursor.Index++;
+        //while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Callvirt && i.Operand.ToString().Contains("GetActionButtonDown"))) {◘
+        while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("continuePrompt"))) {
+            //ilCursor.Index++;
+            ilCursor.Index = ilCursor.Index + 8;
             ilCursor.Remove();
             ilCursor.Emit(OpCodes.Br, newLabel ?? throw new NullReferenceException());
             break;
