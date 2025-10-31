@@ -18,10 +18,8 @@ internal class WinScreenLoop : PluginComponent {
     public static void WinScreenLooper(ILContext il) {
         ILCursor ilCursor = new(il);
         ILLabel newLabel = null;
-        int advanceDelayIndex = 0;
 
         while (ilCursor.TryGotoNext(MoveType.After, i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("advanceDelay"))) {
-            advanceDelayIndex = ilCursor.Index;
             ilCursor.Index++;
 
 
