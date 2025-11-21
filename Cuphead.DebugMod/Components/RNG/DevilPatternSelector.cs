@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
 using MonoMod.Cil;
+using UnityEngine;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
@@ -11,6 +13,38 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 
 [HarmonyPatch]
 internal class DevilPatternSelector : PluginComponent {
+
+    // Skipping over original method and replacing with a modified clap_cr(). This avoids having to modify clap_cr() through IL.
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.StartClap))]
+    [HarmonyPrefix]
+    public static bool PhaseOneClapManipulator(ref DevilLevelSittingDevil __instance) {
+        __instance.state = DevilLevelSittingDevil.State.Clap;
+        __instance.StartCoroutine(new_clap_cr(__instance));
+        return false;
+    }
+
+    public static IEnumerator new_clap_cr(DevilLevelSittingDevil __instance) {
+        LevelProperties.Devil.Clap p = __instance.properties.CurrentState.clap;
+        __instance.animator.SetBool("StartRam", true);
+        yield return __instance.animator.WaitForAnimationToEnd(__instance, "Ram_Start", false);
+        float clapDelay = 0f;
+        if (DevilClapDelay.Value != -1) {
+            clapDelay = new MinMax(DevilClapDelay.Value, DevilClapDelay.Value);
+        } else {
+            clapDelay = p.delay.RandomFloat();
+        }
+        yield return CupheadTime.WaitForSeconds(__instance, clapDelay);
+        foreach (DevilLevelDevilArm devilLevelDevilArm in __instance.arms) {
+            devilLevelDevilArm.Attack(p.speed);
+        }
+        while (__instance.arms[0].state != DevilLevelDevilArm.State.Idle) {
+            yield return null;
+        }
+        __instance.animator.SetBool("StartRam", false);
+        yield return CupheadTime.WaitForSeconds(__instance, p.hesitate);
+        __instance.state = DevilLevelSittingDevil.State.Idle;
+        yield break;
+    }
 
     // Sets the leading attack. Subsequent attacks work as normal.
     [HarmonyPatch(typeof(DevilLevel), nameof(DevilLevel.Start))]
@@ -74,22 +108,56 @@ internal class DevilPatternSelector : PluginComponent {
         }
     }
 
-    // Sets the leading attack. Subsequent attacks work as normal.
-    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.spider_cr), MethodType.Enumerator)]
-    [HarmonyILManipulator]
-    public static void PhaseOneSpiderHopCountManipulator(ILContext il) {
-        ILCursor ilCursor = new(il);
-        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<numAttacks>"))) {
-            ilCursor.EmitDelegate<Func<int, int>>(numAttacks =>
-                DevilPhaseOneSpiderHopCount.Value == DevilPhaseOneSpiderHopCounts.Random ?
-                // spider hop count is always between 3 and 5 on every difficulty so it can be hardcoded here for simplicity
-                UnityEngine.Random.Range(3, 6)
-                :
-                (int) DevilPhaseOneSpiderHopCount.Value + 2
-            );
-            ;
-            ilCursor.Index++; // avoid infinite loops
+    // Skipping over original method and replacing with a modified spider_cr(). This avoids having to modify spider_cr() through IL.
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.StartHead))]
+    [HarmonyPrefix]
+    public static bool PhaseOneSpiderDelayAndHopCountManipulator(ref DevilLevelSittingDevil __instance) {
+        __instance.state = DevilLevelSittingDevil.State.Head;
+        if (__instance.isSpiderAttackNext) {
+            __instance.StartCoroutine(new_spider_cr(__instance));
+        } else {
+            __instance.StartCoroutine(__instance.dragon_cr());
         }
+        __instance.isSpiderAttackNext = !__instance.isSpiderAttackNext;
+        return false;
+    }
+
+    public static IEnumerator new_spider_cr(DevilLevelSittingDevil __instance) {
+        __instance.animator.SetBool("StartSpider", true);
+        yield return __instance.animator.WaitForAnimationToStart(__instance, "Spider_Start", false);
+        AudioManager.Play("devil_spider_head_intro");
+        __instance.emitAudioFromObject.Add("devil_spider_head_intro");
+        yield return __instance.animator.WaitForAnimationToEnd(__instance, "Spider_Start", false);
+        LevelProperties.Devil.Spider p = __instance.properties.CurrentState.spider;
+        int numAttacks;
+        if (DevilPhaseOneSpiderHopCount.Value == DevilPhaseOneSpiderHopCounts.Random) {
+            numAttacks = p.numAttacks.RandomInt();
+        }
+        else {
+            numAttacks = (int) DevilPhaseOneSpiderHopCount.Value + 2;
+        }
+        for (int i = 0; i < numAttacks; i++) {
+            float entranceDelay = 0f;
+            if (DevilSpiderDelay.Value != -1) {
+                entranceDelay = new MinMax(DevilSpiderDelay.Value, DevilSpiderDelay.Value);
+            }
+            else {
+                entranceDelay = p.entranceDelay.RandomFloat();
+            }
+
+            yield return CupheadTime.WaitForSeconds(__instance, entranceDelay);
+            __instance.spiderOffsetIndex = (__instance.spiderOffsetIndex + 1) % __instance.spiderOffsets.Length;
+            float offset = 0f;
+            float.TryParse(__instance.spiderOffsets[__instance.spiderOffsetIndex], out offset);
+            __instance.spiderHead.Attack(Mathf.Clamp(PlayerManager.GetNext().center.x + offset, -620f, 620f), p.downSpeed, p.upSpeed);
+            while (__instance.spiderHead.state != DevilLevelSpiderHead.State.Idle) {
+                yield return null;
+            }
+        }
+        __instance.animator.SetBool("StartSpider", false);
+        yield return CupheadTime.WaitForSeconds(__instance, p.hesitate);
+        __instance.state = DevilLevelSittingDevil.State.Idle;
+        yield break;
     }
 
 

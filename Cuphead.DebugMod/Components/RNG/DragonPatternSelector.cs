@@ -62,7 +62,7 @@ internal class DragonPatternSelector {
     [HarmonyPrefix]
     public static bool PeashotManipulator(DragonLevelDragon __instance) {
         __instance.state = DragonLevelDragon.State.Peashot;
-        __instance.StartCoroutine(new_peashot_cr( __instance));
+        __instance.StartCoroutine(new_peashot_cr(__instance));
         return false;
     }
 

@@ -71,6 +71,9 @@ public class Settings : PluginComponent {
 
     public static ConfigEntry<bool> SkipToLastSafeSpace;
 
+
+    public static ConfigEntry<ForestPlatformingAcornSpawnerDirections> ForestPlatformingAcornSpawnerDirection;
+    public static ConfigEntry<ForestPlatformingAcornSpawnerYIndexes> ForestPlatformingAcornSpawnerYIndex;
     public static ConfigEntry<FrogsPhaseOnePatterns> FrogsPhaseOnePattern;
     public static ConfigEntry<FrogsPhaseOneFirefliesPatternsEasy> FrogsPhaseOneFirefliesPatternEasy;
     public static ConfigEntry<FrogsPhaseOneFirefliesPatternsNormal> FrogsPhaseOneFirefliesPatternNormal;
@@ -87,6 +90,13 @@ public class Settings : PluginComponent {
     public static ConfigEntry<FlowerPhaseGeneric2PatternsNormal> FlowerPhaseGeneric2PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric3PatternsNormal> FlowerPhaseGeneric3PatternNormal;
     public static ConfigEntry<FlowerPhaseGenericHeadLungePatternsNormal> FlowerPhaseGenericHeadLungePatternNormal;
+    public static ConfigEntry<FlowerPodHandsAttackCountIndexesEasy> FlowerPodHandsAttackCountIndexEasy;
+    public static ConfigEntry<FlowerPodHandsAttackCountIndexesNormal> FlowerPodHandsAttackCountIndexNormal;
+    public static ConfigEntry<FlowerPodHandsAttackCountIndexesHard> FlowerPodHandsAttackCountIndexHard;
+    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesEasy> FlowerPodHandsAttackTypeIndexEasy;
+    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesNormal> FlowerPodHandsAttackTypeIndexNormal;
+    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesHard> FlowerPodHandsAttackTypeIndexHard;
+    public static ConfigEntry<FlowerBlinkCounts> FlowerBlinkCount;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss1Easy;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss2Easy;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss3Easy;
@@ -181,11 +191,13 @@ public class Settings : PluginComponent {
     public static ConfigEntry<DicePalaceRabbitParryDirections> DicePalaceRabbitParryDirection;
     public static ConfigEntry<DicePalaceRoulettePatterns> DicePalaceRoulettePattern;
     public static ConfigEntry<DicePalaceRouletteTwirlAmountsNormal> DicePalaceRouletteTwirlAmountNormal;
+    public static ConfigEntry<float> DevilClapDelay;
     public static ConfigEntry<DevilPhaseOnePatterns> DevilPhaseOnePattern;
     public static ConfigEntry<DevilPhaseOneHeadTypes> DevilPhaseOneHeadType;
     public static ConfigEntry<DevilPhaseOneDragonDirections> DevilPhaseOneDragonDirection;
     public static ConfigEntry<DevilPhaseOneSpiderOffsets> DevilPhaseOneSpiderOffset;
     public static ConfigEntry<DevilPhaseOneSpiderHopCounts> DevilPhaseOneSpiderHopCount;
+    public static ConfigEntry<float> DevilSpiderDelay;
     public static ConfigEntry<DevilPhaseOnePitchforkTypes> DevilPhaseOnePitchforkType;
     public static ConfigEntry<DevilPhaseOneBouncerAnglesNormal> DevilPhaseOneBouncerAngleNormal;
     public static ConfigEntry<DevilPhaseOneBouncerAnglesHard> DevilPhaseOneBouncerAngleHard;
@@ -270,6 +282,8 @@ public class Settings : PluginComponent {
 
         SkipToLastSafeSpace = config.Bind("King Dice", "Skip To Last Safe Space", false, --order);
 
+        ForestPlatformingAcornSpawnerDirection = config.Bind("RNG Forest Follies", "Acorn Spawner Facing Direction", ForestPlatformingAcornSpawnerDirections.Random, --order);
+        ForestPlatformingAcornSpawnerYIndex = config.Bind("RNG Forest Follies", "Acorn Spawner Y Coordinate", ForestPlatformingAcornSpawnerYIndexes.Random, --order);
         FrogsPhaseOnePattern = config.Bind("RNG Ribby And Croaks", "Phase One Pattern", FrogsPhaseOnePatterns.Random, --order);
         FrogsPhaseOneFirefliesPatternEasy = config.Bind("RNG Ribby And Croaks", "Phase One Fireflies Pattern Simple", FrogsPhaseOneFirefliesPatternsEasy.Random, --order);
         FrogsPhaseOneFirefliesPatternNormal = config.Bind("RNG Ribby And Croaks", "Phase One Fireflies Pattern Regular", FrogsPhaseOneFirefliesPatternsNormal.Random, --order);
@@ -286,6 +300,13 @@ public class Settings : PluginComponent {
         FlowerPhaseGeneric2PatternNormal = config.Bind("RNG Cagney Carnation", "Second Generic Phase Regular", FlowerPhaseGeneric2PatternsNormal.Random, --order);
         FlowerPhaseGeneric3PatternNormal = config.Bind("RNG Cagney Carnation", "Third Generic Phase Regular", FlowerPhaseGeneric3PatternsNormal.Random, --order);
         FlowerPhaseGenericHeadLungePatternNormal = config.Bind("RNG Cagney Carnation", "Generic Phase Head Lunge Regular", FlowerPhaseGenericHeadLungePatternsNormal.Random, --order);
+        FlowerPodHandsAttackCountIndexEasy = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Simple", FlowerPodHandsAttackCountIndexesEasy.Random, --order);
+        FlowerPodHandsAttackCountIndexNormal = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Regular", FlowerPodHandsAttackCountIndexesNormal.Random, --order);
+        FlowerPodHandsAttackCountIndexHard = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Expert", FlowerPodHandsAttackCountIndexesHard.Random, --order);
+        FlowerPodHandsAttackTypeIndexEasy = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Simple", FlowerPodHandsAttackTypeIndexesEasy.Random, --order);
+        FlowerPodHandsAttackTypeIndexNormal = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Regular", FlowerPodHandsAttackTypeIndexesNormal.Random, --order);
+        FlowerPodHandsAttackTypeIndexHard = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Expert", FlowerPodHandsAttackTypeIndexesHard.Random, --order);
+        FlowerBlinkCount = config.Bind("RNG Cagney Carnation", "Blink Count", FlowerBlinkCounts.Random, --order);
         BaronessMiniboss1Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 1 Simple", BaronessMinibossesEasy.Random, --order);
         BaronessMiniboss2Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Simple", BaronessMinibossesEasy.Random, --order);
         BaronessMiniboss3Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Simple", BaronessMinibossesEasy.Random, --order);
@@ -380,11 +401,13 @@ public class Settings : PluginComponent {
         DicePalaceRabbitParryDirection = config.Bind("RNG King Dice", "Hocus Pocus Parry Direction", DicePalaceRabbitParryDirections.Random, --order);
         DicePalaceRoulettePattern = config.Bind("RNG King Dice", "Pirouletta Pattern", DicePalaceRoulettePatterns.Random, --order);
         DicePalaceRouletteTwirlAmountNormal = config.Bind("RNG King Dice", "Pirouletta Twirl Amount Regular", DicePalaceRouletteTwirlAmountsNormal.Random, --order);
+        DevilClapDelay = config.Bind("RNG The Devil", "Phase One Clap Delay (0.1-0.5, -1 for random)", -1f, --order);
         DevilPhaseOnePattern = config.Bind("RNG The Devil", "Phase One Pattern", DevilPhaseOnePatterns.Random, --order);
         DevilPhaseOneHeadType = config.Bind("RNG The Devil", "Phase One Head Type", DevilPhaseOneHeadTypes.Random, --order);
         DevilPhaseOneDragonDirection = config.Bind("RNG The Devil", "Phase One Dragon Direction", DevilPhaseOneDragonDirections.Random, --order);
         DevilPhaseOneSpiderOffset = config.Bind("RNG The Devil", "Phase One Spider Offset", DevilPhaseOneSpiderOffsets.Random, --order);
         DevilPhaseOneSpiderHopCount = config.Bind("RNG The Devil", "Phase One Spider Hop Count", DevilPhaseOneSpiderHopCounts.Random, --order);
+        DevilSpiderDelay = config.Bind("RNG The Devil", "Phase One Spider Delay (0.3-0.7, -1 for random)", -1f, --order);
         DevilPhaseOnePitchforkType = config.Bind("RNG The Devil", "Phase One Pitchfork Type", DevilPhaseOnePitchforkTypes.Random, --order);
         DevilPhaseOneBouncerAngleNormal = config.Bind("RNG The Devil", "Phase One Bouncer Angle Regular", DevilPhaseOneBouncerAnglesNormal.Random, --order);
         DevilPhaseOneBouncerAngleHard = config.Bind("RNG The Devil", "Phase One Bouncer Angle Expert", DevilPhaseOneBouncerAnglesHard.Random, --order);

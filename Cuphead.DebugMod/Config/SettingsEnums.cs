@@ -12,6 +12,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 #if v1_3
         public enum RelicLevels {
             Default,
+            [Description("Broken Relic")]
             BrokenRelic,
             [Description("Cursed Relic 1")]
             CursedRelic1,
@@ -21,9 +22,41 @@ namespace BepInEx.CupheadDebugMod.Config {
             CursedRelic3,
             [Description("Cursed Relic 4")]
             CursedRelic4,
+            [Description("Divine Relic")]
             DivineRelic
         }
 #endif
+
+        public enum ForestPlatformingAcornSpawnerDirections {
+            Random,
+            [Description("Left")]
+            Left1,
+            [Description("Right")]
+            Right1,
+            [Description("Left")]
+            Left2,
+            [Description("Left")]
+            Left3,
+            [Description("Right")]
+            Right2,
+            [Description("Left")]
+            Left4,
+            [Description("Right")]
+            Right3,
+            [Description("Right")]
+            Right4
+        }
+
+        public enum ForestPlatformingAcornSpawnerYIndexes {
+            Random,
+            [Description("150")]
+            A_150,
+            [Description("50")]
+            B_50,
+            [Description("120")]
+            C_120
+
+        }
 
         public enum FrogsPhaseOnePatterns {
             Random,
@@ -169,6 +202,172 @@ namespace BepInEx.CupheadDebugMod.Config {
             Top3,
             Bottom5,
             Bottom6
+        }
+
+        public enum FlowerPodHandsAttackCountIndexesEasy {
+            Random,
+            [Description("0")]
+            A_00,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("3")]
+            D_03,
+            [Description("4")]
+            E_04,
+            [Description("5")]
+            F_05,
+            [Description("6")]
+            G_06,
+        }
+
+        public enum FlowerPodHandsAttackCountIndexesNormal {
+            Random,
+            [Description("0")]
+            A_00,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("3")]
+            D_03,
+            [Description("4")]
+            E_04,
+            [Description("5")]
+            F_05,
+            [Description("6")]
+            G_06,
+            [Description("7")]
+            H_07,
+            [Description("8")]
+            I_08,
+            [Description("9")]
+            J_09,
+            [Description("10")]
+            K_10,
+            [Description("11")]
+            L_11,
+            [Description("12")]
+            M_12,
+            [Description("13")]
+            N_13,
+            [Description("14")]
+            N_14,
+            [Description("15")]
+            N_15,
+            [Description("16")]
+            N_16,
+            [Description("17")]
+            N_17
+        }
+
+        public enum FlowerPodHandsAttackCountIndexesHard {
+            Random,
+            [Description("0")]
+            A_00,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("3")]
+            D_03,
+            [Description("4")]
+            E_04,
+            [Description("5")]
+            F_05,
+            [Description("6")]
+            G_06,
+            [Description("7")]
+            H_07,
+            [Description("8")]
+            I_08,
+            [Description("9")]
+            J_09,
+            [Description("10")]
+            K_10,
+            [Description("11")]
+            L_11,
+            [Description("12")]
+            M_12,
+            [Description("13")]
+            N_13,
+            [Description("14")]
+            N_14,
+            [Description("15")]
+            N_15,
+            [Description("16")]
+            N_16,
+            [Description("17")]
+            N_17
+        }
+
+        public enum FlowerPodHandsAttackTypeIndexesEasy {
+            Random,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("4")]
+            E_04,
+            [Description("7")]
+            H_07,
+            [Description("9")]
+            J_09,
+            [Description("10")]
+            K_10,
+            [Description("12")]
+            M_12,
+            [Description("13")]
+            N_13,
+        }
+
+        public enum FlowerPodHandsAttackTypeIndexesNormal {
+            Random,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("4")]
+            E_04,
+            [Description("6")]
+            G_06,
+            [Description("7")]
+            H_07,
+            [Description("8")]
+            I_08,
+            [Description("10")]
+            K_10,
+            [Description("12")]
+            M_12
+        }
+
+        public enum FlowerPodHandsAttackTypeIndexesHard {
+            Random,
+            [Description("1")]
+            B_01,
+            [Description("2")]
+            C_02,
+            [Description("5")]
+            F_05,
+            [Description("7")]
+            H_07,
+            [Description("8")]
+            I_08,
+            [Description("9")]
+            J_09,
+            [Description("12")]
+            M_12,
+            [Description("14")]
+            N_14
+        }
+
+        public enum FlowerBlinkCounts {
+            Random,
+            A_2,
+            B_3,
+            C_4,
+            D_5
         }
 
         public enum BaronessMinibossesEasy {
