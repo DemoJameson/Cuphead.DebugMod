@@ -19,29 +19,36 @@ internal class GuaranteeLobberExSweetSpot {
 
     // A Lobber Ex Sweet Spot is when a Lobber Ex collides in-between an enemy and a floor.
     // Roughly half the times, it cause the explosion to happen twice. The other half, if will only happen once.
-    // This is due to OnCollisionEnemy() and OnCollisionGround() getting called in different orders seemingly at random (I think it's single-threaded code so not a true race condition).
-    // If OnCollisionEnemy() gets called first, then the double explosion will occur. If OnCollisionGround() gets called first, then it won't.
-    // The reason why is because OnCollisionGround() lacks a check to make sure to not cause an explosion if it has already happened, but OnCollisionEnemy() does have one.
+    // This is due to OnCollisionEnemy() and OnCollisionGround()/OnCollisionOther() getting called in different orders seemingly at random (I think it's single-threaded code so not a true race condition).
+    // If OnCollisionEnemy() gets called first, then the double explosion will occur. If OnCollisionGround()/OnCollisionOther() gets called first, then it won't.
+    // The reason why is because OnCollisionGround()/OnCollisionOther() lacks a check to make sure to not cause an explosion if it has already happened, but OnCollisionEnemy() does have one.
 
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.Start))]
     [HarmonyPrefix]
     public static void StartFix(ref WeaponBouncerProjectile __instance) {
         if (__instance.isEx) {
-            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", false);
+            //weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", false);
             weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionEnemy", false);
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", false);
             weaponBouncerExtraProperties.SetProperty(__instance, "ranHitGround", false);
         }
     }
 
-    [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionGround))]
-    [HarmonyPrefix]
-    public static void OnCollisionGroundFix(ref WeaponBouncerProjectile __instance) {
-        if (__instance.isEx && !__instance.dead) {
-            weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGround", true);
-        }
-    }
+    //[HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionGround))]
+    //[HarmonyPrefix]
+    //public static void OnCollisionGroundFix(ref WeaponBouncerProjectile __instance) {
+    //    if (__instance.isEx && !__instance.dead) {
+    //        weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", true);
+    //    }
+    //}
 
+    //[HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.OnCollisionOther))]
+    //[HarmonyPrefix]
+    //public static void OnCollisionOtherFix(ref WeaponBouncerProjectile __instance) {
+    //    if (__instance.isEx && !__instance.dead) {
+    //        weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionGroundOther", true);
+    //    }
+    //}
 
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.HitGround))]
     [HarmonyPrefix]
@@ -98,7 +105,7 @@ internal class GuaranteeLobberExSweetSpot {
         }
 
         // if on v1.2+, we want the lobber to never explode when hitting the ground in this scenario, so set ranHitGround immediately.
-        // if on v1.0/v1.1, we set this later so that one single Grond explosion occurs.
+        // if on v1.0/v1.1, we set this later so that one single Ground explosion occurs.
 #if v1_0
         weaponBouncerExtraProperties.SetProperty(__instance, "ranHitGround", true);
 #endif
@@ -113,7 +120,7 @@ internal class GuaranteeLobberExSweetSpot {
             weaponBouncerExtraProperties.SetProperty(__instance, "ranOnCollisionEnemy", true);
         }
         // Actual fix is here. If another collision type has been hit first, cause a second Lobber Ex explosion
-        if (GuaranteeLobberExCrit.Value == LobberCritSettings.Always && __instance.isEx && (bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranOnCollisionGround") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
+        if (GuaranteeLobberExCrit.Value == LobberCritSettings.Always && __instance.isEx && (bool) weaponBouncerExtraProperties.GetProperty(__instance, "ranHitGround") && !(bool) weaponBouncerExtraProperties.GetProperty(__instance, "alreadyRanSweetSpotFix")) {
             __instance.Die();
             weaponBouncerExtraProperties.SetProperty(__instance, "alreadyRanSweetSpotFix", true);
         }
