@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
 using static PlayerData.PlayerLoadouts;
@@ -152,15 +153,15 @@ public class DebugInfo : PluginComponent {
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
-                    GUILayout.Label("RTA: " + levelRealTime.ToString("F2") + "s");
+                    GUILayout.Label("RTA: " + ((float) Math.Truncate(levelRealTime * 100) / 100).ToString("F2") + "s");
                     if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
-                        GUILayout.Label("RTA Total: " + levelRealTimeKingDice.ToString("F2") + "s");
+                        GUILayout.Label("RTA Total: " + ((float) Math.Truncate(levelRealTimeKingDice * 100) / 100).ToString("F2") + "s");
                     }
                 }
                 if (Settings.IGTTime.Value) {
-                    GUILayout.Label("IGT: " + levelInGameTime.ToString("F2") + "s");
+                    GUILayout.Label("IGT: " + ((float) Math.Truncate(levelInGameTime * 100) / 100).ToString("F2") + "s");
                     if (CurrentSceneName.StartsWith("scene_level_dice_palace")) {
-                        GUILayout.Label("IGT Total: " + levelInGameTimeKingDice.ToString("F2") + "s");
+                        GUILayout.Label("IGT Total: " + ((float) Math.Truncate(levelInGameTimeKingDice * 100) / 100).ToString("F2") + "s");
                     }
                 }
                 if (Settings.WeaponCooldowns.Value) {
@@ -352,13 +353,18 @@ public class DebugInfo : PluginComponent {
             if (!isMinibossStartingKingDice && !previousFrameWon) {
                 levelRealTimeKingDice += Time.deltaTime;
             }
-            if (!isMinibossStartingKingDice && !Level.Won) {
-                levelInGameTimeKingDice = Level.ScoringData.time + CurrentLevel.LevelTime;
+            if (!isMinibossStartingKingDice) {
+                if (!Level.Won) {
+                    levelInGameTimeKingDice = Level.ScoringData.time + CurrentLevel.LevelTime;
+                }
+                else {
+                    levelInGameTimeKingDice = Level.ScoringData.time;
+                }
             }
         }
       
         if (IsWinScreen(CurrentSceneName)) {
-            CupheadInput.AnyPlayerInput controllerInput = ((WinScreen)Object.FindObjectOfType(typeof(WinScreen))).input;
+            CupheadInput.AnyPlayerInput controllerInput = ((WinScreen)FindObjectOfType(typeof(WinScreen))).input;
 
 
             winScreenFrameCounter++;

@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Reflection;
 using HarmonyLib;
 using MonoMod.Cil;
+using UnityEngine;
 using static BepInEx.CupheadDebugMod.Config.Settings;
 using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
@@ -152,6 +154,72 @@ public class PiratePatternSelector : PluginComponent {
         return UnityEngine.Random.Range(0, pirateLevelInstance.properties.CurrentState.peashot.patterns.Length);
 
 
+    }
+
+    [HarmonyPatch(typeof(PirateLevel), nameof(PirateLevel.OnLevelStart))]
+    [HarmonyPrefix]
+    public static bool DogfishManipulator(ref PirateLevel __instance) {
+        __instance.StartCoroutine(newpiratePattern_cr(__instance));
+        return false;
+    }
+
+    public static IEnumerator newpiratePattern_cr(PirateLevel __instance) {
+        yield return CupheadTime.WaitForSeconds(__instance, 1f);
+        for (; ; )
+        {
+            yield return __instance.StartCoroutine(newnextPattern_cr(__instance));
+            yield return null;
+        }
+        yield break;
+    }
+
+    public static IEnumerator newnextPattern_cr(PirateLevel __instance) {
+        switch (__instance.properties.CurrentState.NextPattern) {
+            case LevelProperties.Pirate.Pattern.Shark:
+                yield return __instance.StartCoroutine(__instance.shark_cr());
+                break;
+            case LevelProperties.Pirate.Pattern.Squid:
+                yield return __instance.StartCoroutine(__instance.squid_cr());
+                break;
+            case LevelProperties.Pirate.Pattern.DogFish:
+                yield return __instance.StartCoroutine(newdogfish_cr(__instance));
+                break;
+            case LevelProperties.Pirate.Pattern.Peashot:
+                yield return __instance.StartCoroutine(__instance.peashot_cr());
+                break;
+            case LevelProperties.Pirate.Pattern.Boat:
+                __instance.StartBoat();
+                break;
+            default:
+                yield return new WaitForSeconds(1f);
+                break;
+        }
+        yield break;
+    }
+
+    public static IEnumerator newdogfish_cr(PirateLevel __instance) {
+        bool secretHitBox = false;
+        __instance.Whistle(PirateLevel.Creature.DogFish);
+        yield return CupheadTime.WaitForSeconds(__instance, 1.5f);
+        __instance.scope.In();
+        yield return CupheadTime.WaitForSeconds(__instance, __instance.properties.CurrentState.dogFish.startDelay);
+        LevelProperties.Pirate.DogFish properties = __instance.properties.CurrentState.dogFish;
+        for (int i = 0; i < properties.count; i++) {
+            secretHitBox = (i == 3);
+            PirateLevelDogFish dogFish = __instance.prefabs.dogFish.InstantiatePrefab<PirateLevelDogFish>();
+            dogFish.transform.SetPosition(new float?(0f), new float?(-210f), new float?(0f));
+            dogFish.Init(__instance.properties, secretHitBox);
+            if (PirateDogFishDelay.Value != -1f) {
+                yield return CupheadTime.WaitForSeconds(__instance, PirateDogFishDelay.Value);
+            }
+            else {
+                yield return CupheadTime.WaitForSeconds(__instance, properties.nextFishDelay);
+            }
+                
+
+        }
+        yield return CupheadTime.WaitForSeconds(__instance, properties.endDelay);
+        yield break;
     }
 
     protected static bool IsWithinPhase(float phaseStart, float phaseEnd) {

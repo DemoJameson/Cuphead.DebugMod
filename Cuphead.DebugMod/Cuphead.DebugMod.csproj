@@ -4,7 +4,7 @@
         <TargetFramework>net35</TargetFramework>
         <AssemblyName>Cuphead.DebugMod</AssemblyName>
         <Description>Cuphead plugin provides several features</Description>
-        <Version>1.8.1</Version>
+        <Version>1.9.0</Version>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <LangVersion>latest</LangVersion>
         <RestoreAdditionalProjectSources>
@@ -16,7 +16,7 @@
         <RootNamespace>BepInEx.CupheadDebugMod</RootNamespace>
         <Optimize>true</Optimize>
         <PathMap>$(MSBuildProjectDirectory)=CupheadDebugMod/</PathMap>
-        <PackageVersion>1.8.1</PackageVersion>
+        <PackageVersion>1.9.0</PackageVersion>
         <RunPostBuildEvent>Always</RunPostBuildEvent>
     </PropertyGroup>
 

@@ -175,6 +175,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<PiratePhaseSevenPatternsEasy> PiratePhaseSevenPatternEasy;
     public static ConfigEntry<PiratePhaseTwoPatternsNormalHard> PiratePhaseTwoPatternNormalHard;
     public static ConfigEntry<PiratePhaseThreePatternsNormalHard> PiratePhaseThreePatternNormalHard;
+    public static ConfigEntry<float> PirateDogFishDelay;
     public static ConfigEntry<FlyingMermaidPhaseOneFirstPatternsEasy> FlyingMermaidPhaseOneFirstPatternEasy;
     public static ConfigEntry<FlyingMermaidPhaseOneSecondPatternsEasy> FlyingMermaidPhaseOneSecondPatternEasy;
     public static ConfigEntry<FlyingMermaidPhaseOnePatternsNormalHard> FlyingMermaidPhaseOnePatternNormalHard;
@@ -385,6 +386,7 @@ public class Settings : PluginComponent {
         PiratePhaseSevenPatternEasy = config.Bind("RNG Captain Brineybeard", "Phase Seven Simple", PiratePhaseSevenPatternsEasy.Random, --order);
         PiratePhaseTwoPatternNormalHard = config.Bind("RNG Captain Brineybeard", "Phase Two Regular/Expert", PiratePhaseTwoPatternsNormalHard.Random, --order);
         PiratePhaseThreePatternNormalHard = config.Bind("RNG Captain Brineybeard", "Phase Three Regular/Expert", PiratePhaseThreePatternsNormalHard.Random, --order);
+        PirateDogFishDelay = config.Bind("RNG Captain Brineybeard", "Dogfish Delay (0.3-0.5 for Simple, 1.3-2.0 for Regular, 0.9-1.3 on Expert. -1 for random)", -1f, --order);
         FlyingMermaidPhaseOneFirstPatternEasy = config.Bind("RNG Cala Maria", "Phase One First Simple", FlyingMermaidPhaseOneFirstPatternsEasy.Random, --order);
         FlyingMermaidPhaseOneSecondPatternEasy = config.Bind("RNG Cala Maria", "Phase One Second Simple", FlyingMermaidPhaseOneSecondPatternsEasy.Random, --order);
         FlyingMermaidPhaseOnePatternNormalHard = config.Bind("RNG Cala Maria", "Phase One Regular/Expert", FlyingMermaidPhaseOnePatternsNormalHard.Random, --order);
@@ -397,8 +399,8 @@ public class Settings : PluginComponent {
         DicePalaceHeartPosition3 = config.Bind("RNG King Dice", "Third Heart", DicePalaceHeartPositions3.Random, --order);
         DicePalaceCigarSpitAttackCountNormal = config.Bind("RNG King Dice", "Mr. Wheezy Attack Count Regular", DicePalaceCigarSpitAttackCountsNormal.Random, --order);
         DicePalaceCigarSpitAttackCountHard = config.Bind("RNG King Dice", "Mr. Wheezy Attack Count Expert", DicePalaceCigarSpitAttackCountsHard.Random, --order);
-        DicePalaceRabbitPattern = config.Bind("RNG King Dice", "Hocus Pocus Pattern", DicePalaceRabbitPatterns.Random, --order);
-        DicePalaceRabbitParryDirection = config.Bind("RNG King Dice", "Hocus Pocus Parry Direction", DicePalaceRabbitParryDirections.Random, --order);
+        DicePalaceRabbitPattern = config.Bind("RNG King Dice", "Hopus Pocus Pattern", DicePalaceRabbitPatterns.Random, --order);
+        DicePalaceRabbitParryDirection = config.Bind("RNG King Dice", "Hopus Pocus Parry Direction", DicePalaceRabbitParryDirections.Random, --order);
         DicePalaceRoulettePattern = config.Bind("RNG King Dice", "Pirouletta Pattern", DicePalaceRoulettePatterns.Random, --order);
         DicePalaceRouletteTwirlAmountNormal = config.Bind("RNG King Dice", "Pirouletta Twirl Amount Regular", DicePalaceRouletteTwirlAmountsNormal.Random, --order);
         DevilClapDelay = config.Bind("RNG The Devil", "Phase One Clap Delay (0.1-0.5, -1 for random)", -1f, --order);
