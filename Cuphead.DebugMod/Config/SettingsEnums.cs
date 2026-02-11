@@ -1849,6 +1849,43 @@ namespace BepInEx.CupheadDebugMod.Config {
         }
 
 #if v1_3
+        public enum RumRunnersSnoutPositions {
+            Random,
+            [Description("Low")]
+            Low01,
+            [Description("Mid")]
+            Mid01,
+            [Description("High")]
+            High01,
+            [Description("Low")]
+            Low02,
+            [Description("High")]
+            High02,
+            [Description("Low")]
+            Low03,
+            [Description("Low")]
+            Low04,
+            [Description("Mid")]
+            Mid02,
+            [Description("High")]
+            High03,
+            [Description("Mid")]
+            Mid03,
+            [Description("Mid")]
+            Mid04,
+            [Description("Low")]
+            Low05,
+            [Description("High")]
+            High04,
+            [Description("High")]
+            High05,
+            [Description("Mid")]
+            Mid05,
+            [Description("Low")]
+            Low06,
+            [Description("Mid")]
+            Mid06
+        }
 
         public enum SaltbakerPhaseOnePatterns {
             Random,

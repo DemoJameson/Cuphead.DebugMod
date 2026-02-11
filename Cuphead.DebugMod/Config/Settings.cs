@@ -208,6 +208,7 @@ public class Settings : PluginComponent {
     public static ConfigEntry<string> DevilTest;
 
 #if v1_3
+    public static ConfigEntry<RumRunnersSnoutPositions> RunRunnersSnoutPosition;
     public static ConfigEntry<SaltbakerPhaseOnePatterns> SaltbakerPhaseOnePattern;
     public static ConfigEntry<SaltbakerPhaseThreeSawPatterns> SaltbakerPhaseThreeSawPattern;
 #endif
@@ -419,6 +420,7 @@ public class Settings : PluginComponent {
         DevilTest = config.Bind("RNG The Devil", "EXPERIMENTAL - Spider Offset Selection", "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19", --order);
 
 #if v1_3
+        RunRunnersSnoutPosition = config.Bind("RNG Moonshine Mob", "Snout Position", RumRunnersSnoutPositions.Random, --order);
         SaltbakerPhaseOnePattern = config.Bind("RNG Chef Saltbaker", "Phase One Pattern", SaltbakerPhaseOnePatterns.Random, --order);
         SaltbakerPhaseThreeSawPattern = config.Bind("RNG Chef Saltbaker", "Phase Three Saw Pattern", SaltbakerPhaseThreeSawPatterns.Random, --order);
 #endif
