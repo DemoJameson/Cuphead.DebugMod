@@ -1,6 +1,11 @@
 ﻿#if v1_3
+using System.Collections.Generic;
+using System.Reflection;
 using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
+using MonoMod.Cil;
+using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
+using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
