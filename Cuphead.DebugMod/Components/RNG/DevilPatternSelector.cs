@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
 using MonoMod.Cil;
@@ -227,5 +228,25 @@ internal class DevilPatternSelector : PluginComponent {
             ilCursor.Index++; // avoid infinite loops
         }
     }
-}
 
+    [HarmonyPatch(typeof(DevilLevelHand), nameof(DevilLevelHand.StartPattern))]
+    [HarmonyPostfix]
+    public static void PhaseTwoHandStartPatternManipulator(DevilLevelHand __instance, LevelProperties.Devil.Hands properties)
+    {
+        if (!DevilPhaseTwoHandStartPattern.Value) {
+            return;
+        }
+
+        FieldInfo pinkStringIndexField = AccessTools.Field(typeof(DevilLevelHand), "pinkStringIndex");
+        
+        string pinkString = properties.pinkString;
+        for (int i = 0; i < pinkString.Length; i++)
+        {
+            if (pinkString[i] == 'P')
+            {
+                pinkStringIndexField.SetValue(__instance, i);
+                return;
+            }
+        }
+    }
+}
