@@ -92,7 +92,7 @@ internal class DevilPatternSelector {
 If the method you're trying to hijack is an Enumerator or a Constructor, you will have to specify that in the attribute tags:
 ```
 [...]
-[HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType,Enumerator)]
+[HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.dragon_cr), MethodType.Enumerator)]
 [HarmonyPostfix]
 [...]
 ```
