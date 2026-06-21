@@ -140,7 +140,7 @@ public class DebugInfo : PluginComponent {
                 GUISetDefElements();
             }
 
-            // to avoid having an ampty GUI on run n guns, this increments the panel state to the next valid one
+            // to avoid having an empty GUI on run n guns, this increments the panel state to the next valid one
             // this means that if someone comes from a boss fight with guiPanelState == 1, then plays a run n gun, it will get auto-incremeneted to 2
             // which is a minor inconvenience, but i think it's a fine solution to avoid showing an empty space 
             if (guiPanelState == 1 && CurrentLevel.type != Level.Type.Battle) {

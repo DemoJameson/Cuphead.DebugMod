@@ -183,7 +183,7 @@ public static class LevelSelectList_SetupList_Patch
         { Scenes.scene_win, new EntryData("Win", 3) },
         { Scenes.scene_level_house_elder_kettle, new EntryData("Elder Kettle's House", 4) },
         { Scenes.scene_level_shmup_tutorial, new EntryData("Plane Tutorial", 5) },
-        { Scenes.scene_level_dice_gate, new EntryData("Die House", 6) }
+        { Scenes.scene_level_dice_gate, new EntryData("Die House", 6) },
 
 #if v1_3
         // DLC
@@ -206,7 +206,7 @@ public static class LevelSelectList_SetupList_Patch
 
         { Scenes.scene_shop_DLC, new EntryData("DLC Shop", 14) },
         { Scenes.scene_cutscene_dlc_ending, new EntryData("DLC Ending", 15) },
-        { Scenes.scene_cutscene_dlc_credits_comic, new EntryData("DLC Credits Comic", 16) }
+        { Scenes.scene_cutscene_dlc_credits_comic, new EntryData("DLC Credits Comic", 16) },
 
         { Scenes.scene_map_world_DLC, new EntryData("Isle 4", 17) }
 #endif
