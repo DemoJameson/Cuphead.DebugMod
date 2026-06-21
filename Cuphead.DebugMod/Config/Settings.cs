@@ -71,6 +71,7 @@ public class Settings : PluginComponent {
 
     public static ConfigEntry<bool> SkipToLastSafeSpace;
 
+    public static ConfigEntry<bool> HideUnusedLevels;
 
     public static ConfigEntry<ForestPlatformingAcornSpawnerDirections> ForestPlatformingAcornSpawnerDirection;
     public static ConfigEntry<ForestPlatformingAcornSpawnerYIndexes> ForestPlatformingAcornSpawnerYIndex;
@@ -284,6 +285,8 @@ public class Settings : PluginComponent {
         LoopWinScreen = config.Bind("Scoreboard", "Loop Scoreboard", false, --order);
 
         SkipToLastSafeSpace = config.Bind("King Dice", "Skip To Last Safe Space", false, --order);
+
+        HideUnusedLevels = config.Bind("Misc", "Hide Unused Levels", true, --order);
 
         ForestPlatformingAcornSpawnerDirection = config.Bind("RNG Forest Follies", "Acorn Spawner Facing Direction", ForestPlatformingAcornSpawnerDirections.Random, --order);
         ForestPlatformingAcornSpawnerYIndex = config.Bind("RNG Forest Follies", "Acorn Spawner Y Coordinate", ForestPlatformingAcornSpawnerYIndexes.Random, --order);

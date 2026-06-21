@@ -884,11 +884,11 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseOneMeteorPatternsEasy {
             Random,
-            [Description("Up-Down (Thrice as likely!)")]
+            [Description("Up-Down (3x as likely!)")]
             UD,
-            [Description("Down-Up-Down (Thrice as likely!)")]
+            [Description("Down-Up-Down (3x as likely!)")]
             DUD,
-            [Description("Down-Up-Down (Double as likely!)")]
+            [Description("Down-Up-Down (2x as likely!)")]
             UDU,
             [Description("Down-Down")]
             DD,
@@ -898,11 +898,11 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseTwoMeteorPatternsEasy {
             Random,
-            [Description("Up-Down (Triple as likely!)")]
+            [Description("Up-Down (3x as likely!)")]
             UD,
-            [Description("Down-Up-Down (Triple as likely!)")]
+            [Description("Down-Up-Down (3x as likely!)")]
             DUD,
-            [Description("Down-Up-Down (Double as likely!)")]
+            [Description("Down-Up-Down (2x as likely!)")]
             UDU,
             [Description("Down-Down")]
             DD,
@@ -936,7 +936,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseOneMeteorPatternsHard {
             Random,
-            [Description("Up-Down (Double as likely!)")]
+            [Description("Up-Down (2x as likely!)")]
             UD,
             [Description("Down-Up-Down")]
             DUD,
@@ -948,9 +948,9 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseTwoMeteorPatternsHard {
             Random,
-            [Description("Up-Up-Down (Double as likely!)")]
+            [Description("Up-Up-Down (2x as likely!)")]
             UUD,
-            [Description("Down-Up-Down (Double as likely!)")]
+            [Description("Down-Up-Down (2x as likely!)")]
             DUU,
             [Description("Down-Up-Both")]
             DUB
@@ -1000,7 +1000,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("2")]
             Two,
-            [Description("1 (Double as likely!)")]
+            [Description("1 (2x as likely!)")]
             One
         }
 
@@ -1302,7 +1302,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             One_One_1,
             [Description("1-1 #2")]
             One_One_2,
-            [Description("2 (Double as likely!)")]
+            [Description("2 (2x as likely!)")]
             Two,
             [Description("1-1 Longer")]
             One_One_Longer,
@@ -1314,7 +1314,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("2-1-2 #1")]
             Two_One_Two_1,
-            [Description("2-2-1 (Double as likely!)")]
+            [Description("2-2-1 (2x as likely!)")]
             Two_Two_One,
             [Description("3")]
             Three,
@@ -1372,7 +1372,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("3-1")]
             Three_One,
-            [Description("4 (Double as likely!)")]
+            [Description("4 (2x as likely!)")]
             Four,
             [Description("2-2")]
             Two_Two,
@@ -1382,7 +1382,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum PiratePhaseThreeGunPatternsHard {
             Random,
-            [Description("2 (Double as likely!)")]
+            [Description("2 (2x as likely!)")]
             Two,
             [Description("3")]
             Three,
