@@ -231,9 +231,9 @@ internal class DevilPatternSelector : PluginComponent {
 
     [HarmonyPatch(typeof(DevilLevelHand), nameof(DevilLevelHand.StartPattern))]
     [HarmonyPostfix]
-    public static void PhaseTwoHandStartPatternManipulator(DevilLevelHand __instance, LevelProperties.Devil.Hands properties)
+    public static void DevilPhaseThreeSkullPatternManipulator(DevilLevelHand __instance, LevelProperties.Devil.Hands properties)
     {
-        if (!DevilPhaseTwoHandStartPattern.Value) {
+        if (!DevilPhaseThreeSkullPattern.Value) {
             return;
         }
 
