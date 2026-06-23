@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using System.Reflection;
 using BepInEx.CupheadDebugMod.Config;
 using HarmonyLib;
 using MonoMod.Cil;
@@ -227,5 +228,13 @@ internal class DevilPatternSelector : PluginComponent {
             ilCursor.Index++; // avoid infinite loops
         }
     }
-}
 
+    [HarmonyPatch(typeof(DevilLevelHand), nameof(DevilLevelHand.StartPattern))]
+    [HarmonyPostfix]
+    public static void DevilPhaseThreeSkullPatternManipulator(DevilLevelHand __instance)
+    {
+        if (DevilPhaseThreeHandsSkullType.Value != DevilPhaseThreeHandsSkullTypes.Random) {
+            __instance.pinkStringIndex = (int) DevilPhaseThreeHandsSkullType.Value - 1;
+        }
+    }
+}
