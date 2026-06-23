@@ -231,22 +231,10 @@ internal class DevilPatternSelector : PluginComponent {
 
     [HarmonyPatch(typeof(DevilLevelHand), nameof(DevilLevelHand.StartPattern))]
     [HarmonyPostfix]
-    public static void DevilPhaseThreeSkullPatternManipulator(DevilLevelHand __instance, LevelProperties.Devil.Hands properties)
+    public static void DevilPhaseThreeSkullPatternManipulator(DevilLevelHand __instance)
     {
-        if (!DevilPhaseThreeSkullPattern.Value) {
-            return;
-        }
-
-        FieldInfo pinkStringIndexField = AccessTools.Field(typeof(DevilLevelHand), "pinkStringIndex");
-        
-        string pinkString = properties.pinkString;
-        for (int i = 0; i < pinkString.Length; i++)
-        {
-            if (pinkString[i] == 'P')
-            {
-                pinkStringIndexField.SetValue(__instance, i);
-                return;
-            }
+        if (DevilPhaseThreeHandsSkullType.Value != DevilPhaseThreeHandsSkullTypes.Random) {
+            __instance.pinkStringIndex = (int) DevilPhaseThreeHandsSkullType.Value - 1;
         }
     }
 }

@@ -1848,6 +1848,15 @@ namespace BepInEx.CupheadDebugMod.Config {
             Right
         }
 
+        public enum DevilPhaseThreeHandsSkullTypes {
+            Random,
+            Regular1,
+            Regular2,
+            Regular3,
+            Regular4,
+            Parry
+        }
+
 #if v1_3
         public enum RumRunnersSnoutPositions {
             Random,
