@@ -24,6 +24,7 @@ and benefits from the built-in config manager it is easy to change hotkeys and s
 2. (Windows) Run `Cuphead.exe` start the game with plugin. Run `Cuphead_Vanilla.bat` start the game without plugin.
 3. (macOS) Launch `Terminal`, run `chmod +x run_bepinex.sh` (only once), then run `./run_bepinex.sh` start the game with plugin.
 4. Press `F1` show settings.
+5. (Windows) If the game seemingly launches without the plugin active, try downloading [this](https://github.com/DemoJameson/Cuphead.DebugMod/blob/master/Misc/steam_appid.txt) text file, place it in the same directory where Cuphead.exe is located, then try starting the game again.
 
 ## Credits
 * [BepInEx](https://github.com/BepInEx/BepInEx)
