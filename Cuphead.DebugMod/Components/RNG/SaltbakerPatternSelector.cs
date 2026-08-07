@@ -14,11 +14,33 @@ namespace BepInEx.CupheadDebugMod.Components.RNG {
 
     [HarmonyPatch]
     internal class SaltbakerPatternSelector : PluginComponent {
+
+        [HarmonyPatch(typeof(SaltbakerLevelSaltbaker), nameof(SaltbakerLevelSaltbaker.intro_cr))]
+        [HarmonyPostfix]
+        public static void PhaseOneTableManipulator(ref SaltbakerLevelSaltbaker __instance) {
+            if (SaltbakerPhaseOneTablePattern.Value != SaltbakerPhaseOneTablePatterns.Random) {
+                if ((Utility.GetUserPattern<SaltbakerPhaseOneTablePatterns>((int) SaltbakerPhaseOneTablePattern.Value) == 0)) {
+                    __instance.animator.SetBool("IntroCubes", true);
+                }
+                else {
+                    __instance.animator.SetBool("IntroCubes", false);
+                }
+            }
+        }
+
         [HarmonyPatch(typeof(SaltbakerLevel), nameof(SaltbakerLevel.Start))]
         [HarmonyPostfix]
         public static void PhaseOnePatternManipulator(ref SaltbakerLevel __instance) {
             if (SaltbakerPhaseOnePattern.Value != SaltbakerPhaseOnePatterns.Random) {
                 __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<SaltbakerPhaseOnePatterns>((int) SaltbakerPhaseOnePattern.Value);
+            }
+        }
+
+        [HarmonyPatch(typeof(SaltbakerLevelSaltbaker), nameof(SaltbakerLevelSaltbaker.sugarcubes_cr))]
+        [HarmonyPostfix]
+        public static void PhaseOneSugarParryManipulator(ref SaltbakerLevelSaltbaker __instance) {
+            if (SaltbakerParryStringPattern.Value != SaltbakerParryStringPatterns.Random) {
+                __instance.sugarcubesParryString.subIndex = Utility.GetUserPattern<SaltbakerParryStringPatterns>((int) SaltbakerParryStringPattern.Value);
             }
         }
 
