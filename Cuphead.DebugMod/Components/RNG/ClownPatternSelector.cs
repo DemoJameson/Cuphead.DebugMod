@@ -20,6 +20,21 @@ internal class ClownPatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(ClownLevelClown), nameof(ClownLevelClown.ducks_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void PhaseOneDuckPatternManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        if (ilCursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Ldfld && i.Operand?.ToString().Contains("Duck::duckTypeString") == true)) {
+            ilCursor.EmitDelegate<Func<string[], string[]>>(SelectDuckPattern);
+
+            if (ilCursor.TryGotoNext(MoveType.After,
+                    i => i.Operand?.ToString().Contains("UnityEngine.Random::Range") == true)) {
+                ilCursor.EmitDelegate<Func<int, int>>(SelectDuckStartIndex);
+            }
+        }
+    }
+
     [HarmonyPatch(typeof(ClownLevelClownHorse), nameof(ClownLevelClownHorse.select_horse_cr), MethodType.Enumerator)]
     [HarmonyPrefix]
     private static void PhaseThreeHorseTypeManipulator(ClownLevelClownHorse __instance) {
@@ -67,5 +82,23 @@ internal class ClownPatternSelector : PluginComponent {
 
     }
 
-}
+    static string[] SelectDuckPattern(string[] duckPatterns) {
+        int selectedIndex = Level.ScoringData.difficulty switch {
+            Level.Mode.Easy => (int)Settings.ClownDuckPatternEasy.Value - 1,
+            Level.Mode.Normal => (int)Settings.ClownDuckPatternNormal.Value - 1,
+            Level.Mode.Hard => (int)Settings.ClownDuckPatternHard.Value - 1,
+            _ => -1
+        };
 
+        return selectedIndex >= 0 && selectedIndex < duckPatterns.Length
+            ? new[] { duckPatterns[selectedIndex] }
+            : duckPatterns;
+    }
+
+    static int SelectDuckStartIndex(int randomIndex) {
+        return Settings.ClownDuckStartIndex.Value == ClownDuckStartIndexes.Random
+            ? randomIndex
+            : (int)Settings.ClownDuckStartIndex.Value - 1;
+    }
+
+}

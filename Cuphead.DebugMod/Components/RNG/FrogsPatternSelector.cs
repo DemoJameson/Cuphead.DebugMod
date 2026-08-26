@@ -9,6 +9,7 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 
 [HarmonyPatch]
 public class FrogsPatternSelector : PluginComponent {
+    private static int bisonPatternIndex;
 
     // Sets the leading attack. Subsequent attacks work as normal.
     [HarmonyPatch(typeof(FrogsLevel), nameof(FrogsLevel.Start))]
@@ -40,6 +41,44 @@ public class FrogsPatternSelector : PluginComponent {
             );
             ilCursor.Index++; // avoid infinite loops
         }
+    }
+
+    [HarmonyPatch(typeof(FrogsLevelMorphed), "bison_cr", MethodType.Enumerator)]
+    [HarmonyPrefix]
+    private static void BisonLaserPatternReset() {
+        bisonPatternIndex = 0;
+    }
+
+    [HarmonyPatch(typeof(FrogsLevelMorphed), "bison_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void BisonLaserPatternManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            cursor.EmitDelegate<Func<int, int>>(GetBisonLaserDirection);
+        }
+    }
+
+    private static int GetBisonLaserDirection(int randomDirection) {
+        string pattern = Settings.FrogsPhaseFinalBisonLaserPattern.Value;
+        if (string.IsNullOrEmpty(pattern)) {
+            return randomDirection;
+        }
+
+        string directions = "";
+        foreach (char character in pattern) {
+            if (character == '0' || character == '1') {
+                directions += character;
+            }
+        }
+
+        if (directions.Length == 0) {
+            return randomDirection;
+        }
+
+        int direction = directions[bisonPatternIndex % directions.Length] - '0';
+        bisonPatternIndex++;
+        return direction;
     }
 
 

@@ -91,8 +91,12 @@ internal class BeePatternSelector : PluginComponent {
     }
 
     static int GetPlatformPattern(int platform) {
-        if (!Settings.BeeMissingPlatformPattern.Value) {
+        if (!Settings.BeePerfectPlatforms.Value && !Settings.BeeMissingPlatformPattern.Value) {
             return platform;
+        }
+
+        if (Settings.BeePerfectPlatforms.Value) {
+            return 0;
         }
 
         if (!File.Exists("BeePlatforms.txt")) {

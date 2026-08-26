@@ -18,6 +18,10 @@
         <PathMap>$(MSBuildProjectDirectory)=CupheadDebugMod/</PathMap>
         <PackageVersion>1.11.0</PackageVersion>
         <RunPostBuildEvent>Always</RunPostBuildEvent>
+        <DisableImplicitConfigurationDefines>true</DisableImplicitConfigurationDefines>
+        <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))</RepositoryRoot>
+        <WindowsPackageDirectory>$(RepositoryRoot)/out/Windows_Cuphead_v$(Configuration)</WindowsPackageDirectory>
+        <MacPackageDirectory>$(RepositoryRoot)/out/macOS_Cuphead_v$(Configuration)</MacPackageDirectory>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == '1.0~1.1' ">
@@ -110,13 +114,25 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(Configuration)' == '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x64 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Condition="'$(Configuration)' != '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x86 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
-        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip' -Force" />
+        <PropertyGroup>
+            <WindowsBepInExDirectory Condition="'$(Configuration)' == '1.3+'">$(RepositoryRoot)/BepInEx/BepInEx_x64</WindowsBepInExDirectory>
+            <WindowsBepInExDirectory Condition="'$(Configuration)' != '1.3+'">$(RepositoryRoot)/BepInEx/BepInEx_x86</WindowsBepInExDirectory>
+        </PropertyGroup>
 
-        <Exec Command="xcopy $(SolutionDir)BepInex\BepInex_unix $(SolutionDir)out\macOS_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
-        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip' -Force" />
+        <ItemGroup>
+            <WindowsBepInExFiles Include="$(WindowsBepInExDirectory)/**/*" />
+            <MacBepInExFiles Include="$(RepositoryRoot)/BepInEx/BepInEx_unix/**/*" />
+            <PluginFiles Include="$(TargetDir)**/*" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(WindowsBepInExFiles)" DestinationFiles="@(WindowsBepInExFiles -> '$(WindowsPackageDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(MacBepInExFiles)" DestinationFiles="@(MacBepInExFiles -> '$(MacPackageDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles -> '$(WindowsPackageDirectory)/BepInEx/plugins/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles -> '$(MacPackageDirectory)/BepInEx/plugins/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command Compress-Archive -Path '$(WindowsPackageDirectory)\*' -DestinationPath '$(RepositoryRoot)\out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip' -Force" />
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command Compress-Archive -Path '$(MacPackageDirectory)\*' -DestinationPath '$(RepositoryRoot)\out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip' -Force" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; ." WorkingDirectory="$(WindowsPackageDirectory)" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; ." WorkingDirectory="$(MacPackageDirectory)" />
     </Target>
 </Project>

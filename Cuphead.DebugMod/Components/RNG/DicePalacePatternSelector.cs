@@ -31,6 +31,24 @@ internal class DicePalacePatternSelector : PluginComponent {
         }
     }
 
+    [HarmonyPatch(typeof(DicePalaceChipsLevelChips), "chipAttack_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void ChipsPatternManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("Chips::chipAttackString")) &&
+            cursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range"))) {
+            cursor.EmitDelegate<Func<int, int>>(randomIndex => Level.ScoringData.difficulty switch {
+                Level.Mode.Normal when DicePalaceChipsPatternNormal.Value != DicePalaceChipsPatternsNormal.Random =>
+                    (int)DicePalaceChipsPatternNormal.Value - 1,
+                Level.Mode.Hard when DicePalaceChipsPatternHard.Value != DicePalaceChipsPatternsHard.Random =>
+                    (int)DicePalaceChipsPatternHard.Value - 1,
+                _ => randomIndex
+            });
+        }
+    }
+
 
     [HarmonyPatch(typeof(DicePalaceRabbitLevel), nameof(DicePalaceRabbitLevel.Start))]
     [HarmonyPrefix]

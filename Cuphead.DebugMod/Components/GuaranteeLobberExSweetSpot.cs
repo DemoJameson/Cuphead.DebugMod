@@ -14,7 +14,6 @@ namespace BepInEx.CupheadDebugMod.Components;
 internal class GuaranteeLobberExSweetSpot {
 
 
-    private static bool alreadyRanNeverCrit;
     private static bool triedToDie;
 
     // A Lobber Ex Sweet Spot is when a Lobber Ex collides in-between an enemy and a floor.

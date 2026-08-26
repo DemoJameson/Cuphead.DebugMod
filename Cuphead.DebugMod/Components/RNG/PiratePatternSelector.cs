@@ -170,7 +170,6 @@ public class PiratePatternSelector : PluginComponent {
             yield return __instance.StartCoroutine(newnextPattern_cr(__instance));
             yield return null;
         }
-        yield break;
     }
 
     public static IEnumerator newnextPattern_cr(PirateLevel __instance) {

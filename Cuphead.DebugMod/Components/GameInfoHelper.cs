@@ -13,12 +13,6 @@ public class GameInfoHelper : PluginComponent {
     public static LevelPlayerController LevelPlayerControllerInstance;
     public static PlanePlayerController PlanePlayerControllerInstance;
     public static bool isChalice = false;
-    private static Vector3? lastPlayerPosition;
-    private static string lastLevelName;
-    private static string lastTime;
-    private static string lastInfo;
-    private static int lastEventIndex;
-    private static float overDamage;
     public static Dictionary<Weapon, int> weaponsTimer = new() {
         { Weapon.level_weapon_spreadshot, 0 },
         { Weapon.level_weapon_bouncer, 0 },
@@ -227,12 +221,6 @@ public class GameInfoHelper : PluginComponent {
 
     private void Awake() {
         HookHelper.ActiveSceneChanged(() => {
-            lastPlayerPosition = null;
-            lastLevelName = null;
-            lastTime = null;
-            lastInfo = null;
-            lastEventIndex = 0;
-            overDamage = 0;
             weaponsTimer = new() {
                 { Weapon.level_weapon_spreadshot, 0 },
                 { Weapon.level_weapon_bouncer, 0 },
@@ -297,6 +285,7 @@ public class GameInfoHelper : PluginComponent {
         }
     }
 
+#pragma warning disable Harmony003
     public static string GetWeaponName(Weapon weapon) {
         return weapon switch {
             Weapon.level_weapon_peashot => "Peashooter",
@@ -324,4 +313,5 @@ public class GameInfoHelper : PluginComponent {
             $"{timeSpan.Minutes.ToString().PadLeft(2, '0')}:{timeSpan.Seconds.ToString().PadLeft(2, '0')}.{timeSpan.Milliseconds.ToString().PadLeft(3, '0')}";
         return $"{formatted}({time.ToCeilingFrames()})";
     }
+#pragma warning restore Harmony003
 }

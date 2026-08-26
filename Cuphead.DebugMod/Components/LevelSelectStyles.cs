@@ -1,9 +1,13 @@
-using HarmonyLib;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using HarmonyLib;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using BepInEx.CupheadDebugMod;
 using BepInEx.CupheadDebugMod.Config;
 [HarmonyPatch(typeof(LevelSelectList), "SetupList")]
 public static class LevelSelectList_SetupList_Patch
@@ -17,10 +21,12 @@ public static class LevelSelectList_SetupList_Patch
         return Color.white;
     }
 
+#pragma warning disable Harmony003
     private static float GetLuminance(Color color)
     {
         return color.r * 0.299f + color.g * 0.587f + color.b * 0.114f;
     }
+#pragma warning restore Harmony003
 
     private static Color GetHighlightColor(Color baseColor)
     {
@@ -61,7 +67,7 @@ public static class LevelSelectList_SetupList_Patch
             return;
         }
 
-        if (!Settings.HideUnusedLevels.Value)
+        if (Settings.ShowUnusedLevels.Value)
         {
             return;
         }
@@ -71,7 +77,7 @@ public static class LevelSelectList_SetupList_Patch
         __instance.scenes = groups.ToArray();
     }
 
-    private static void ApplyButtonColors(UnityEngine.UI.Button button, Color baseColor)
+    internal static void ApplyButtonColors(UnityEngine.UI.Button button, Color baseColor)
     {
         Graphic graphic = button.targetGraphic ?? button.GetComponent<Graphic>();
         if (graphic != null)
@@ -213,6 +219,58 @@ public static class LevelSelectList_SetupList_Patch
 
     };
 
+    internal static readonly Dictionary<Weapon, LoadoutEntryData> WeaponEntries = new Dictionary<Weapon, LoadoutEntryData>
+    {
+        { Weapon.level_weapon_peashot, new LoadoutEntryData("Peashooter", 0) },
+        { Weapon.level_weapon_spreadshot, new LoadoutEntryData("Spread", 1) },
+        { Weapon.level_weapon_homing, new LoadoutEntryData("Chaser", 2) },
+        { Weapon.level_weapon_bouncer, new LoadoutEntryData("Lobber", 3) },
+        { Weapon.level_weapon_charge, new LoadoutEntryData("Charge", 4) },
+        { Weapon.level_weapon_boomerang, new LoadoutEntryData("Roundabout", 5) },
+#if v1_3
+        { Weapon.level_weapon_crackshot, new LoadoutEntryData("Crackshot", 6) },
+        { Weapon.level_weapon_wide_shot, new LoadoutEntryData("Converge", 7) },
+        { Weapon.level_weapon_upshot, new LoadoutEntryData("Twist-Up", 8) },
+        { Weapon.None, new LoadoutEntryData("None", 9) },
+#else
+        { Weapon.None, new LoadoutEntryData("None", 6) },
+#endif
+    };
+
+    internal static readonly Dictionary<Super, LoadoutEntryData> SuperEntries = new Dictionary<Super, LoadoutEntryData>
+    {
+        { Super.level_super_beam, new LoadoutEntryData("1 - Energy Beam", 0) },
+        { Super.level_super_invincible, new LoadoutEntryData("2 - Invincibility", 1) },
+        { Super.level_super_ghost, new LoadoutEntryData("3 - Giant Ghost", 2) },
+        { Super.None, new LoadoutEntryData("None", 3) }
+    };
+
+    internal static readonly Dictionary<Charm, LoadoutEntryData> CharmEntries = new Dictionary<Charm, LoadoutEntryData>
+    {
+        { Charm.charm_health_up_1, new LoadoutEntryData("Heart", 0) },
+        { Charm.charm_super_builder, new LoadoutEntryData("Coffee", 1) },
+        { Charm.charm_smoke_dash, new LoadoutEntryData("Smoke Bomb", 2) },
+        { Charm.charm_parry_plus, new LoadoutEntryData("P. Sugar", 3) },
+        { Charm.charm_health_up_2, new LoadoutEntryData("Twin Heart", 4) },
+        { Charm.charm_parry_attack, new LoadoutEntryData("Whetstone", 5) },
+#if v1_3
+        { Charm.charm_chalice, new LoadoutEntryData("Astral Cookie", 6) },
+        { Charm.charm_healer, new LoadoutEntryData("Heart Ring", 7) },
+        { Charm.charm_curse, new LoadoutEntryData("Cursed Relic", 8) },
+        { Charm.charm_EX, new LoadoutEntryData("Divine Relic", 9) },
+        { Charm.None, new LoadoutEntryData("None", 10) },
+#else
+        { Charm.None, new LoadoutEntryData("None", 5) },
+#endif
+    };
+
+    internal static readonly Dictionary<Level.Mode, string> DifficultyNames = new Dictionary<Level.Mode, string>
+    {
+        { Level.Mode.Easy, "Simple" },
+        { Level.Mode.Normal, "Regular" },
+        { Level.Mode.Hard, "Expert" },
+    };
+
     private class EntryButtonInfo
     {
         public UnityEngine.UI.Button button;
@@ -267,9 +325,351 @@ public static class LevelSelectList_SetupList_Patch
             if (entryData.bgColor.HasValue)
             {
                 ApplyButtonColors(button, entryData.bgColor.Value);
+                LevelSelectConfigSettings settings = button.GetComponent<LevelSelectConfigSettings>();
+                if (settings == null)
+                {
+                    settings = button.gameObject.AddComponent<LevelSelectConfigSettings>();
+                }
+
+                settings.Initialize(button, textComponent, GetConfigSearch(entryData.name));
             }
 
             button.transform.SetSiblingIndex(siblingIndex++);
         }
+    }
+
+#pragma warning disable Harmony003
+    private static string GetConfigSearch(string entryName)
+    {
+        int separatorIndex = entryName.IndexOf(" - ", StringComparison.Ordinal);
+        if (separatorIndex > 0 && int.TryParse(entryName.Substring(0, separatorIndex), out _))
+        {
+            entryName = entryName.Substring(separatorIndex + 3);
+        }
+
+        return entryName == "Dr. Kahl's Robot" ? "Dr. Kahls Robot" : entryName;
+    }
+#pragma warning restore Harmony003
+}
+
+public class LoadoutEntryData
+{
+    public string name;
+    public int index;
+
+    public LoadoutEntryData(string name, int index)
+    {
+        this.name = name;
+        this.index = index;
+    }
+}
+
+[HarmonyPatch]
+public static class LoadoutSelectList_SetupList_Patch
+{
+    private const string WeaponIconName = "DebugLoadoutWeaponIcon";
+    private static LevelHUDWeapon weaponIconTemplate;
+
+    internal static void CacheWeaponIcon(LevelHUDWeapon source)
+    {
+        if (weaponIconTemplate != null || source == null || source.gameObject.activeInHierarchy)
+        {
+            return;
+        }
+
+        weaponIconTemplate = UnityEngine.Object.Instantiate(source);
+        weaponIconTemplate.gameObject.name = WeaponIconName + "Template";
+        weaponIconTemplate.gameObject.SetActive(false);
+        UnityEngine.Object.DontDestroyOnLoad(weaponIconTemplate.gameObject);
+    }
+
+    private class LoadoutButtonInfo
+    {
+        public Button button;
+        public LoadoutEntryData entry;
+    }
+
+    [HarmonyPatch(typeof(LoadoutSelectList), "SetupList")]
+    [HarmonyPostfix]
+    private static void Postfix(LoadoutSelectList __instance)
+    {
+        if (__instance == null || __instance.contentPanel == null || Settings.ShowUnusedLevels == null)
+        {
+            return;
+        }
+
+        bool isWeaponList = __instance.mode is LoadoutSelectList.Mode.Primary or LoadoutSelectList.Mode.Secondary;
+        List<LoadoutButtonInfo> orderedButtons = new List<LoadoutButtonInfo>();
+
+        foreach (Button button in __instance.contentPanel.GetComponentsInChildren<Button>(true))
+        {
+            if (isWeaponList && Enum.IsDefined(typeof(Weapon), button.name))
+            {
+                Weapon weapon = (Weapon)Enum.Parse(typeof(Weapon), button.name);
+                ApplyEntryVisibility(button, LevelSelectList_SetupList_Patch.WeaponEntries.TryGetValue(weapon, out LoadoutEntryData weaponEntry), weaponEntry);
+                if (weaponEntry != null)
+                {
+                    if (weapon != Weapon.None)
+                    {
+                        AddWeaponIcon(button, weapon);
+                    }
+
+                    orderedButtons.Add(new LoadoutButtonInfo { button = button, entry = weaponEntry });
+                }
+            }
+
+            if (__instance.mode == LoadoutSelectList.Mode.Super && Enum.IsDefined(typeof(Super), button.name))
+            {
+                Super super = (Super)Enum.Parse(typeof(Super), button.name);
+                ApplyEntryVisibility(button, LevelSelectList_SetupList_Patch.SuperEntries.TryGetValue(super, out LoadoutEntryData superEntry), superEntry);
+                if (superEntry != null)
+                {
+                    orderedButtons.Add(new LoadoutButtonInfo { button = button, entry = superEntry });
+                }
+            }
+
+            if (__instance.mode == LoadoutSelectList.Mode.Charm && Enum.IsDefined(typeof(Charm), button.name))
+            {
+                Charm charm = (Charm)Enum.Parse(typeof(Charm), button.name);
+                ApplyEntryVisibility(button, LevelSelectList_SetupList_Patch.CharmEntries.TryGetValue(charm, out LoadoutEntryData charmEntry), charmEntry);
+                if (charmEntry != null)
+                {
+                    orderedButtons.Add(new LoadoutButtonInfo { button = button, entry = charmEntry });
+                }
+            }
+
+            Text textComponent = button.GetComponentInChildren<Text>();
+            if (textComponent != null && TryGetDisplayName(__instance.mode, button.name, out string displayName))
+            {
+                textComponent.text = displayName;
+            }
+        }
+
+        orderedButtons.Sort((a, b) => a.entry.index.CompareTo(b.entry.index));
+        for (int i = 0; i < orderedButtons.Count; i++)
+        {
+            orderedButtons[i].button.transform.SetSiblingIndex(i);
+        }
+    }
+
+    private static void ApplyEntryVisibility(Button button, bool hasEntry, LoadoutEntryData entry)
+    {
+        button.gameObject.SetActive(Settings.ShowUnusedLevels.Value || hasEntry);
+    }
+
+#pragma warning disable Harmony003
+    private static void AddWeaponIcon(Button button, Weapon weapon)
+    {
+        if (weaponIconTemplate == null || button.transform.Find(WeaponIconName) != null)
+        {
+            return;
+        }
+
+        GameObject iconObject = UnityEngine.Object.Instantiate(weaponIconTemplate.gameObject, button.transform, false);
+        iconObject.name = WeaponIconName;
+        UnityEngine.Object.DestroyImmediate(iconObject.GetComponent<LevelHUDWeapon>());
+        iconObject.SetActive(true);
+
+        Animator animator = iconObject.GetComponent<Animator>();
+        if (animator != null)
+        {
+            animator.Play(weapon.ToString());
+        }
+
+        RectTransform iconRect = iconObject.GetComponent<RectTransform>();
+        iconRect.anchorMin = new Vector2(1f, 0.5f);
+        iconRect.anchorMax = new Vector2(1f, 0.5f);
+        iconRect.pivot = new Vector2(0.5f, 0.5f);
+        iconRect.anchoredPosition = new Vector2(-26f, -12f);
+        iconRect.localScale = Vector3.one * 0.32f;
+    }
+#pragma warning restore Harmony003
+
+    private static bool TryGetDisplayName(LoadoutSelectList.Mode mode, string buttonName, out string displayName)
+    {
+        displayName = null;
+
+        if (mode is LoadoutSelectList.Mode.Primary or LoadoutSelectList.Mode.Secondary &&
+            Enum.IsDefined(typeof(Weapon), buttonName))
+        {
+            Weapon weapon = (Weapon)Enum.Parse(typeof(Weapon), buttonName);
+            if (LevelSelectList_SetupList_Patch.WeaponEntries.TryGetValue(weapon, out LoadoutEntryData weaponEntry))
+            {
+                displayName = weaponEntry.name;
+                return true;
+            }
+        }
+
+        if (mode == LoadoutSelectList.Mode.Super && Enum.IsDefined(typeof(Super), buttonName))
+        {
+            if (LevelSelectList_SetupList_Patch.SuperEntries.TryGetValue((Super)Enum.Parse(typeof(Super), buttonName), out LoadoutEntryData superEntry))
+            {
+                displayName = superEntry.name;
+                return true;
+            }
+        }
+
+        if (mode == LoadoutSelectList.Mode.Charm && Enum.IsDefined(typeof(Charm), buttonName))
+        {
+            if (LevelSelectList_SetupList_Patch.CharmEntries.TryGetValue((Charm)Enum.Parse(typeof(Charm), buttonName), out LoadoutEntryData charmEntry))
+            {
+                displayName = charmEntry.name;
+                return true;
+            }
+        }
+
+        if (mode == LoadoutSelectList.Mode.Difficulty && Enum.IsDefined(typeof(Level.Mode), buttonName))
+        {
+            return LevelSelectList_SetupList_Patch.DifficultyNames.TryGetValue((Level.Mode)Enum.Parse(typeof(Level.Mode), buttonName), out displayName);
+        }
+
+        return false;
+    }
+}
+
+public class LoadoutWeaponIconCache : PluginComponent
+{
+    private static readonly FieldInfo WeaponIconPrefabField = AccessTools.Field(typeof(LevelHUDPlayer), "weaponIconPrefab");
+
+    private void Update()
+    {
+        if (WeaponIconPrefabField == null)
+        {
+            return;
+        }
+
+        LevelHUDPlayer hudPlayer = Resources.FindObjectsOfTypeAll<LevelHUDPlayer>().FirstOrDefault();
+        if (hudPlayer != null)
+        {
+            LoadoutSelectList_SetupList_Patch.CacheWeaponIcon(WeaponIconPrefabField.GetValue(hudPlayer) as LevelHUDWeapon);
+        }
+    }
+}
+
+public class LevelSelectConfigSettings : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerDownHandler, IPointerUpHandler
+{
+    private const string ConfigurationManagerTypeName = "ConfigurationManager.ConfigurationManager";
+
+    private RectTransform entryRect;
+    private GameObject settingsObject;
+    private Text settingsText;
+    private Color textColor;
+    private string searchText;
+
+    public void Initialize(Button entryButton, Text entryText, string search)
+    {
+        entryRect = entryButton.GetComponent<RectTransform>();
+        searchText = search;
+
+        if (settingsObject == null)
+        {
+            settingsObject = new GameObject("DebugConfigSettings", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            settingsObject.transform.SetParent(entryButton.transform, false);
+
+            RectTransform settingsRect = settingsObject.GetComponent<RectTransform>();
+            settingsRect.anchorMin = new Vector2(1f, 0.5f);
+            settingsRect.anchorMax = new Vector2(1f, 0.5f);
+            settingsRect.pivot = new Vector2(0.5f, 0.5f);
+            settingsRect.anchoredPosition = new Vector2(-20f, -5f);
+            settingsRect.sizeDelta = new Vector2(28f, 28f);
+
+            Image settingsImage = settingsObject.GetComponent<Image>();
+            settingsImage.color = Color.clear;
+
+            Button settingsButton = settingsObject.GetComponent<Button>();
+            settingsButton.targetGraphic = settingsImage;
+            settingsButton.navigation = new Navigation { mode = Navigation.Mode.None };
+            ColorBlock colors = settingsButton.colors;
+            colors.normalColor = Color.clear;
+            colors.highlightedColor = Color.clear;
+            colors.pressedColor = Color.clear;
+            colors.disabledColor = Color.clear;
+            settingsButton.colors = colors;
+            settingsButton.onClick.AddListener(OpenConfigurationManager);
+
+            GameObject textObject = new GameObject("Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.transform.SetParent(settingsObject.transform, false);
+            RectTransform textRect = textObject.GetComponent<RectTransform>();
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.zero;
+            textRect.offsetMax = Vector2.zero;
+
+            settingsText = textObject.GetComponent<Text>();
+            settingsText.text = "...";
+            settingsText.alignment = TextAnchor.MiddleCenter;
+            settingsText.raycastTarget = false;
+            settingsText.fontSize = 24;
+        }
+
+        settingsText.font = entryText != null && entryText.font != null ? entryText.font : Resources.GetBuiltinResource<Font>("Arial.ttf");
+        textColor = entryText != null ? entryText.color : Color.white;
+        SetTextOpacity(1f);
+
+        Button textButton = settingsObject.GetComponent<Button>();
+        textButton.targetGraphic = settingsText;
+        ColorBlock textColors = textButton.colors;
+        textColors.normalColor = textColor;
+        textColors.highlightedColor = WithOpacity(textColor, 0.65f);
+        textColors.pressedColor = WithOpacity(textColor, 0.35f);
+        textColors.disabledColor = WithOpacity(textColor, 0.35f);
+        textColors.colorMultiplier = 1f;
+        textButton.colors = textColors;
+        settingsObject.SetActive(false);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        SetTextOpacity(1f);
+        settingsObject.SetActive(true);
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        settingsObject.SetActive(false);
+    }
+
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        SetTextOpacity(0.35f);
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        SetTextOpacity(0.65f);
+    }
+
+    private void SetTextOpacity(float opacity)
+    {
+        settingsText.color = WithOpacity(textColor, opacity);
+    }
+
+    private static Color WithOpacity(Color color, float opacity)
+    {
+        color.a *= opacity;
+        return color;
+    }
+
+    private void OpenConfigurationManager()
+    {
+        Type configurationManagerType = AccessTools.TypeByName(ConfigurationManagerTypeName);
+        Component configurationManager = configurationManagerType == null
+            ? null
+            : UnityEngine.Object.FindObjectOfType(configurationManagerType) as Component;
+        if (configurationManager == null)
+        {
+            return;
+        }
+
+        configurationManagerType.GetProperty("DisplayingWindow")?.SetValue(configurationManager, true, null);
+        StartCoroutine(SetConfigurationSearchNextFrame(configurationManager, configurationManagerType));
+    }
+
+    private IEnumerator SetConfigurationSearchNextFrame(Component configurationManager, Type configurationManagerType)
+    {
+        yield return null;
+
+        PropertyInfo searchProperty = configurationManagerType.GetProperty("SearchString", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        searchProperty?.GetSetMethod(true)?.Invoke(configurationManager, new object[] { searchText });
     }
 }
