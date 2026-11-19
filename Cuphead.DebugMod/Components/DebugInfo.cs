@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
+using static LevelProperties.FlyingGenie;
 using static PlayerData.PlayerLoadouts;
 
 namespace BepInEx.CupheadDebugMod.Components;
@@ -115,7 +116,7 @@ public class DebugInfo : PluginComponent {
 
             if (guiPanelState == 0) {
                 GUISetDefElements();
-                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("Cuphead Debug Mod");
                 GUILayout.Label("Mod Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -128,16 +129,16 @@ public class DebugInfo : PluginComponent {
             // add health bar if available
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
                 GUISetDefElements();
-                float num = 241f;
-                float num2 = 48f;
+                float num = 200f;
+                float num2 = 40f;
                 float num3 = CurrentLevel.timeline.health - CurrentLevel.timeline.damage;
                 float num4 = num * (num3 / CurrentLevel.timeline.health);
                 GUI.skin.label.alignment = TextAnchor.MiddleLeft;
-                GUI.Label(GameAreaRect(10f, 10f, 117f, 48f), "<size=" + ScaledFontSize(35).ToString() + "><b>BOSS:</b></size>");
-                DrawRect(GameAreaRect(126f, 9f, num + 2f, num2 + 2f), Color.gray);
-                DrawRect(GameAreaRect(127f, 10f, num, num2), Color.black);
+                GUI.Label(GameAreaRect(10f, 10f, 100f, 40f), "<size=" + ScaledFontSize(30).ToString() + "><b>BOSS:</b></size>");
+                DrawRect(GameAreaRect(109f, 9f, num + 2f, num2 + 2f), Color.gray);
+                DrawRect(GameAreaRect(110f, 10f, num, num2), Color.black);
                 if (CurrentLevel.timeline.damage < CurrentLevel.timeline.health) {
-                    DrawRect(GameAreaRect(127f, 10f, num4, num2), Color.red);
+                    DrawRect(GameAreaRect(110f, 10f, num4, num2), Color.red);
                 }
 
                 for (int num5 = CurrentLevel.timeline.events.Count - 1; num5 >= 0; num5--) {
@@ -147,12 +148,12 @@ public class DebugInfo : PluginComponent {
                         color = Color.gray;
                     }
 
-                    DrawRect(GameAreaRect(127f + (num6 - 2f), 10f, 2f, num2), color);
+                    DrawRect(GameAreaRect(110f + (num6 - 2f), 10f, 2f, num2), color);
                 }
 
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.skin.label.fontSize = ScaledFontSize(32);
-                GUI.Label(GameAreaRect(127f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
+                GUI.skin.label.fontSize = ScaledFontSize(28);
+                GUI.Label(GameAreaRect(110f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
                 GUISetDefElements();
             }
 
@@ -165,7 +166,7 @@ public class DebugInfo : PluginComponent {
 
             if (guiPanelState == 2) {
                 GUISetDefElements();
-                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
@@ -182,38 +183,46 @@ public class DebugInfo : PluginComponent {
                 }
                 if (Settings.WeaponCooldowns.Value) {
 
-                    string weaponInfo = $"";
+                    //string weaponInfo = $"";
                     if (planeLevelNames.Contains(CurrentSceneName)) {
 #if v1_3
                         if (GameInfoHelper.isChalice) {
-                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                            string weaponInfo = $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]}";
+                            GUILayout.Label(weaponInfo);
+                            string weaponInfo2 = $"Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                            GUILayout.Label(weaponInfo2);
                         }
                         else {
 #endif
-                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+                            string weaponInfo = $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]}";
+                            GUILayout.Label(weaponInfo);
+                            string weaponInfo2 = $"Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+                            GUILayout.Label(weaponInfo2);
 #if v1_3
-                    }
+                        }
 #endif
                     } else {
                         PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
                       
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.primaryWeapon, out int frame1)) {
-                            weaponInfo += $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
+                            string weaponInfo = $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
                             if (loadOut.primaryWeapon == Weapon.level_weapon_charge) {
                                 weaponInfo += $" {GameInfoHelper.chargeFrames}";
                             }
+                            GUILayout.Label(weaponInfo);
                         }
 
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.secondaryWeapon, out int frame2)) {
 
-                            weaponInfo += $" {GameInfoHelper.GetWeaponName(loadOut.secondaryWeapon)}: {frame2}";
+                            string weaponInfo2 = $"{GameInfoHelper.GetWeaponName(loadOut.secondaryWeapon)}: {frame2}";
 
                             if (loadOut.secondaryWeapon == Weapon.level_weapon_charge) {
-                                weaponInfo += $" {GameInfoHelper.chargeFrames}";
+                                weaponInfo2 += $" {GameInfoHelper.chargeFrames}";
                             }
+                            GUILayout.Label(weaponInfo2);
                         }
                     }
-                    GUILayout.Label(weaponInfo);
+                    //GUILayout.Label(weaponInfo);
                 }
                 if (Settings.OnEXWeaponCooldown.Value) {
                     GUILayout.Label(GameInfoHelper.onEXWeaponName + ": " + GameInfoHelper.onEXWeaponCooldown.ToString());
@@ -301,7 +310,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsMapScene(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[GLOBAL DATA]");
             GUILayout.Label("Deaths P1: " + pdDeaths1);
@@ -323,7 +332,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsWinScreen(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[Star Skip Info]");
             GUILayout.Label("Star skip offset: " + winScreenStarSkipFrameOffset.ToString());
@@ -417,7 +426,7 @@ public class DebugInfo : PluginComponent {
     }
 
     private void GUISetDefElements() {
-        GUI.skin.label.fontSize = ScaledFontSize(22);
+        GUI.skin.label.fontSize = ScaledFontSize(24);
         GUI.skin.label.fontStyle = FontStyle.Bold;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
     }

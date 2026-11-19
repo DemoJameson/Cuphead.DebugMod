@@ -918,11 +918,11 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseOneMeteorPatternsEasy {
             Random,
-            [Description("Up-Down (3x as likely!)")]
+            [Description("Up-Down (Thrice as likely!)")]
             UD,
-            [Description("Down-Up-Down (3x as likely!)")]
+            [Description("Down-Up-Down (Thrice as likely!)")]
             DUD,
-            [Description("Down-Up-Down (2x as likely!)")]
+            [Description("Down-Up-Down (Double as likely!)")]
             UDU,
             [Description("Down-Down")]
             DD,
@@ -932,11 +932,11 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseTwoMeteorPatternsEasy {
             Random,
-            [Description("Up-Down (3x as likely!)")]
+            [Description("Up-Down (Triple as likely!)")]
             UD,
-            [Description("Down-Up-Down (3x as likely!)")]
+            [Description("Down-Up-Down (Triple as likely!)")]
             DUD,
-            [Description("Down-Up-Down (2x as likely!)")]
+            [Description("Down-Up-Down (Double as likely!)")]
             UDU,
             [Description("Down-Down")]
             DD,
@@ -970,7 +970,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseOneMeteorPatternsHard {
             Random,
-            [Description("Up-Down (2x as likely!)")]
+            [Description("Up-Down (Double as likely!)")]
             UD,
             [Description("Down-Up-Down")]
             DUD,
@@ -982,9 +982,9 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum DragonPhaseTwoMeteorPatternsHard {
             Random,
-            [Description("Up-Up-Down (2x as likely!)")]
+            [Description("Up-Up-Down (Double as likely!)")]
             UUD,
-            [Description("Down-Up-Down (2x as likely!)")]
+            [Description("Down-Up-Down (Double as likely!)")]
             DUU,
             [Description("Down-Up-Both")]
             DUB
@@ -1032,7 +1032,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("2")]
             Two,
-            [Description("1 (2x as likely!)")]
+            [Description("1 (Double as likely!)")]
             One
         }
 
@@ -1354,7 +1354,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             One_One_1,
             [Description("1-1 #2")]
             One_One_2,
-            [Description("2 (2x as likely!)")]
+            [Description("2 (Double as likely!)")]
             Two,
             [Description("1-1 Longer")]
             One_One_Longer,
@@ -1366,7 +1366,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("2-1-2 #1")]
             Two_One_Two_1,
-            [Description("2-2-1 (2x as likely!)")]
+            [Description("2-2-1 (Double as likely!)")]
             Two_Two_One,
             [Description("3")]
             Three,
@@ -1424,7 +1424,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             [Description("3-1")]
             Three_One,
-            [Description("4 (2x as likely!)")]
+            [Description("4 (Double as likely!)")]
             Four,
             [Description("2-2")]
             Two_Two,
@@ -1434,7 +1434,7 @@ namespace BepInEx.CupheadDebugMod.Config {
 
         public enum PiratePhaseThreeGunPatternsHard {
             Random,
-            [Description("2 (2x as likely!)")]
+            [Description("2 (Double as likely!)")]
             Two,
             [Description("3")]
             Three,
@@ -2027,6 +2027,14 @@ namespace BepInEx.CupheadDebugMod.Config {
         }
 
 #if v1_3
+        public enum  OldManPhaseOnePatterns {
+            Random,
+            Spit01,
+            Camel01,
+            Spit02,
+            Duck01
+        }
+  
         public enum OldManPhaseOnePlatformRemoveOrdersNormal {
             Random,
             [Description("0,2")]
@@ -2102,6 +2110,93 @@ namespace BepInEx.CupheadDebugMod.Config {
             Mid02,
             Low03
         }
+          
+        public enum SnowCultPhaseOnePatterns {
+            Random,
+            Cones01,
+            Whale01,
+            Cards01,
+            Cones02,
+            Cards02,
+            Whale02,
+            Cones03,
+            Cards03,
+            Cones04,
+            Whale03
+        }
+
+        public enum SnowCultPhaseOneStartPositions {
+            Random,
+            [Description("150")]
+            A_150,
+            [Description("0")]
+            B_0,
+            [Description("-100")]
+            C_Neg100,
+            [Description("50")]
+            D_50,
+            [Description("100")]
+            E_100,
+            [Description("-50")]
+            F_Neg50,
+            [Description("-150")]
+            G_Neg150,
+            [Description("0")]
+            H_0,
+            [Description("-150")]
+            I_Neg150,
+            [Description("-50")]
+            J_Neg50,
+            [Description("150")]
+            K_150,
+            [Description("-100")]
+            L_Neg100,
+            [Description("100")]
+            M_100
+        }
+
+        public enum SnowCultPhaseTwoPatterns {
+            Random,
+            Roll01,
+            Jump01,
+            Fridge01,
+            Roll02,
+            Slam01,
+            Roll03,
+            Fridge02,
+            Slam02,
+            Roll04,
+            Roll05,
+            Jump02,
+            Fridge03,
+            Slam03,
+            Roll06,
+            Fridge04,
+            Roll07,
+            Jump03,
+            Slam04,
+            Fridge05
+        }
+          
+        public enum SnowCultPhaseThreePatterns {
+            Random,
+            Mouth01,
+            Switch01,
+            Eye01,
+            Switch02,
+            Shard01,
+            Eye02,
+            Switch03,
+            Mouth02,
+            Switch04,
+            Eye03,
+            Switch05,
+            Shard02,
+            Switch06,
+            Mouth03,
+            Eye04,
+            Switch07
+        }
 
         public enum AirplanePhaseOnePatterns {
             Random,
@@ -2144,6 +2239,82 @@ namespace BepInEx.CupheadDebugMod.Config {
             Random,
             Clockwise,
             Counterclockwise
+        }
+  
+        public enum AirplaneTurretPatterns {
+            Random,
+            [Description("TopL-MidL, MidR, TopR-Bot")]
+            A_B_D_C_E01,
+            [Description("MidR, TopL-TopR, Bot")]
+            D_A_C_E02,
+            [Description("TopL, MidL-TopR, Bot")]
+            A_B_C_E03,
+            [Description("MidL-MidR, TopL, MidL-Bot")]
+            B_D_A_B_E04,
+            [Description("TopR, TopL-MidR, Bot")]
+            C_A_D_E05,
+            [Description("TopL, MidL-MidR, Bot")]
+            A_B_D_E06,
+            [Description("TopL-TopR, MidL, MidR-Bot")]
+            A_C_B_D_E07,
+            [Description("MidL, TopR-MidR, Bot")]
+            B_C_D_E08,
+            [Description("MidR, TopL-MidL, Bot")]
+            D_A_B_E09,
+            [Description("TopR-MidR, MidL, TopL-Bot")]
+            C_D_B_A_E10,
+            [Description("TopL, MidL-TopR, Bot")]
+            A_B_C_E11,
+            [Description("TopR, TopL-MidR, Bot")]
+            C_A_D_E12 
+        }
+
+        public enum AirplaneTurretPatternsSimple {
+            Random,
+            [Description("Bot")]
+            E01,
+            [Description("TopL, MidL, TopR-MidR")]
+            A_B_C_D02,
+            [Description("TopL, TopR, MidL-MidR")]
+            A_C_B_D03,
+            [Description("Bot")]
+            E04,
+            [Description("MidL, TopL, TopR-MidR")]
+            B_A_C_D05,
+            [Description("MidL, TopR, TopL-MidL")]
+            B_C_A_B06,
+            [Description("Bot")]
+            E07,
+            [Description("TopL, MidR, MidL-TopR")]
+            A_D_B_C08,
+            [Description("MidL, TopR, TopL-MidR")]
+            B_C_A_D09,
+            [Description("Bot")]
+            E10,
+            [Description("MidR, MidL, TopL-TopR")]
+            D_B_A_C11,
+            [Description("TopR, TopL, MidL-MidR")]
+            C_A_B_D12
+        }
+
+        public enum AirplaneTurretPatternsHard {
+            Random,
+            [Description("MidR-Bot, TopL-TopR, TopL-MidL-TopR")]
+            D_E_A_C_A_B_C01,
+            [Description("TopL-MidL, TopR-MidR, MidL-Bot")]
+            A_B_C_D_B_E02,
+            [Description("TopL-TopR, MidL-Bot, TopL-TopR-MidR")]
+            A_C_B_E_A_C_D03,
+            [Description("TopR-MidR, TopL-MidL, TopR-Bot")]
+            C_D_A_B_C_E04,
+            [Description("MidL-MidR, TopL-Bot, TopL-MidL-MidR")]
+            B_D_A_E_A_B_D05,
+            [Description("TopL-MidR, MidL-TopR, TopL-Bot")]
+            A_D_B_C_A_E06,
+            [Description("MidL-Bot, TopL-MidR, MidL-TopR-MidR")]
+            B_E_A_D_B_C_D07,
+            [Description("MidL-TopR, TopL-MidR, MidL-Bot")]
+            B_C_A_D_B_E08
         }
 
         public enum RumRunnersPhaseOneSpiderActionsEasyNormal {
@@ -2332,7 +2503,7 @@ namespace BepInEx.CupheadDebugMod.Config {
             [Description("LQ,F,T")] LQ_F_T,
             [Description("LQ,LT")] LQ_LT
         }
-
+      
         public enum RumRunnersPhaseThreeSnoutPositions {
             Random,
             Low01,
@@ -2352,6 +2523,12 @@ namespace BepInEx.CupheadDebugMod.Config {
             Mid05,
             Low06,
             Mid06
+        }
+
+        public enum SaltbakerPhaseOneTablePatterns {
+            Random,
+            Limes,
+            Sugarcubes
         }
 
         public enum SaltbakerPhaseOnePatterns {
@@ -2377,6 +2554,36 @@ namespace BepInEx.CupheadDebugMod.Config {
             Limes06,
             Strawberries05,
             Limes07
+        }
+
+        public enum SaltbakerParryStringPatterns {
+            Random,
+            [Description("Regular")]
+            R01,
+            [Description("Regular")]
+            R02,
+            [Description("Regular")]
+            R03,
+            [Description("Parry")]
+            P01,
+            [Description("Regular")]
+            R04,
+            [Description("Regular")]
+            R05,
+            [Description("Regular")]
+            R06,
+            [Description("Parry")]
+            P02,
+            [Description("Regular")]
+            R07,
+            [Description("Regular")]
+            R08,
+            [Description("Regular")]
+            R09,
+            [Description("Regular")]
+            R10,
+            [Description("Parry")]
+            P03
         }
 
         public enum SaltbakerPhaseThreeSawPatterns {

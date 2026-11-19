@@ -11,6 +11,15 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 
 [HarmonyPatch]
 internal class OldManPatternSelector : PluginComponent {
+
+    [HarmonyPatch(typeof(OldManLevelOldMan), nameof(OldManLevelOldMan.LevelInit))]
+    [HarmonyPostfix]
+    public static void OldManPhaseOnePatternManipulator(ref OldManLevelOldMan __instance) {
+        if (OldManPhaseOnePattern.Value != OldManPhaseOnePatterns.Random) {
+            __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<OldManPhaseOnePatterns>((int) OldManPhaseOnePattern.Value);
+        }
+    }
+
     [HarmonyPatch(typeof(OldManLevelPlatformManager), "handle_remove_platforms_cr", MethodType.Enumerator)]
     [HarmonyILManipulator]
     private static void PlatformRemoveOrderManipulator(ILContext il) {
