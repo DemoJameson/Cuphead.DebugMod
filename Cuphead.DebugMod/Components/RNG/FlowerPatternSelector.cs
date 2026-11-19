@@ -60,11 +60,9 @@ public class FlowerPatternSelector : PluginComponent {
         else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
             if (FlowerPodHandsAttackCountIndexNormal.Value != FlowerPodHandsAttackCountIndexesNormal.Random) {
                 __instance.podHandsAttackCountTarget = (int) FlowerPodHandsAttackCountIndexNormal.Value - 1;
-                UnityEngine.Debug.Log("setting podHandsAttackCountTarget to " + ((int) FlowerPodHandsAttackCountIndexNormal.Value - 1).ToString());
             }
             if (FlowerPodHandsAttackTypeIndexNormal.Value != FlowerPodHandsAttackTypeIndexesNormal.Random) {
                 __instance.currentPodHandsAttack = FlowerPodHandsAttackTypesNormal[FlowerPodHandsAttackTypeIndexNormal.Value];
-                UnityEngine.Debug.Log("setting currentPodHandsAttack to " + (FlowerPodHandsAttackTypesNormal[FlowerPodHandsAttackTypeIndexNormal.Value].ToString()));
             }
         }
         else { // Hard

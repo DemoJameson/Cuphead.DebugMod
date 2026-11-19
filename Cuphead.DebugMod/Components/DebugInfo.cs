@@ -17,7 +17,6 @@ public class DebugInfo : PluginComponent {
     private int pdDeaths2;
     private int pdCoins;
     private bool hasExtraIGTTickBeenHandledKingDice;
-    public Vector3 guiScale;
     public static int winScreenFrameCounter;
     public static int onWinScreenButtonPressFrame;
     public static int onWinScreenStarFrame;
@@ -45,16 +44,9 @@ public class DebugInfo : PluginComponent {
     };
 
     private void Awake() {
-        GUISetMatrix();
         Init();
         InitHotkeys();
         HookHelper.ActiveSceneChanged(RefPercentage);
-    }
-
-    private void GUISetMatrix() {
-        guiScale.x = Screen.width / 1920f;
-        guiScale.y = Screen.height / 1080f;
-        guiScale.z = 1f;
     }
 
     private void Init() {
@@ -91,15 +83,39 @@ public class DebugInfo : PluginComponent {
         GUI.backgroundColor = backgroundColor;
     }
 
+    private Rect GameAreaRect(float x, float y, float width, float height) {
+        Camera cam = Camera.main;
+        Rect r = cam.pixelRect;
+
+        const float referenceWidth = 1920f;
+
+        float scale = r.width / referenceWidth;
+
+        float guiX = r.x + x * scale;
+        float guiY = Screen.height - r.yMax + y * scale;
+
+        float guiWidth = width * scale;
+        float guiHeight = height * scale;
+
+        return new Rect(guiX, guiY, guiWidth, guiHeight);
+    }
+
+    private int ScaledFontSize(int referenceFontSize) {
+        Camera cam = Camera.main;
+        float scale = cam.pixelRect.width / 1920f;
+
+        return Mathf.RoundToInt(referenceFontSize * scale);
+    }
+
     private void OnGUI() {
         GUI.depth = 1;
-        GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, guiScale);
+        GUI.matrix = Matrix4x4.identity;
         GUISetDefColors();
         if (CurrentLevel != null && CurrentLevel.type is Level.Type.Battle or Level.Type.Platforming) {
 
             if (guiPanelState == 0) {
                 GUISetDefElements();
-                GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("Cuphead Debug Mod");
                 GUILayout.Label("Mod Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -112,16 +128,16 @@ public class DebugInfo : PluginComponent {
             // add health bar if available
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
                 GUISetDefElements();
-                float num = 200f;
-                float num2 = 40f;
+                float num = 241f;
+                float num2 = 48f;
                 float num3 = CurrentLevel.timeline.health - CurrentLevel.timeline.damage;
                 float num4 = num * (num3 / CurrentLevel.timeline.health);
                 GUI.skin.label.alignment = TextAnchor.MiddleLeft;
-                GUI.Label(new Rect(10f, 10f, 100f, 40f), "<size=30><b>BOSS:</b></size>");
-                DrawRect(new Rect(109f, 9f, num + 2f, num2 + 2f), Color.gray);
-                DrawRect(new Rect(110f, 10f, num, num2), Color.black);
+                GUI.Label(GameAreaRect(10f, 10f, 117f, 48f), "<size=" + ScaledFontSize(35).ToString() + "><b>BOSS:</b></size>");
+                DrawRect(GameAreaRect(126f, 9f, num + 2f, num2 + 2f), Color.gray);
+                DrawRect(GameAreaRect(127f, 10f, num, num2), Color.black);
                 if (CurrentLevel.timeline.damage < CurrentLevel.timeline.health) {
-                    DrawRect(new Rect(110f, 10f, num4, num2), Color.red);
+                    DrawRect(GameAreaRect(127f, 10f, num4, num2), Color.red);
                 }
 
                 for (int num5 = CurrentLevel.timeline.events.Count - 1; num5 >= 0; num5--) {
@@ -131,12 +147,12 @@ public class DebugInfo : PluginComponent {
                         color = Color.gray;
                     }
 
-                    DrawRect(new Rect(110f + (num6 - 2f), 10f, 2f, num2), color);
+                    DrawRect(GameAreaRect(127f + (num6 - 2f), 10f, 2f, num2), color);
                 }
 
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.skin.label.fontSize = 28;
-                GUI.Label(new Rect(110f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
+                GUI.skin.label.fontSize = ScaledFontSize(32);
+                GUI.Label(GameAreaRect(127f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
                 GUISetDefElements();
             }
 
@@ -149,7 +165,7 @@ public class DebugInfo : PluginComponent {
 
             if (guiPanelState == 2) {
                 GUISetDefElements();
-                GUILayout.BeginArea(new Rect(10f, 52f, 300f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
@@ -285,7 +301,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsMapScene(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(new Rect(10f, 52f, 300f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[GLOBAL DATA]");
             GUILayout.Label("Deaths P1: " + pdDeaths1);
@@ -307,7 +323,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsWinScreen(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(new Rect(10f, 52f, 300f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[Star Skip Info]");
             GUILayout.Label("Star skip offset: " + winScreenStarSkipFrameOffset.ToString());
@@ -401,7 +417,7 @@ public class DebugInfo : PluginComponent {
     }
 
     private void GUISetDefElements() {
-        GUI.skin.label.fontSize = 24;
+        GUI.skin.label.fontSize = ScaledFontSize(22);
         GUI.skin.label.fontStyle = FontStyle.Bold;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
     }

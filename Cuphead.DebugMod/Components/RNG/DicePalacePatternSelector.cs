@@ -26,8 +26,30 @@ internal class DicePalacePatternSelector : PluginComponent {
     [HarmonyPatch(typeof(DicePalaceCigarLevelCigar), nameof(DicePalaceCigarLevelCigar.LevelInit))]
     [HarmonyPostfix]
     public static void CigarAttackCountManipulator(ref DicePalaceCigarLevelCigar __instance) {
-        if (DicePalaceCigarSpitAttackCountNormal.Value != DicePalaceCigarSpitAttackCountsNormal.Random) {
+        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+            if (DicePalaceCigarSpitAttackCountHard.Value != DicePalaceCigarSpitAttackCountsHard.Random) {
+                __instance.spitAttackCountIndex = (int) DicePalaceCigarSpitAttackCountHard.Value - 1;
+            }
+        } else if (DicePalaceCigarSpitAttackCountNormal.Value != DicePalaceCigarSpitAttackCountsNormal.Random) {
             __instance.spitAttackCountIndex = (int) DicePalaceCigarSpitAttackCountNormal.Value - 1;
+        }
+    }
+
+    [HarmonyPatch(typeof(DicePalaceChipsLevelChips), "chipAttack_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void ChipsPatternManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Ldfld && i.Operand.ToString().Contains("Chips::chipAttackString")) &&
+            cursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range"))) {
+            cursor.EmitDelegate<Func<int, int>>(randomIndex => Level.ScoringData.difficulty switch {
+                Level.Mode.Normal when DicePalaceChipsPatternNormal.Value != DicePalaceChipsPatternsNormal.Random =>
+                    (int)DicePalaceChipsPatternNormal.Value - 1,
+                Level.Mode.Hard when DicePalaceChipsPatternHard.Value != DicePalaceChipsPatternsHard.Random =>
+                    (int)DicePalaceChipsPatternHard.Value - 1,
+                _ => randomIndex
+            });
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using BepInEx.Configuration;
@@ -107,6 +108,9 @@ internal sealed class ConfigurationManagerAttributes {
 }
 
 internal static class ConfigExtensions {
+    private static readonly List<ConfigurationManagerAttributes> DifficultySpecificAttributes = new List<ConfigurationManagerAttributes>();
+    private static bool showDifficultySpecificOptions;
+
     public static ConfigEntry<T> Bind<T>(
         this ConfigFile config,
         string section,
@@ -114,9 +118,34 @@ internal static class ConfigExtensions {
         T defaultValue,
         int? order = null
     ) {
-        return config.Bind(section, key, defaultValue, new ConfigDescription("", null, new ConfigurationManagerAttributes {
+        ConfigurationManagerAttributes attributes = new ConfigurationManagerAttributes {
             Order = order
-        }));
+        };
+
+        if (IsDifficultySpecificOption(key)) {
+            attributes.Browsable = showDifficultySpecificOptions;
+            DifficultySpecificAttributes.Add(attributes);
+        }
+
+        return config.Bind(section, key, defaultValue, new ConfigDescription("", null, attributes));
+    }
+
+    public static void SetDifficultySpecificOptionsVisible(bool visible) {
+        showDifficultySpecificOptions = visible;
+
+        foreach (ConfigurationManagerAttributes attributes in DifficultySpecificAttributes) {
+            attributes.Browsable = visible;
+        }
+    }
+
+    private static bool IsDifficultySpecificOption(string key) {
+        if (key == "Show Simple / Expert RNG") {
+            return false;
+        }
+
+        bool hasDifficulty = key.IndexOf("Simple", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                             key.IndexOf("Expert", StringComparison.OrdinalIgnoreCase) >= 0;
+        return hasDifficulty && key.IndexOf("Regular", StringComparison.OrdinalIgnoreCase) < 0;
     }
 
     public static bool IsDownEx(this ConfigEntry<KeyboardShortcut> configEntry) {

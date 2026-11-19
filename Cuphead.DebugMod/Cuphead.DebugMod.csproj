@@ -11,25 +11,37 @@
             https://api.nuget.org/v3/index.json;
             https://nuget.bepinex.dev/v3/index.json
         </RestoreAdditionalProjectSources>
-        <Configurations>1.0~1.1;1.2;1.3+</Configurations>
+        <Configurations>1.0;1.1;1.2;1.3+</Configurations>
         <Platforms>AnyCPU</Platforms>
         <RootNamespace>BepInEx.CupheadDebugMod</RootNamespace>
         <Optimize>true</Optimize>
         <PathMap>$(MSBuildProjectDirectory)=CupheadDebugMod/</PathMap>
         <PackageVersion>1.11.0</PackageVersion>
         <RunPostBuildEvent>Always</RunPostBuildEvent>
+        <DisableImplicitConfigurationDefines>true</DisableImplicitConfigurationDefines>
+        <RepositoryRoot>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))</RepositoryRoot>
+        <WindowsPackageDirectory>$(RepositoryRoot)/out/Windows_Cuphead_v$(Configuration)</WindowsPackageDirectory>
+        <MacPackageDirectory>$(RepositoryRoot)/out/macOS_Cuphead_v$(Configuration)</MacPackageDirectory>
     </PropertyGroup>
 
-    <PropertyGroup Condition=" '$(Configuration)' == '1.0~1.1' ">
+    <PropertyGroup Condition=" '$(Configuration)' == '1.0' ">
       <DefineConstants>TRACE;v1_0</DefineConstants>
+      <ConfigurationGroup>1.0~1.1</ConfigurationGroup>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == '1.1' ">
+      <DefineConstants>TRACE;v1_1</DefineConstants>
+      <ConfigurationGroup>1.0~1.1</ConfigurationGroup>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == '1.2' ">
       <DefineConstants>TRACE;v1_2</DefineConstants>
+      <ConfigurationGroup>1.2</ConfigurationGroup>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == '1.3+' ">
       <DefineConstants>TRACE;v1_3</DefineConstants>
+      <ConfigurationGroup>1.3+</ConfigurationGroup>
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,59 +54,59 @@
         <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(Configuration)' == '1.0~1.1' ">
+    <ItemGroup Condition=" '$(ConfigurationGroup)' == '1.0~1.1' ">
         <Reference Include="UnityEngine.UI">
-            <HintPath>libs\$(Configuration)\UnityEngine.UI.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\UnityEngine.UI.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <PackageReference Include="UnityEngine.Modules" Version="5.6.2" IncludeAssets="compile" />
         <Reference Include="Assembly-CSharp">
-            <HintPath>libs\$(Configuration)\Assembly-CSharp-nstrip.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Assembly-CSharp-nstrip.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Rewired_Core">
-            <HintPath>libs\$(Configuration)\Rewired_Core.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Rewired_Core.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Compile Remove="Components\IgnoreInputWhenLoseFocus.cs" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(Configuration)' == '1.2' ">
+    <ItemGroup Condition=" '$(ConfigurationGroup)' == '1.2' ">
         <Reference Include="UnityEngine.UI">
-            <HintPath>libs\$(Configuration)\UnityEngine.UI.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\UnityEngine.UI.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <PackageReference Include="UnityEngine.Modules" Version="2017.4.9" IncludeAssets="compile" />
         <Reference Include="Assembly-CSharp">
-            <HintPath>libs\$(Configuration)\Assembly-CSharp-nstrip.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Assembly-CSharp-nstrip.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Rewired_Core">
-            <HintPath>libs\$(Configuration)\Rewired_Core.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Rewired_Core.dll</HintPath>
             <Private>False</Private>
         </Reference>
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(Configuration)' == '1.3+' ">
+    <ItemGroup Condition=" '$(ConfigurationGroup)' == '1.3+' ">
         <Reference Include="UnityEngine.UI">
-            <HintPath>libs\$(Configuration)\UnityEngine.UI.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\UnityEngine.UI.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <PackageReference Include="UnityEngine.Modules" Version="2017.4.9" IncludeAssets="compile" />
         <Reference Include="Assembly-CSharp">
-            <HintPath>libs\$(Configuration)\Assembly-CSharp-nstrip.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Assembly-CSharp-nstrip.dll</HintPath>
             <Private>False</Private>
         </Reference>
         <Reference Include="Rewired_Core">
-            <HintPath>libs\$(Configuration)\Rewired_Core.dll</HintPath>
+            <HintPath>libs\$(ConfigurationGroup)\Rewired_Core.dll</HintPath>
             <Private>False</Private>
         </Reference>
     </ItemGroup>
 
     <ItemGroup>
         <Compile Remove="libs\**" />
-        <Compile Condition=" '$(Configuration)' != '1.0~1.1' " Remove="Components\EnableDebugConsole.cs" />
-        <Compile Condition=" '$(Configuration)' != '1.3+' " Remove="Components\LevelSelectorFixer.cs" />
+        <Compile Condition=" '$(ConfigurationGroup)' != '1.0~1.1' " Remove="Components\EnableDebugConsole.cs" />
+        <Compile Condition=" '$(ConfigurationGroup)' != '1.3+' " Remove="Components\LevelSelectorFixer.cs" />
     </ItemGroup>
 
     <ItemGroup>
@@ -110,13 +122,25 @@
     </ItemGroup>
 
     <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Condition="'$(Configuration)' == '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x64 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Condition="'$(Configuration)' != '1.3+'" Command="xcopy $(SolutionDir)BepInex\BepInex_x86 $(SolutionDir)out\Windows_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
-        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\Windows_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip' -Force" />
+        <PropertyGroup>
+            <WindowsBepInExDirectory Condition="'$(ConfigurationGroup)' == '1.3+'">$(RepositoryRoot)/BepInEx/BepInEx_x64</WindowsBepInExDirectory>
+            <WindowsBepInExDirectory Condition="'$(ConfigurationGroup)' != '1.3+'">$(RepositoryRoot)/BepInEx/BepInEx_x86</WindowsBepInExDirectory>
+        </PropertyGroup>
 
-        <Exec Command="xcopy $(SolutionDir)BepInex\BepInex_unix $(SolutionDir)out\macOS_Cuphead_v$(Configuration) /E/H/C/I/Y" />
-        <Exec Command="xcopy &quot;$(TargetDir)&quot; &quot;$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\BepInEx\plugins&quot; /E/H/C/I/Y" />
-        <Exec Command="powershell -Command Compress-Archive -Path '$(SolutionDir)out\macOS_Cuphead_v$(Configuration)\*' -DestinationPath '$(SolutionDir)out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip' -Force" />
+        <ItemGroup>
+            <WindowsBepInExFiles Include="$(WindowsBepInExDirectory)/**/*" />
+            <MacBepInExFiles Include="$(RepositoryRoot)/BepInEx/BepInEx_unix/**/*" />
+            <PluginFiles Include="$(TargetDir)**/*" />
+        </ItemGroup>
+
+        <Copy SourceFiles="@(WindowsBepInExFiles)" DestinationFiles="@(WindowsBepInExFiles -> '$(WindowsPackageDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(MacBepInExFiles)" DestinationFiles="@(MacBepInExFiles -> '$(MacPackageDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles -> '$(WindowsPackageDirectory)/BepInEx/plugins/%(RecursiveDir)%(Filename)%(Extension)')" />
+        <Copy SourceFiles="@(PluginFiles)" DestinationFiles="@(PluginFiles -> '$(MacPackageDirectory)/BepInEx/plugins/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command Compress-Archive -Path '$(WindowsPackageDirectory)\*' -DestinationPath '$(RepositoryRoot)\out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip' -Force" />
+        <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -Command Compress-Archive -Path '$(MacPackageDirectory)\*' -DestinationPath '$(RepositoryRoot)\out\Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip' -Force" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; ." WorkingDirectory="$(WindowsPackageDirectory)" />
+        <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; ." WorkingDirectory="$(MacPackageDirectory)" />
     </Target>
 </Project>
