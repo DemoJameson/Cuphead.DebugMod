@@ -12,6 +12,8 @@ namespace BepInEx.CupheadDebugMod.Components;
 
 [HarmonyPatch]
 public class Misc : PluginComponent {
+    private static bool damageMultiplierEnabled;
+
     private void Awake() {
         Settings.OnKeyUpdate += () => {
             if (Settings.SwapBetweenFrameLimit.IsDownEx()) {
@@ -114,11 +116,11 @@ public class Misc : PluginComponent {
     }
 
     private static void ToggleMegaDamage() {
-        DamageReceiver.Debug_ToggleMegaDamage();
-        if (DamageReceiver.DEBUG_DO_MEGA_DAMAGE) {
-            Toast.Show("Enable x10 Damage");
+        damageMultiplierEnabled = !damageMultiplierEnabled;
+        if (damageMultiplierEnabled) {
+            Toast.Show($"Enable {Settings.DamageMultiplier.Value}x Damage");
         } else {
-            Toast.Show("Disable x10 Damage");
+            Toast.Show("Disable Damage Multiplier");
         }
     }
 
@@ -157,7 +159,11 @@ public class Misc : PluginComponent {
     public static void PatchNoDamage(ref DamageReceiver __instance, DamageDealer.DamageInfo info) {
         if (Misc.DEBUG_DO_NO_DAMAGE && (__instance.type == DamageReceiver.Type.Enemy || __instance.type == DamageReceiver.Type.Other)) {
             info.damage = 0f;
-        }   
+        }
+
+        if (damageMultiplierEnabled && (__instance.type == DamageReceiver.Type.Enemy || __instance.type == DamageReceiver.Type.Other)) {
+            info.damage *= Settings.DamageMultiplier.Value;
+        }
     }
 
     private static void Debug_ToggleNoDamage() {

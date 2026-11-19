@@ -14,7 +14,6 @@ namespace BepInEx.CupheadDebugMod.Components;
 internal class GuaranteeLobberExSweetSpot {
 
 
-    private static bool alreadyRanNeverCrit;
     private static bool triedToDie;
 
     // A Lobber Ex Sweet Spot is when a Lobber Ex collides in-between an enemy and a floor.
@@ -86,7 +85,7 @@ internal class GuaranteeLobberExSweetSpot {
     [HarmonyPatch(typeof(WeaponBouncerProjectile), nameof(WeaponBouncerProjectile.HitGround))]
     [HarmonyPostfix]
     public static void ReallyJankPostfixBecauseILManipulatorIsWeird(ref WeaponBouncerProjectile __instance) {
-#if !v1_0
+#if !v1_0 && !v1_1
         weaponBouncerExtraProperties.SetProperty(__instance, "ranHitGround", true);
 #endif
 
@@ -106,7 +105,7 @@ internal class GuaranteeLobberExSweetSpot {
 
         // if on v1.2+, we want the lobber to never explode when hitting the ground in this scenario, so set ranHitGround immediately.
         // if on v1.0/v1.1, we set this later so that one single Ground explosion occurs.
-#if v1_0
+#if v1_0 || v1_1
         weaponBouncerExtraProperties.SetProperty(__instance, "ranHitGround", true);
 #endif
     }

@@ -9,6 +9,7 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 
 [HarmonyPatch]
 public class FrogsPatternSelector : PluginComponent {
+    private static int bisonPatternIndex;
 
     // Sets the leading attack. Subsequent attacks work as normal.
     [HarmonyPatch(typeof(FrogsLevel), nameof(FrogsLevel.Start))]
@@ -32,14 +33,52 @@ public class FrogsPatternSelector : PluginComponent {
             // I am checking for Settings.FrogsPhaseFinalPattern.Value dynamically during this function call.
             // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
             // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.FrogsPhaseFinalPattern.Value
-            ilCursor.EmitDelegate<Func<int, int>>(mode =>
-                Settings.FrogsPhaseFinalPattern.Value == FrogsPhaseFinalPatterns.Random ?
-                UnityEngine.Random.Range(0, 3)
-                :
-                (int) Settings.FrogsPhaseFinalPattern.Value - 1
-            );
+            // The mode store is also the one point in the coroutine that runs exactly once per attack, so the bulls
+            // laser direction counter is reset here whenever the selected mode is Bison.
+            ilCursor.EmitDelegate<Func<int, int>>(mode => {
+                int result = Settings.FrogsPhaseFinalPattern.Value == FrogsPhaseFinalPatterns.Random ?
+                    UnityEngine.Random.Range(0, 3)
+                    :
+                    (int) Settings.FrogsPhaseFinalPattern.Value - 1;
+                if (result == (int) Slots.Mode.Bison) {
+                    bisonPatternIndex = 0;
+                }
+                return result;
+            });
             ilCursor.Index++; // avoid infinite loops
         }
+    }
+
+    [HarmonyPatch(typeof(FrogsLevelMorphed), "bison_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void BisonLaserPatternManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            cursor.EmitDelegate<Func<int, int>>(GetBisonLaserDirection);
+        }
+    }
+
+    private static int GetBisonLaserDirection(int randomDirection) {
+        string pattern = Settings.FrogsPhaseFinalBisonLaserPattern.Value;
+        if (string.IsNullOrEmpty(pattern)) {
+            return randomDirection;
+        }
+
+        string directions = "";
+        foreach (char character in pattern) {
+            if (character == '0' || character == '1') {
+                directions += character;
+            }
+        }
+
+        if (directions.Length == 0) {
+            return randomDirection;
+        }
+
+        int direction = directions[bisonPatternIndex % directions.Length] - '0';
+        bisonPatternIndex++;
+        return direction;
     }
 
 

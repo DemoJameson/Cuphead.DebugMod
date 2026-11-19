@@ -30,13 +30,22 @@ public class FlyingBlimpPatternSelector : PluginComponent {
     // pattern index seems to get regenerated in phases 2 and 3
     public static void PhaseBlimpPatternManipulator(ref FlyingBlimpLevel __instance) {
         if (Level.ScoringData.difficulty == Level.Mode.Easy) {
+#if v1_0
             if (IsWithinPhase(0.62f, 0.46f, __instance)) {
+#else
+            if (IsWithinPhase(0.65f, 0.45f, __instance)) {
+#endif
                 if (FlyingBlimpPhaseBlimp2PatternEasy.Value != FlyingBlimpPhaseBlimp2PatternsEasy.Random) {
                     __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsEasy>((int) FlyingBlimpPhaseBlimp2PatternEasy.Value);
                 }
-            } else if (IsWithinPhase(0.23f, 0.00f, __instance)) {
-                if (FlyingBlimpPhaseBlimp3PatternNormal.Value != FlyingBlimpPhaseBlimp3PatternsNormal.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsNormal>((int) FlyingBlimpPhaseBlimp3PatternNormal.Value);
+            }
+#if v1_0
+            else if (IsWithinPhase(0.23f, 0.00f, __instance)) {
+#else
+            else if (IsWithinPhase(0.20f, 0.00f, __instance)) {
+#endif
+                if (FlyingBlimpPhaseBlimp3PatternEasy.Value != FlyingBlimpPhaseBlimp3PatternsEasy.Random) {
+                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsEasy>((int) FlyingBlimpPhaseBlimp3PatternEasy.Value);
                 }
             }
         } else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
