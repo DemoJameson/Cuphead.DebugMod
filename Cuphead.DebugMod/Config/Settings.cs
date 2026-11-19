@@ -248,10 +248,12 @@ public class Settings : PluginComponent {
     public static ConfigEntry<AirplanePhaseOnePatterns> AirplanePhaseOnePattern;
     public static ConfigEntry<AirplanePhaseOneSides> AirplanePhaseOneSide;
     public static ConfigEntry<AirplanePhaseOneParryPatterns> AirplanePhaseOneParryPattern;
+    public static ConfigEntry<AirplanePhaseOneParryPatternsSimple> AirplanePhaseOneParryPatternSimple;
     public static ConfigEntry<AirplanePhaseTwoTerrierRotationDirections> AirplanePhaseTwoTerrierRotationDirection;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutPositions> RumRunnersPhaseThreeSnoutPosition;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutActionsNormal> RumRunnersPhaseThreeSnoutActionNormal;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutActionsHard> RumRunnersPhaseThreeSnoutActionHard;
+    public static ConfigEntry<RumRunnersPhaseOneSpiderActionsEasy> RumRunnersPhaseOneSpiderActionEasy;
     public static ConfigEntry<RumRunnersPhaseOneSpiderActionsEasyNormal> RumRunnersPhaseOneSpiderActionEasyNormal;
     public static ConfigEntry<RumRunnersPhaseOneSpiderActionsHard> RumRunnersPhaseOneSpiderActionHard;
     public static ConfigEntry<RumRunnersPhaseOneSpiderInitialActions> RumRunnersPhaseOneSpiderInitialAction;
@@ -514,9 +516,11 @@ public class Settings : PluginComponent {
         AirplanePhaseOnePattern = config.Bind("RNG The Howling Aces", "Phase 1 Pattern", AirplanePhaseOnePatterns.Random, --order);
         AirplanePhaseOneSide = config.Bind("RNG The Howling Aces", "Phase 1 Side", AirplanePhaseOneSides.Random, --order);
         AirplanePhaseOneParryPattern = config.Bind("RNG The Howling Aces", "Phase 1 Parry Pattern", AirplanePhaseOneParryPatterns.Random, --order);
+        AirplanePhaseOneParryPatternSimple = config.Bind("RNG The Howling Aces", "Phase 1 Parry Pattern Simple", AirplanePhaseOneParryPatternsSimple.Random, --order);
         AirplanePhaseOneAttackDelay = config.Bind("RNG The Howling Aces", "Phase 1 Attack Delay (2.5-4.0 for Simple, 2.0-3.5 for Regular, 1.5-3.0 for Expert. -1 for random)", -1f, --order);
         AirplanePhaseTwoTerrierRotationDirection = config.Bind("RNG The Howling Aces", "Phase 2 Rotation", AirplanePhaseTwoTerrierRotationDirections.Random, --order);
-        RumRunnersPhaseOneSpiderActionEasyNormal = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Regular/Simple", RumRunnersPhaseOneSpiderActionsEasyNormal.Random, --order);
+        RumRunnersPhaseOneSpiderActionEasy = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Simple", RumRunnersPhaseOneSpiderActionsEasy.Random, --order);
+        RumRunnersPhaseOneSpiderActionEasyNormal = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Regular", RumRunnersPhaseOneSpiderActionsEasyNormal.Random, --order);
         RumRunnersPhaseOneSpiderActionHard = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Expert", RumRunnersPhaseOneSpiderActionsHard.Random, --order);
         RumRunnersPhaseOneSpiderInitialAction = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Initial Action", RumRunnersPhaseOneSpiderInitialActions.Random, --order);
         RumRunnersPhaseOneSpiderPositionEasy = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Position Simple", RumRunnersPhaseOneSpiderPositionsEasy.Random, --order);

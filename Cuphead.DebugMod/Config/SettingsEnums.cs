@@ -2132,6 +2132,14 @@ namespace BepInEx.CupheadDebugMod.Config {
             Parry02
         }
 
+        public enum AirplanePhaseOneParryPatternsSimple {
+            Random,
+            Regular01,
+            Parry01,
+            Regular02,
+            Parry02
+        }
+
         public enum AirplanePhaseTwoTerrierRotationDirections {
             Random,
             Clockwise,
@@ -2151,6 +2159,23 @@ namespace BepInEx.CupheadDebugMod.Config {
             Caterpillar02,
             Mine03,
             Grubs04,
+            None03
+        }
+
+        public enum RumRunnersPhaseOneSpiderActionsEasy {
+            Random,
+            Grubs01,
+            None01,
+            Mine01,
+            Grubs02,
+            Mine02,
+            Mine03,
+            None02,
+            Grubs03,
+            Mine04,
+            Mine05,
+            Grubs04,
+            Mine06,
             None03
         }
 

@@ -113,7 +113,7 @@ public class HitboxRenderer : MonoBehaviour {
     private bool nonHurting;
 
     private void Start() {
-#if v1_0
+#if v1_0 || v1_1
         renderLayer = SpriteLayer.Top;
 #else
         renderLayer = Map.Current != null ? SpriteLayer.ForegroundEffects : SpriteLayer.Top;
@@ -844,7 +844,7 @@ public class HitboxRenderer : MonoBehaviour {
     private Color UpdateColorParry(Collider2D collider) {
         if (compAbstractLevelEntity != null && compAbstractLevelEntity.canParry || compAbstractParryEffect != null ||
             compAbstractProjectile != null && compAbstractProjectile.CanParry ||
-#if v1_0
+#if v1_0 || v1_1
             compParrySwitch != null) {
 #else
             compParrySwitch != null && compParrySwitch.IsParryable) {
@@ -1059,7 +1059,7 @@ public class HitboxRenderer : MonoBehaviour {
     }
 
     public static void Setup() {
-#if v1_0
+#if v1_0 || v1_1
         renderLayer = SpriteLayer.Top;
 #else
         renderLayer = Map.Current != null ? SpriteLayer.ForegroundEffects : SpriteLayer.Top;

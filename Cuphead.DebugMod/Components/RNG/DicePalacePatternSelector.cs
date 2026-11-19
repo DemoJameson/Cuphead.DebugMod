@@ -26,7 +26,11 @@ internal class DicePalacePatternSelector : PluginComponent {
     [HarmonyPatch(typeof(DicePalaceCigarLevelCigar), nameof(DicePalaceCigarLevelCigar.LevelInit))]
     [HarmonyPostfix]
     public static void CigarAttackCountManipulator(ref DicePalaceCigarLevelCigar __instance) {
-        if (DicePalaceCigarSpitAttackCountNormal.Value != DicePalaceCigarSpitAttackCountsNormal.Random) {
+        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
+            if (DicePalaceCigarSpitAttackCountHard.Value != DicePalaceCigarSpitAttackCountsHard.Random) {
+                __instance.spitAttackCountIndex = (int) DicePalaceCigarSpitAttackCountHard.Value - 1;
+            }
+        } else if (DicePalaceCigarSpitAttackCountNormal.Value != DicePalaceCigarSpitAttackCountsNormal.Random) {
             __instance.spitAttackCountIndex = (int) DicePalaceCigarSpitAttackCountNormal.Value - 1;
         }
     }

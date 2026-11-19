@@ -10,6 +10,8 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
+        { "ForestPlatformingAcornSpawnerDirection", ForestPlatformingAcornSpawnerDirections.Left1 },
+        { "ForestPlatformingAcornSpawnerYIndex", ForestPlatformingAcornSpawnerYIndexes.B_50 },
         { "FrogsPhaseOnePattern", FrogsPhaseOnePatterns.Fireflies },
         { "FrogsPhaseOneFirefliesPatternNormal", FrogsPhaseOneFirefliesPatternsNormal.Two_Two_One },
         { "FrogsPhaseFinalPattern", FrogsPhaseFinalPatterns.Bison },
@@ -152,6 +154,7 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("Slime", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingBlimp", StringComparison.Ordinal)
             || fieldName.StartsWith("Flower", StringComparison.Ordinal)
+            || fieldName.StartsWith("ForestPlatforming", StringComparison.Ordinal)
             || fieldName.StartsWith("Baroness", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingBird", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingGenie", StringComparison.Ordinal)

@@ -7,13 +7,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cuphead.DebugMod", "Cuphead
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		1.0~1.1|Any CPU = 1.0~1.1|Any CPU
+			1.0|Any CPU = 1.0|Any CPU
+			1.1|Any CPU = 1.1|Any CPU
 		1.2|Any CPU = 1.2|Any CPU
 		1.3+|Any CPU = 1.3+|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0~1.1|Any CPU.ActiveCfg = 1.0~1.1|Any CPU
-		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0~1.1|Any CPU.Build.0 = 1.0~1.1|Any CPU
+			{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0|Any CPU.ActiveCfg = 1.0|Any CPU
+			{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.0|Any CPU.Build.0 = 1.0|Any CPU
+			{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.1|Any CPU.ActiveCfg = 1.1|Any CPU
+			{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.1|Any CPU.Build.0 = 1.1|Any CPU
 		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.2|Any CPU.ActiveCfg = 1.2|Any CPU
 		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.2|Any CPU.Build.0 = 1.2|Any CPU
 		{23BA8716-B857-4B9F-A349-5DBD8F0D2E9D}.1.3+|Any CPU.ActiveCfg = 1.3+|Any CPU

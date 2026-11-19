@@ -286,12 +286,9 @@ public static class LevelSelectList_SetupList_Patch
         foreach (UnityEngine.UI.Button b in __instance.contentPanel.GetComponentsInChildren<UnityEngine.UI.Button>(true))
         {
             Scenes scene;
-            if (Enum.IsDefined(typeof(Scenes), b.name) && (scene = (Scenes)Enum.Parse(typeof(Scenes), b.name)) == scene)
+            if (Enum.IsDefined(typeof(Scenes), b.name) && entries.TryGetValue(scene = (Scenes)Enum.Parse(typeof(Scenes), b.name), out var entryData))
             {
-                if (entries.TryGetValue(scene, out var entryData))
-                {
-                    buttonList.Add(new EntryButtonInfo { button = b, data = entryData, index = entryData.index });
-                }
+                buttonList.Add(new EntryButtonInfo { button = b, data = entryData, index = entryData.index });
             }
         }
 
@@ -369,6 +366,17 @@ public static class LoadoutSelectList_SetupList_Patch
 {
     private const string WeaponIconName = "DebugLoadoutWeaponIcon";
     private static LevelHUDWeapon weaponIconTemplate;
+    private static readonly FieldInfo WeaponIconPrefabField = AccessTools.Field(typeof(LevelHUDPlayer), "weaponIconPrefab");
+
+    // The weapon icon template only exists inside the level HUD prefab, so it is cached the
+    // moment a LevelHUDPlayer initializes. Its Awake is inherited from AbstractMonoBehaviour,
+    // so Init is the earliest hook declared on the class itself.
+    [HarmonyPatch(typeof(LevelHUDPlayer), nameof(LevelHUDPlayer.Init))]
+    [HarmonyPostfix]
+    private static void CacheWeaponIconOnHudInit(LevelHUDPlayer __instance)
+    {
+        CacheWeaponIcon(WeaponIconPrefabField.GetValue(__instance) as LevelHUDWeapon);
+    }
 
     internal static void CacheWeaponIcon(LevelHUDWeapon source)
     {
@@ -524,25 +532,6 @@ public static class LoadoutSelectList_SetupList_Patch
         }
 
         return false;
-    }
-}
-
-public class LoadoutWeaponIconCache : PluginComponent
-{
-    private static readonly FieldInfo WeaponIconPrefabField = AccessTools.Field(typeof(LevelHUDPlayer), "weaponIconPrefab");
-
-    private void Update()
-    {
-        if (WeaponIconPrefabField == null)
-        {
-            return;
-        }
-
-        LevelHUDPlayer hudPlayer = Resources.FindObjectsOfTypeAll<LevelHUDPlayer>().FirstOrDefault();
-        if (hudPlayer != null)
-        {
-            LoadoutSelectList_SetupList_Patch.CacheWeaponIcon(WeaponIconPrefabField.GetValue(hudPlayer) as LevelHUDWeapon);
-        }
     }
 }
 

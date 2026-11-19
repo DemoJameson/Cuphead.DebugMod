@@ -58,7 +58,11 @@ internal class AirplanePatternSelector : PluginComponent {
     [HarmonyPatch(typeof(AirplaneLevelBulldogParachute), "Awake")]
     [HarmonyPostfix]
     private static void ParachutePinkManipulator(ref PatternString ___pinkString) {
-        if (AirplanePhaseOneParryPattern.Value != AirplanePhaseOneParryPatterns.Random) {
+        if (Level.CurrentMode == Level.Mode.Easy) {
+            if (AirplanePhaseOneParryPatternSimple.Value != AirplanePhaseOneParryPatternsSimple.Random) {
+                ___pinkString.SetSubStringIndex((int)AirplanePhaseOneParryPatternSimple.Value - 2);
+            }
+        } else if (AirplanePhaseOneParryPattern.Value != AirplanePhaseOneParryPatterns.Random) {
             ___pinkString.SetSubStringIndex((int)AirplanePhaseOneParryPattern.Value - 2);
         }
     }

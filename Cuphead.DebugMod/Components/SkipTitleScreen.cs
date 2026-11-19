@@ -6,7 +6,7 @@ namespace BepInEx.CupheadDebugMod.Components;
 public class SkipTitleScreen : PluginComponent {
     private void Update() {
         if (Settings.SkipTitleScreen.Value && SceneManager.GetActiveScene().name == nameof(Scenes.scene_title)) {
-#if !v1_0
+#if !v1_0 && !v1_1
             CreditsScreen.goodEnding = true;
 #endif
             SettingsData.Data.hasBootedUpGame = true;

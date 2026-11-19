@@ -183,40 +183,26 @@ internal class DevilPatternSelector : PluginComponent {
         }
     }
 
-    [HarmonyPatch(typeof(DevilLevelPitchforkProjectileSpawner), MethodType.Constructor, new Type[] { typeof(int), typeof(string) })]
+    // The bouncer, pinwheel and ring spawners are constructed inside LevelInit with the same
+    // projectile count (4) for the first two, so they are set by field reference instead of
+    // by constructor argument. The postfix runs after the game's random pick, and the spawners
+    // read their angle with an increment, which is what GetUserPattern assumes.
+    [HarmonyPatch(typeof(DevilLevelSittingDevil), nameof(DevilLevelSittingDevil.LevelInit))]
     [HarmonyPostfix]
-    public static void PhaseOnePitchforkAnglesManipulator(ref DevilLevelPitchforkProjectileSpawner __instance, int __0) {
-        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            DevilPhaseOneBouncerAnglesNormal setting = __0 switch {
-                4 => DevilPhaseOneBouncerAngleNormal.Value,
-                _ => DevilPhaseOneBouncerAnglesNormal.Random
-            };
-            if (setting != DevilPhaseOneBouncerAnglesNormal.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesNormal>((int)setting);
-            }
-
-            if (__0 == 5 && DevilPhaseOnePinwheelAngle.Value != DevilPhaseOnePinwheelAngles.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOnePinwheelAngles>((int)DevilPhaseOnePinwheelAngle.Value);
-            }
-            if (__0 == 6 && DevilPhaseOneRingAngle.Value != DevilPhaseOneRingAngles.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneRingAngles>((int)DevilPhaseOneRingAngle.Value);
-            }
+    public static void PhaseOnePitchforkAnglesManipulator(ref DevilLevelSittingDevil __instance) {
+        bool isNormal = Level.ScoringData.difficulty == Level.Mode.Normal;
+        bool isHard = Level.ScoringData.difficulty == Level.Mode.Hard;
+        if (isNormal && DevilPhaseOneBouncerAngleNormal.Value != DevilPhaseOneBouncerAnglesNormal.Random) {
+            __instance.pitchforkFourFlameBouncerSpawner.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesNormal>((int)DevilPhaseOneBouncerAngleNormal.Value);
         }
-        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            DevilPhaseOneBouncerAnglesHard setting = __0 switch {
-                4 => DevilPhaseOneBouncerAngleHard.Value,
-                _ => DevilPhaseOneBouncerAnglesHard.Random
-            };
-            if (setting != DevilPhaseOneBouncerAnglesHard.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesHard>((int)setting);
-            }
-
-            if (__0 == 5 && DevilPhaseOnePinwheelAngle.Value != DevilPhaseOnePinwheelAngles.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOnePinwheelAngles>((int)DevilPhaseOnePinwheelAngle.Value);
-            }
-            if (__0 == 6 && DevilPhaseOneRingAngle.Value != DevilPhaseOneRingAngles.Random) {
-                __instance.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneRingAngles>((int)DevilPhaseOneRingAngle.Value);
-            }
+        if (isHard && DevilPhaseOneBouncerAngleHard.Value != DevilPhaseOneBouncerAnglesHard.Random) {
+            __instance.pitchforkFourFlameBouncerSpawner.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneBouncerAnglesHard>((int)DevilPhaseOneBouncerAngleHard.Value);
+        }
+        if ((isNormal || isHard) && DevilPhaseOnePinwheelAngle.Value != DevilPhaseOnePinwheelAngles.Random) {
+            __instance.pitchforkFiveFlameSpinnerSpawner.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOnePinwheelAngles>((int)DevilPhaseOnePinwheelAngle.Value);
+        }
+        if ((isNormal || isHard) && DevilPhaseOneRingAngle.Value != DevilPhaseOneRingAngles.Random) {
+            __instance.pitchforkSixFlameRingSpawner.angleOffsetIndex = Utility.GetUserPattern<DevilPhaseOneRingAngles>((int)DevilPhaseOneRingAngle.Value);
         }
     }
 
