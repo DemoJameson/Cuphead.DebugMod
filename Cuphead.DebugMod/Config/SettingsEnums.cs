@@ -2026,6 +2026,177 @@ namespace BepInEx.CupheadDebugMod.Config {
             Parry
         }
 
+        // Funfair Fever cannonball order: goingBackwards = Rand.Bool(); the three muzzles are stacked top to bottom (Root1..Root3), so forward order fires downward
+        public enum CircusCannonballOrderDirections {
+            Random,
+            Up,
+            Down
+        }
+
+        // Funfair Fever cannonball: pinkString = "O,G,P,O,P,G,P,P"
+        public enum CircusCannonballPinkStarts {
+            Random,
+            [Description("O")]
+            Orange1,
+            [Description("G")]
+            Green1,
+            [Description("P")]
+            Pink1,
+            [Description("O")]
+            Orange2,
+            [Description("P")]
+            Pink2,
+            [Description("G")]
+            Green2,
+            [Description("P")]
+            Pink3,
+            [Description("P")]
+            Pink4
+        }
+
+        // Funfair Fever cannonball: shootRoots = Root1 (top), Root2 (middle), Root3 (bottom)
+        public enum CircusCannonballMuzzleStarts {
+            Random,
+            [Description("1")]
+            One,
+            [Description("2")]
+            Two,
+            [Description("3")]
+            Three
+        }
+
+        // Funfair Fever hotdog: spawnPatternString = "0,1,3,6,7,5,0,4,2,6,1,5,3,0,7,2,4,0,5,2,6,0,3,7,1,6"
+        public enum CircusHotdogSpawnStarts {
+            Random,
+            [Description("0")]
+            Zero1,
+            [Description("1")]
+            One1,
+            [Description("3")]
+            Three1,
+            [Description("6")]
+            Six1,
+            [Description("7")]
+            Seven1,
+            [Description("5")]
+            Five1,
+            [Description("0")]
+            Zero2,
+            [Description("4")]
+            Four1,
+            [Description("2")]
+            Two1,
+            [Description("6")]
+            Six2,
+            [Description("1")]
+            One2,
+            [Description("5")]
+            Five2,
+            [Description("3")]
+            Three2,
+            [Description("0")]
+            Zero3,
+            [Description("7")]
+            Seven2,
+            [Description("2")]
+            Two2,
+            [Description("4")]
+            Four2,
+            [Description("0")]
+            Zero4,
+            [Description("5")]
+            Five3,
+            [Description("2")]
+            Two3,
+            [Description("6")]
+            Six3,
+            [Description("0")]
+            Zero5,
+            [Description("3")]
+            Three3,
+            [Description("7")]
+            Seven3,
+            [Description("1")]
+            One3,
+            [Description("6")]
+            Six4
+        }
+
+        // Funfair Fever hotdog: condimentPatternString = "R,M,K,M,K,R,M"
+        public enum CircusHotdogCondimentStarts {
+            Random,
+            [Description("R")]
+            Relish1,
+            [Description("M")]
+            Mustard1,
+            [Description("K")]
+            Ketchup1,
+            [Description("M")]
+            Mustard2,
+            [Description("K")]
+            Ketchup2,
+            [Description("R")]
+            Relish2,
+            [Description("M")]
+            Mustard3
+        }
+
+        // Funfair Fever hotdog: sidePatternString = "L,R,L,L,R,L,R,R"
+        public enum CircusHotdogSideStarts {
+            Random,
+            [Description("L")]
+            Left1,
+            [Description("R")]
+            Right1,
+            [Description("L")]
+            Left2,
+            [Description("L")]
+            Left3,
+            [Description("R")]
+            Right2,
+            [Description("L")]
+            Left4,
+            [Description("R")]
+            Right3,
+            [Description("R")]
+            Right4
+        }
+
+        // Funfair Fever hotdog: shotDelayPatternString = "3,4,5,3,4,6,3,5,3,3,4,5,3,6,4"
+        public enum CircusHotdogShotDelayStarts {
+            Random,
+            [Description("3")]
+            Three1,
+            [Description("4")]
+            Four1,
+            [Description("5")]
+            Five1,
+            [Description("3")]
+            Three2,
+            [Description("4")]
+            Four2,
+            [Description("6")]
+            Six1,
+            [Description("3")]
+            Three3,
+            [Description("5")]
+            Five2,
+            [Description("3")]
+            Three4,
+            [Description("3")]
+            Three5,
+            [Description("4")]
+            Four3,
+            [Description("5")]
+            Five3,
+            [Description("3")]
+            Three6,
+            [Description("6")]
+            Six2,
+            [Description("4")]
+            Four4
+        }
+
 #if v1_3
         public enum  OldManPhaseOnePatterns {
             Random,

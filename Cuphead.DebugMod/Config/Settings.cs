@@ -114,6 +114,13 @@ public class Settings : PluginComponent {
     public static ConfigEntry<BaronessMinibossesHard> BaronessMiniboss2Hard;
     public static ConfigEntry<BaronessMinibossesHard> BaronessMiniboss3Hard;
     public static ConfigEntry<BaronessWaffleDirections> BaronessWaffleDirection;
+    public static ConfigEntry<CircusCannonballOrderDirections> CircusCannonballOrderDirection;
+    public static ConfigEntry<CircusCannonballPinkStarts> CircusCannonballPinkStart;
+    public static ConfigEntry<CircusCannonballMuzzleStarts> CircusCannonballMuzzleStart;
+    public static ConfigEntry<CircusHotdogSpawnStarts> CircusHotdogSpawnStart;
+    public static ConfigEntry<CircusHotdogCondimentStarts> CircusHotdogCondimentStart;
+    public static ConfigEntry<CircusHotdogSideStarts> CircusHotdogSideStart;
+    public static ConfigEntry<CircusHotdogShotDelayStarts> CircusHotdogShotDelayStart;
     public static ConfigEntry<FlyingBirdPhaseOneDirections> FlyingBirdPhaseOneDirection;
     public static ConfigEntry<FlyingBirdPhaseOnePatternsEasy> FlyingBirdPhaseOnePatternEasy;
     public static ConfigEntry<FlyingBirdPhaseTwoPatternsEasy> FlyingBirdPhaseTwoPatternEasy;
@@ -393,6 +400,13 @@ public class Settings : PluginComponent {
         BaronessMiniboss2Hard = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Expert", BaronessMinibossesHard.Random, --order);
         BaronessMiniboss3Hard = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Expert", BaronessMinibossesHard.Random, --order);
         BaronessWaffleDirection = config.Bind("RNG Baroness Von Bon Bon", "Waffle Direction", BaronessWaffleDirections.Random, --order);
+        CircusCannonballOrderDirection = config.Bind("RNG Funfair Fever", "Cannonball Order Direction", CircusCannonballOrderDirections.Random, --order);
+        CircusCannonballPinkStart = config.Bind("RNG Funfair Fever", "Cannonball Types", CircusCannonballPinkStarts.Random, --order);
+        CircusCannonballMuzzleStart = config.Bind("RNG Funfair Fever", "Cannonball Starting Position", CircusCannonballMuzzleStarts.Random, --order);
+        CircusHotdogSpawnStart = config.Bind("RNG Funfair Fever", "Hotdog Condiment Starting Position", CircusHotdogSpawnStarts.Random, --order);
+        CircusHotdogCondimentStart = config.Bind("RNG Funfair Fever", "Hotdog Condiment Starting Type", CircusHotdogCondimentStarts.Random, --order);
+        CircusHotdogSideStart = config.Bind("RNG Funfair Fever", "Hotdog Starting Side", CircusHotdogSideStarts.Random, --order);
+        CircusHotdogShotDelayStart = config.Bind("RNG Funfair Fever", "Hotdog Starting Shot Delay", CircusHotdogShotDelayStarts.Random, --order);
         FlyingBirdPhaseOneDirection = config.Bind("RNG Wally Warbles", "Phase 1 Direction", FlyingBirdPhaseOneDirections.Random, --order);
         FlyingBirdPhaseOnePatternEasy = config.Bind("RNG Wally Warbles", "Phase 1 Pattern Simple", FlyingBirdPhaseOnePatternsEasy.Random, --order);
         FlyingBirdPhaseTwoPatternEasy = config.Bind("RNG Wally Warbles", "Phase 2 Pattern Simple", FlyingBirdPhaseTwoPatternsEasy.Random, --order);
