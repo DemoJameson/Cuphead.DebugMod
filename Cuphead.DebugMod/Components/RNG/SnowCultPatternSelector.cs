@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if v1_3
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -121,11 +122,12 @@ internal class SnowCultPatternSelector {
         yield break;
     }
 
-    [HarmonyPatch(typeof(SnowCultLevelJackFrost), nameof(SnowCultLevelJackFrost.StartPhase3))]
+    [HarmonyPatch(typeof(SnowCultLevel), nameof(SnowCultLevel.OnStateChanged))]
     [HarmonyPostfix]
-    public static void SnowCultPhaseThreePatternManipulator(ref SnowCultLevelJackFrost __instance) {
-        if (SnowCultPhaseThreePattern.Value != SnowCultPhaseThreePatterns.Random) {
+    public static void SnowCultPhaseThreePatternManipulator(ref SnowCultLevel __instance) {
+        if (SnowCultPhaseThreePattern.Value != SnowCultPhaseThreePatterns.Random && __instance.properties.CurrentState.stateName == LevelProperties.SnowCult.States.JackFrost) {
             __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<SnowCultPhaseThreePatterns>((int) SnowCultPhaseThreePattern.Value);
         }
     }
 }
+#endif

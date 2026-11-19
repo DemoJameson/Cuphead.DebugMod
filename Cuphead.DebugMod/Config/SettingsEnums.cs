@@ -2269,6 +2269,54 @@ namespace BepInEx.CupheadDebugMod.Config {
             C_A_D_E12 
         }
 
+        public enum AirplaneTurretPatternsSimple {
+            Random,
+            [Description("Bot")]
+            E01,
+            [Description("TopL, MidL, TopR-MidR")]
+            A_B_C_D02,
+            [Description("TopL, TopR, MidL-MidR")]
+            A_C_B_D03,
+            [Description("Bot")]
+            E04,
+            [Description("MidL, TopL, TopR-MidR")]
+            B_A_C_D05,
+            [Description("MidL, TopR, TopL-MidL")]
+            B_C_A_B06,
+            [Description("Bot")]
+            E07,
+            [Description("TopL, MidR, MidL-TopR")]
+            A_D_B_C08,
+            [Description("MidL, TopR, TopL-MidR")]
+            B_C_A_D09,
+            [Description("Bot")]
+            E10,
+            [Description("MidR, MidL, TopL-TopR")]
+            D_B_A_C11,
+            [Description("TopR, TopL, MidL-MidR")]
+            C_A_B_D12
+        }
+
+        public enum AirplaneTurretPatternsHard {
+            Random,
+            [Description("MidR-Bot, TopL-TopR, TopL-MidL-TopR")]
+            D_E_A_C_A_B_C01,
+            [Description("TopL-MidL, TopR-MidR, MidL-Bot")]
+            A_B_C_D_B_E02,
+            [Description("TopL-TopR, MidL-Bot, TopL-TopR-MidR")]
+            A_C_B_E_A_C_D03,
+            [Description("TopR-MidR, TopL-MidL, TopR-Bot")]
+            C_D_A_B_C_E04,
+            [Description("MidL-MidR, TopL-Bot, TopL-MidL-MidR")]
+            B_D_A_E_A_B_D05,
+            [Description("TopL-MidR, MidL-TopR, TopL-Bot")]
+            A_D_B_C_A_E06,
+            [Description("MidL-Bot, TopL-MidR, MidL-TopR-MidR")]
+            B_E_A_D_B_C_D07,
+            [Description("MidL-TopR, TopL-MidR, MidL-Bot")]
+            B_C_A_D_B_E08
+        }
+
         public enum RumRunnersPhaseOneSpiderActionsEasyNormal {
             Random,
             Caterpillar01,

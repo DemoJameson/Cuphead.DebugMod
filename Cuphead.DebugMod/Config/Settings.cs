@@ -256,6 +256,8 @@ public class Settings : PluginComponent {
     public static ConfigEntry<AirplanePhaseOneParryPatternsSimple> AirplanePhaseOneParryPatternSimple;
     public static ConfigEntry<AirplanePhaseTwoTerrierRotationDirections> AirplanePhaseTwoTerrierRotationDirection;
     public static ConfigEntry<AirplaneTurretPatterns> AirplaneTurretPattern;
+    public static ConfigEntry<AirplaneTurretPatternsSimple> AirplaneTurretPatternSimple;
+    public static ConfigEntry<AirplaneTurretPatternsHard> AirplaneTurretPatternHard;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutPositions> RumRunnersPhaseThreeSnoutPosition;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutActionsNormal> RumRunnersPhaseThreeSnoutActionNormal;
     public static ConfigEntry<RumRunnersPhaseThreeSnoutActionsHard> RumRunnersPhaseThreeSnoutActionHard;
@@ -269,7 +271,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<RumRunnersPhaseOneMinePlacementsEasy> RumRunnersPhaseOneMinePlacementEasy;
     public static ConfigEntry<RumRunnersPhaseOneMinePlacementsNormal> RumRunnersPhaseOneMinePlacementNormal;
     public static ConfigEntry<RumRunnersPhaseOneMinePlacementsHard> RumRunnersPhaseOneMinePlacementHard;
-    public static ConfigEntry<RumRunnersSnoutPositions> RumRunnersSnoutPosition;
     public static ConfigEntry<SaltbakerPhaseOneTablePatterns> SaltbakerPhaseOneTablePattern;
     public static ConfigEntry<SaltbakerPhaseOnePatterns> SaltbakerPhaseOnePattern;
     public static ConfigEntry<SaltbakerParryStringPatterns> SaltbakerParryStringPattern;
@@ -533,7 +534,9 @@ public class Settings : PluginComponent {
         AirplanePhaseOneParryPatternSimple = config.Bind("RNG The Howling Aces", "Phase 1 Parry Pattern Simple", AirplanePhaseOneParryPatternsSimple.Random, --order);
         AirplanePhaseOneAttackDelay = config.Bind("RNG The Howling Aces", "Phase 1 Attack Delay (2.5-4.0 for Simple, 2.0-3.5 for Regular, 1.5-3.0 for Expert. -1 for random)", -1f, --order);
         AirplanePhaseTwoTerrierRotationDirection = config.Bind("RNG The Howling Aces", "Phase 2 Rotation", AirplanePhaseTwoTerrierRotationDirections.Random, --order);
-        AirplaneTurretPattern = config.Bind("RNG Howling Aces", "Phase Three Turret Pattern", AirplaneTurretPatterns.Random, --order);
+        AirplaneTurretPattern = config.Bind("RNG The Howling Aces", "Phase Three Turret Pattern", AirplaneTurretPatterns.Random, --order);
+        AirplaneTurretPatternSimple = config.Bind("RNG The Howling Aces", "Phase Three Turret Pattern Simple", AirplaneTurretPatternsSimple.Random, --order);
+        AirplaneTurretPatternHard = config.Bind("RNG The Howling Aces", "Phase Three Turret Pattern Expert", AirplaneTurretPatternsHard.Random, --order);
         RumRunnersPhaseOneSpiderActionEasy = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Simple", RumRunnersPhaseOneSpiderActionsEasy.Random, --order);
         RumRunnersPhaseOneSpiderActionEasyNormal = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Regular", RumRunnersPhaseOneSpiderActionsEasyNormal.Random, --order);
         RumRunnersPhaseOneSpiderActionHard = config.Bind("RNG Moonshine Mob", "Phase 1 Spider Pattern Expert", RumRunnersPhaseOneSpiderActionsHard.Random, --order);
@@ -547,7 +550,6 @@ public class Settings : PluginComponent {
         RumRunnersPhaseThreeSnoutPosition = config.Bind("RNG Moonshine Mob", "Phase 3 Snout Position", RumRunnersPhaseThreeSnoutPositions.Random, --order);
         RumRunnersPhaseThreeSnoutActionNormal = config.Bind("RNG Moonshine Mob", "Phase 3 Snout Pattern Regular", RumRunnersPhaseThreeSnoutActionsNormal.Random, --order);
         RumRunnersPhaseThreeSnoutActionHard = config.Bind("RNG Moonshine Mob", "Phase 3 Snout Pattern Expert", RumRunnersPhaseThreeSnoutActionsHard.Random, --order);
-        RumRunnersSnoutPosition = config.Bind("RNG Moonshine Mob", "Snout Position", RumRunnersSnoutPositions.Random, --order);
         SaltbakerPhaseOneTablePattern = config.Bind("RNG Chef Saltbaker", "Phase One Table Pattern", SaltbakerPhaseOneTablePatterns.Random, --order);
         SaltbakerPhaseOnePattern = config.Bind("RNG Chef Saltbaker", "Phase 1 Pattern", SaltbakerPhaseOnePatterns.Random, --order);
         SaltbakerParryStringPattern = config.Bind("RNG Chef Saltbaker", "Sugarcubes Parry String", SaltbakerParryStringPatterns.Random, --order);

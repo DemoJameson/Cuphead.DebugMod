@@ -70,7 +70,15 @@ internal class AirplanePatternSelector : PluginComponent {
     [HarmonyPatch(typeof(AirplaneLevelLeader), nameof(AirplaneLevelLeader.laser_main_cr))]
     [HarmonyPostfix]
     public static void AirplaneTurretPatternManipulator(ref AirplaneLevelLeader __instance) {
-        if (AirplaneTurretPattern.Value != AirplaneTurretPatterns.Random) {
+        if (Level.CurrentMode == Level.Mode.Easy) {
+            if (AirplaneTurretPatternSimple.Value != AirplaneTurretPatternsSimple.Random) {
+                __instance.laserPositionStringsMainIndex = Utility.GetUserPattern<AirplaneTurretPatternsSimple>((int) AirplaneTurretPatternSimple.Value);
+            }
+        } else if (Level.CurrentMode == Level.Mode.Hard) {
+            if (AirplaneTurretPatternHard.Value != AirplaneTurretPatternsHard.Random) {
+                __instance.laserPositionStringsMainIndex = Utility.GetUserPattern<AirplaneTurretPatternsHard>((int) AirplaneTurretPatternHard.Value);
+            }
+        } else if (AirplaneTurretPattern.Value != AirplaneTurretPatterns.Random) {
             __instance.laserPositionStringsMainIndex = Utility.GetUserPattern<AirplaneTurretPatterns>((int) AirplaneTurretPattern.Value);
         }
     }

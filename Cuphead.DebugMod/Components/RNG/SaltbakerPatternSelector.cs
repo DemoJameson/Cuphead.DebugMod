@@ -36,7 +36,7 @@ namespace BepInEx.CupheadDebugMod.Components.RNG {
             }
         }
 
-        [HarmonyPatch(typeof(SaltbakerLevelSaltbaker), nameof(SaltbakerLevelSaltbaker.sugarcubes_cr))]
+        [HarmonyPatch(typeof(SaltbakerLevelSaltbaker), nameof(SaltbakerLevelSaltbaker.LevelInit))]
         [HarmonyPostfix]
         public static void PhaseOneSugarParryManipulator(ref SaltbakerLevelSaltbaker __instance) {
             if (SaltbakerParryStringPattern.Value != SaltbakerParryStringPatterns.Random) {

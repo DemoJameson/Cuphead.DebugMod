@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using BepInEx.CupheadDebugMod.Config;
 using UnityEngine;
+using static LevelProperties.FlyingGenie;
 using static PlayerData.PlayerLoadouts;
 
 namespace BepInEx.CupheadDebugMod.Components;
@@ -182,38 +183,46 @@ public class DebugInfo : PluginComponent {
                 }
                 if (Settings.WeaponCooldowns.Value) {
 
-                    string weaponInfo = $"";
+                    //string weaponInfo = $"";
                     if (planeLevelNames.Contains(CurrentSceneName)) {
 #if v1_3
                         if (GameInfoHelper.isChalice) {
-                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                            string weaponInfo = $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_3way]}";
+                            GUILayout.Label(weaponInfo);
+                            string weaponInfo2 = $"Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_chalice_weapon_bomb]}";
+                            GUILayout.Label(weaponInfo2);
                         }
                         else {
 #endif
-                            weaponInfo += $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]} Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+                            string weaponInfo = $"Peashooter: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_peashot]}";
+                            GUILayout.Label(weaponInfo);
+                            string weaponInfo2 = $"Bomb: {GameInfoHelper.weaponsTimer[Weapon.plane_weapon_bomb]}";
+                            GUILayout.Label(weaponInfo2);
 #if v1_3
-                    }
+                        }
 #endif
                     } else {
                         PlayerLoadout loadOut = PlayerData.Data.Loadouts.GetPlayerLoadout(PlayerId.PlayerOne);
                       
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.primaryWeapon, out int frame1)) {
-                            weaponInfo += $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
+                            string weaponInfo = $"{GameInfoHelper.GetWeaponName(loadOut.primaryWeapon)}: {frame1}";
                             if (loadOut.primaryWeapon == Weapon.level_weapon_charge) {
                                 weaponInfo += $" {GameInfoHelper.chargeFrames}";
                             }
+                            GUILayout.Label(weaponInfo);
                         }
 
                         if (GameInfoHelper.weaponsTimer.TryGetValue(loadOut.secondaryWeapon, out int frame2)) {
 
-                            weaponInfo += $" {GameInfoHelper.GetWeaponName(loadOut.secondaryWeapon)}: {frame2}";
+                            string weaponInfo2 = $"{GameInfoHelper.GetWeaponName(loadOut.secondaryWeapon)}: {frame2}";
 
                             if (loadOut.secondaryWeapon == Weapon.level_weapon_charge) {
-                                weaponInfo += $" {GameInfoHelper.chargeFrames}";
+                                weaponInfo2 += $" {GameInfoHelper.chargeFrames}";
                             }
+                            GUILayout.Label(weaponInfo2);
                         }
                     }
-                    GUILayout.Label(weaponInfo);
+                    //GUILayout.Label(weaponInfo);
                 }
                 if (Settings.OnEXWeaponCooldown.Value) {
                     GUILayout.Label(GameInfoHelper.onEXWeaponName + ": " + GameInfoHelper.onEXWeaponCooldown.ToString());
