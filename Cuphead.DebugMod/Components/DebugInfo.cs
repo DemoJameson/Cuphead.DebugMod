@@ -116,7 +116,7 @@ public class DebugInfo : PluginComponent {
 
             if (guiPanelState == 0) {
                 GUISetDefElements();
-                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("Cuphead Debug Mod");
                 GUILayout.Label("Mod Version " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString());
@@ -129,16 +129,16 @@ public class DebugInfo : PluginComponent {
             // add health bar if available
             if (guiPanelState > 0 && CurrentLevel.type == Level.Type.Battle && CurrentLevel.timeline.health > 0f) {
                 GUISetDefElements();
-                float num = 241f;
-                float num2 = 48f;
+                float num = 200f;
+                float num2 = 40f;
                 float num3 = CurrentLevel.timeline.health - CurrentLevel.timeline.damage;
                 float num4 = num * (num3 / CurrentLevel.timeline.health);
                 GUI.skin.label.alignment = TextAnchor.MiddleLeft;
-                GUI.Label(GameAreaRect(10f, 10f, 117f, 48f), "<size=" + ScaledFontSize(35).ToString() + "><b>BOSS:</b></size>");
-                DrawRect(GameAreaRect(126f, 9f, num + 2f, num2 + 2f), Color.gray);
-                DrawRect(GameAreaRect(127f, 10f, num, num2), Color.black);
+                GUI.Label(GameAreaRect(10f, 10f, 100f, 40f), "<size=" + ScaledFontSize(30).ToString() + "><b>BOSS:</b></size>");
+                DrawRect(GameAreaRect(109f, 9f, num + 2f, num2 + 2f), Color.gray);
+                DrawRect(GameAreaRect(110f, 10f, num, num2), Color.black);
                 if (CurrentLevel.timeline.damage < CurrentLevel.timeline.health) {
-                    DrawRect(GameAreaRect(127f, 10f, num4, num2), Color.red);
+                    DrawRect(GameAreaRect(110f, 10f, num4, num2), Color.red);
                 }
 
                 for (int num5 = CurrentLevel.timeline.events.Count - 1; num5 >= 0; num5--) {
@@ -148,12 +148,12 @@ public class DebugInfo : PluginComponent {
                         color = Color.gray;
                     }
 
-                    DrawRect(GameAreaRect(127f + (num6 - 2f), 10f, 2f, num2), color);
+                    DrawRect(GameAreaRect(110f + (num6 - 2f), 10f, 2f, num2), color);
                 }
 
                 GUI.skin.label.alignment = TextAnchor.MiddleCenter;
-                GUI.skin.label.fontSize = ScaledFontSize(32);
-                GUI.Label(GameAreaRect(127f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
+                GUI.skin.label.fontSize = ScaledFontSize(28);
+                GUI.Label(GameAreaRect(110f, 10f, num, num2), num3.ToString("F2") + "/" + CurrentLevel.timeline.health);
                 GUISetDefElements();
             }
 
@@ -166,7 +166,7 @@ public class DebugInfo : PluginComponent {
 
             if (guiPanelState == 2) {
                 GUISetDefElements();
-                GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 600f));
+                GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 600f));
                 GUILayout.BeginVertical("box");
                 GUILayout.Label("[LEVEL DATA]");
                 if (Settings.RTATime.Value) {
@@ -310,7 +310,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsMapScene(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[GLOBAL DATA]");
             GUILayout.Label("Deaths P1: " + pdDeaths1);
@@ -332,7 +332,7 @@ public class DebugInfo : PluginComponent {
 
         if (IsWinScreen(CurrentSceneName)) {
             GUISetDefElements();
-            GUILayout.BeginArea(GameAreaRect(10f, 63f, 359f, 620f));
+            GUILayout.BeginArea(GameAreaRect(10f, 52f, 300f, 620f));
             GUILayout.BeginVertical("box");
             GUILayout.Label("[Star Skip Info]");
             GUILayout.Label("Star skip offset: " + winScreenStarSkipFrameOffset.ToString());
@@ -426,7 +426,7 @@ public class DebugInfo : PluginComponent {
     }
 
     private void GUISetDefElements() {
-        GUI.skin.label.fontSize = ScaledFontSize(22);
+        GUI.skin.label.fontSize = ScaledFontSize(24);
         GUI.skin.label.fontStyle = FontStyle.Bold;
         GUI.skin.label.alignment = TextAnchor.UpperLeft;
     }
