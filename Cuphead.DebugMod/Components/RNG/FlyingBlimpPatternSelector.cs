@@ -66,7 +66,7 @@ internal class FlyingBlimpPatternSelector : PluginComponent {
                 i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("ArrayExtensions::GetRandom"))) {
             bool positions = stringPicks == 0;
             cursor.EmitDelegate<Func<string, string>>(rolled => {
-                string[] strings = FlyingBlimpStarStringsFor(positions);
+                string[] strings = RngSpots.FlyingBlimpStarStrings(Mode, positions);
                 int vanilla = Array.IndexOf(strings, rolled);
                 if (vanilla < 0) {
                     return rolled;
@@ -135,9 +135,5 @@ internal class FlyingBlimpPatternSelector : PluginComponent {
             cursor.EmitDelegate<Func<float, float>>(rolled =>
                 RngState.Float(RngSpots.FlyingBlimpMoonStarSpeed, Mode, rolled));
         }
-    }
-
-    private static string[] FlyingBlimpStarStringsFor(bool positions) {
-        return RngSpots.FlyingBlimpStarStrings(Mode, positions);
     }
 }

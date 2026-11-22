@@ -1,8 +1,7 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
 using BepInEx;
 
@@ -169,7 +168,6 @@ internal static class RngProfiles {
     private static readonly Dictionary<string, RngProfile> Profiles = new Dictionary<string, RngProfile>(StringComparer.Ordinal);
     private static string activeName = CustomName;
     private static bool initialized;
-    private static bool legacyImported;
 
     private static string FilePath {
         get { return Path.Combine(Paths.ConfigPath, Path.Combine("Cuphead.DebugMod", "rng_profiles.cfg")); }
@@ -200,7 +198,6 @@ internal static class RngProfiles {
 
         BuildBuiltInProfiles();
         Load();
-        LegacyImport();
         Save();
     }
 
@@ -242,10 +239,6 @@ internal static class RngProfiles {
         return profile.GetSpot(spot.Key(mode));
     }
 
-    public static bool IsModified(RngSpot spot, Level.Mode mode) {
-        return GetSpotConfig(spot, mode) != null;
-    }
-
     public static void ClearSpot(RngSpot spot, Level.Mode mode) {
         RngProfile profile = Active;
         if (profile == null || spot == null || profile.ReadOnly) {
@@ -278,10 +271,6 @@ internal static class RngProfiles {
         }
         RngState.ResetSession();
         Save();
-    }
-
-    public static void SetFloatValue(RngSpot spot, Level.Mode mode, float value) {
-        SetFloatSequence(spot, mode, new List<float> { value }, true);
     }
 
     /// <summary>Writes a float spot's sequence: step 1 first, then the remaining steps in
@@ -596,8 +585,7 @@ internal static class RngProfiles {
     private static void BuildBuiltInProfiles() {
         Profiles[VanillaName] = new RngProfile(VanillaName, true, true);
 
-        // Ported from the legacy RngOverrideComponent dictionary; covers The Devil only
-        // while the pilot migration runs (other bosses keep the legacy mechanism).
+        // Ported from the old RngOverrideComponent dictionary.
         RngProfile perfect = new RngProfile(PerfectName, true, true);
         RngSpot patternStart = RngSpots.Find(RngSpots.DevilPhase1PatternStart);
         RngSpot headFirst = RngSpots.Find(RngSpots.DevilPhase1HeadFirst);
@@ -695,8 +683,6 @@ internal static class RngProfiles {
                 if (current == null) {
                     if (key == "active") {
                         activeName = value;
-                    } else if (key == "legacy_devil_import" && value == "done") {
-                        legacyImported = true;
                     }
                     continue;
                 }
@@ -752,7 +738,7 @@ internal static class RngProfiles {
     }
 
     private static RngProfile ParseSectionHeader(string line) {
-        // [profile Name] — name may be quoted
+        // [profile Name] â€” name may be quoted
         string inner = line.Substring(1, line.Length - 2).Trim();
         if (!inner.StartsWith("profile", StringComparison.Ordinal)) {
             return null;
@@ -1066,9 +1052,6 @@ internal static class RngProfiles {
             sb.AppendLine("; Cuphead.DebugMod RNG profiles.");
             sb.AppendLine("; A missing line always means vanilla. Profiles can be edited by hand while the game runs.");
             sb.AppendLine("active = " + activeName);
-            if (legacyImported) {
-                sb.AppendLine("legacy_devil_import = done");
-            }
 
             List<RngProfile> userProfiles = new List<RngProfile>();
             foreach (RngProfile profile in Profiles.Values) {
@@ -1224,509 +1207,4 @@ internal static class RngProfiles {
         return sb.ToString().Trim();
     }
 
-    // ------------------------------------------------------------------
-    // One-time import of the legacy per-boss BepInEx entries for The Devil,
-    // so existing users keep their values after the config moved here.
-    // ------------------------------------------------------------------
-
-    private static readonly string[] LegacyPhase1Patterns = { "Head1", "Clap1", "Pitchfork1", "Clap2", "Head2", "Clap3", "Pitchfork2" };
-    private static readonly string[] LegacySpiderOffsets = {
-        "A_Neg150", "B_50", "C_Neg50", "D_300", "E_Neg200", "F_50", "G_150", "H_Neg300", "I_0", "J_100",
-        "K_Neg50", "L_200", "M_50", "N_0", "O_100", "P_Neg150", "Q_50", "R_Neg250", "S_200", "T_0"
-    };
-    private static readonly string[] LegacyBouncerAngles = {
-        "A_55", "B_30", "C_35", "D_60", "E_40", "F_70", "G_20", "H_35", "I_50", "J_100", "K_200"
-    };
-    private static readonly string[] LegacyBouncerAnglesHard = {
-        "A_55", "B_30", "C_35", "D_60", "E_40", "F_70", "G_20", "H_35", "I_50", "J_100", "K_200",
-        "L_35", "M_60", "N_35", "O_55", "P_100", "Q_70", "R_20", "S_30", "T_50", "U_40", "V_200"
-    };
-    private static readonly string[] LegacyPinwheelAngles = {
-        "A_0", "B_10", "C_Neg10", "D_0", "E_05", "F_Neg05", "G_Neg20", "H_20", "I_0", "J_30", "K_Neg30"
-    };
-    private static readonly string[] LegacyRingAngles = {
-        "A_0", "B_10", "C_Neg10", "D_25", "E_05", "F_30", "G_Neg25", "H_15", "I_35", "J_20", "K_Neg20"
-    };
-    private static readonly string[] LegacyPhase2Normal = {
-        "BombEye01", "SkullEye01", "BombEye02", "SkullEye02", "BombEye03", "SkullEye03", "SkullEye04", "BombEye04",
-        "SkullEye05", "SkullEye06", "SkullEye07", "BombEye05", "SkullEye08", "BombEye06", "SkullEye09", "BombEye07",
-        "SkullEye10", "SkullEye11"
-    };
-    private static readonly string[] LegacyPhase2Hard = {
-        "BombEye01", "SkullEye01", "BombEye02", "BombEye03", "SkullEye02", "BombEye04", "SkullEye03", "SkullEye04",
-        "BombEye05", "SkullEye05", "BombEye06", "BombEye07", "SkullEye06", "BombEye08", "SkullEye07", "BombEye09",
-        "SkullEye08", "SkullEye09"
-    };
-    private static readonly string[] LegacyPlatformRise = {
-        "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen"
-    };
-    private static readonly string[] LegacyHopCounts = { "Num_3", "Num_4", "Num_5" };
-    private static readonly string[] LegacyPitchforkTypes = { "Bouncer", "Pinwheel", "Ring" };
-    private static readonly string[] LegacySkullTypes = { "Regular1", "Regular2", "Regular3", "Regular4", "Parry" };
-
-    private static void LegacyImport() {
-        if (legacyImported) {
-            return;
-        }
-
-        try {
-            string legacyPath = Path.Combine(Paths.ConfigPath, "Cuphead.DebugMod.cfg");
-            if (File.Exists(legacyPath)) {
-                ImportLegacyFile(legacyPath);
-            }
-        } catch (Exception) {
-        }
-
-        legacyImported = true;
-    }
-
-    private static void ImportLegacyFile(string path) {
-        string[] lines = File.ReadAllLines(path);
-        string section = null;
-        RngProfile custom = GetOrCreateCustom();
-
-        foreach (string rawLine in lines) {
-            string line = rawLine.Trim();
-            if (line.Length == 0 || line.StartsWith(";", StringComparison.Ordinal) || line.StartsWith("#", StringComparison.Ordinal)) {
-                continue;
-            }
-
-            if (line.StartsWith("[", StringComparison.Ordinal)) {
-                section = line.Trim('[', ']');
-                continue;
-            }
-
-            if (section != "RNG The Devil" && section != "RNG Ribby And Croaks" && section != "RNG Goopy Le Grande" && section != "RNG Hilda Berg") {
-                continue;
-            }
-
-            int separator = line.IndexOf('=');
-            if (separator <= 0) {
-                continue;
-            }
-            string key = line.Substring(0, separator).Trim();
-            string value = line.Substring(separator + 1).Trim();
-            if (section == "RNG The Devil") {
-                ImportLegacyKey(custom, key, value);
-            } else if (section == "RNG Ribby And Croaks") {
-                ImportLegacyFrogKey(custom, key, value);
-            } else if (section == "RNG Goopy Le Grande") {
-                ImportLegacyGoopyKey(custom, key, value);
-            } else {
-                ImportLegacyBlimpKey(custom, key, value);
-            }
-        }
-    }
-
-    private static void ImportLegacyKey(RngProfile custom, string key, string value) {
-        if (string.IsNullOrEmpty(value) || value == "Random" || value == "-1" || value == "-1f") {
-            return;
-        }
-
-        int index = IndexOfLegacy(value, null);
-        float floatValue;
-        bool isFloat = float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out floatValue);
-
-        switch (key) {
-            case "Phase 1 Pattern":
-                index = IndexOfLegacy(value, LegacyPhase1Patterns);
-                if (index >= 0) {
-                    SeedStartPoolAllDifficulties(custom, RngSpots.DevilPhase1PatternStart, index);
-                }
-                break;
-            case "Phase 1 Head Type":
-                if (value == "Dragon") {
-                    SeedPool(custom, RngSpots.DevilPhase1HeadFirst, 0);
-                } else if (value == "Spider") {
-                    SeedPool(custom, RngSpots.DevilPhase1HeadFirst, 1);
-                }
-                break;
-            case "Phase 1 Dragon Direction":
-                if (value == "Left") {
-                    SeedPool(custom, RngSpots.DevilPhase1DragonLeft, 0);
-                } else if (value == "Right") {
-                    SeedPool(custom, RngSpots.DevilPhase1DragonLeft, 1);
-                }
-                break;
-            case "Phase 1 Spider Offset":
-                index = IndexOfLegacy(value, LegacySpiderOffsets);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1SpiderOffsetStart, index);
-                }
-                break;
-            case "Phase 1 Spider Hop Count":
-                index = IndexOfLegacy(value, LegacyHopCounts);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1SpiderHopCount, index);
-                }
-                break;
-            case "Phase 1 Pitchfork Type":
-                index = IndexOfLegacy(value, LegacyPitchforkTypes);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1PitchforkType, index);
-                }
-                break;
-            case "Phase 1 Bouncer Parry Index":
-                index = IndexOfLegacy(value, new[] { "One", "Two", "Three", "Four" });
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1BouncerParryIndex, index);
-                }
-                break;
-            case "Phase 1 Ring Parry Index":
-                index = IndexOfLegacy(value, new[] { "One", "Two", "Three", "Four", "Five", "Six" });
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1RingParryIndex, index);
-                }
-                break;
-            case "Phase 1 Bouncer Angle Regular":
-                index = IndexOfLegacy(value, LegacyBouncerAngles);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1BouncerAngleStart + "@normal", index);
-                }
-                break;
-            case "Phase 1 Bouncer Angle Expert":
-                index = IndexOfLegacy(value, LegacyBouncerAnglesHard);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1BouncerAngleStart + "@hard", index);
-                }
-                break;
-            case "Phase 1 Pinwheel Angle":
-                index = IndexOfLegacy(value, LegacyPinwheelAngles);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1PinwheelAngleStart, index);
-                }
-                break;
-            case "Phase 1 Ring Angle":
-                index = IndexOfLegacy(value, LegacyRingAngles);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase1RingAngleStart, index);
-                }
-                break;
-            case "Phase 2 Regular":
-                index = IndexOfLegacy(value, LegacyPhase2Normal);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase2PatternStart + "@normal", index);
-                }
-                break;
-            case "Phase 2 Expert":
-                index = IndexOfLegacy(value, LegacyPhase2Hard);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase2PatternStart + "@hard", index);
-                }
-                break;
-            case "Phase 2 Bomb Direction":
-                if (value == "Left") {
-                    SeedPool(custom, RngSpots.DevilPhase2BombLeft, 0);
-                } else if (value == "Right") {
-                    SeedPool(custom, RngSpots.DevilPhase2BombLeft, 1);
-                }
-                break;
-            case "Phase 2 Platform Rise Pattern":
-                index = IndexOfLegacy(value, LegacyPlatformRise);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase2PlatformRiseStart, index);
-                }
-                break;
-            case "Phase 1 Clap Delay (0.1-0.5, -1 for random)":
-                if (isFloat && floatValue > 0f) {
-                    SeedFloat(custom, RngSpots.DevilPhase1ClapDelay, floatValue);
-                }
-                break;
-            case "Phase 1 Spider Delay (0.3-0.7, -1 for random)":
-                if (isFloat && floatValue > 0f) {
-                    SeedFloat(custom, RngSpots.DevilPhase1SpiderDelay, floatValue);
-                }
-                break;
-            case "Phase 1 Bouncer Delay (1.0-1.5. -1 for random)":
-                if (isFloat && floatValue > 0f) {
-                    SeedFloat(custom, RngSpots.DevilPhase1BouncerDelay, floatValue);
-                }
-                break;
-            case "Phase 1 Ring Delay (1.0-1.5. -1 for random)":
-                if (isFloat && floatValue > 0f) {
-                    SeedFloat(custom, RngSpots.DevilPhase1RingDelay, floatValue);
-                }
-                break;
-            case "Phase 2 Platform Rise Delay (2.0-3.5 for Regular, 1.5-2.8 for Expert. -1 for random)":
-                if (isFloat && floatValue > 0f) {
-                    SeedFloat(custom, RngSpots.DevilPhase2PlatformRiseDelay + "@normal", floatValue);
-                    SeedFloat(custom, RngSpots.DevilPhase2PlatformRiseDelay + "@hard", floatValue);
-                }
-                break;
-            case "Phase 3 Skull Type":
-                index = IndexOfLegacy(value, LegacySkullTypes);
-                if (index >= 0) {
-                    SeedPool(custom, RngSpots.DevilPhase3SkullType, index);
-                }
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Imports the legacy "RNG Ribby And Croaks" section. Option positions are resolved
-    /// through the live catalog, so per-difficulty option orders (the frogs list the two
-    /// phase-1 attacks in opposite order on Simple and Regular) come out right.
-    /// </summary>
-    private static void ImportLegacyFrogKey(RngProfile custom, string key, string value) {
-        if (string.IsNullOrEmpty(value)) {
-            return;
-        }
-
-        switch (key) {
-            case "Phase 1 Pattern":
-                SeedFrogsOptionByLabel(custom, RngSpots.FrogsPhase1PatternStart, value, "Fireflies", "Punches");
-                break;
-            case "Phase 1 Fireflies Pattern Simple":
-                SeedFrogsOptionByLabel(custom, RngSpots.FrogsPhase1FirefliesPattern + "@easy", value);
-                break;
-            case "Phase 1 Fireflies Pattern Regular":
-                SeedFrogsOptionByLabel(custom, RngSpots.FrogsPhase1FirefliesPattern + "@normal", value);
-                break;
-            case "Phase 1 Fireflies Pattern Expert":
-                SeedFrogsOptionByLabel(custom, RngSpots.FrogsPhase1FirefliesPattern + "@hard", value);
-                break;
-            case "Final Phase Pattern":
-                int slotPosition;
-                if (value == "Snake") {
-                    slotPosition = 0;
-                } else if (value == "Tiger") {
-                    slotPosition = 1;
-                } else if (value == "Bison") {
-                    slotPosition = 2;
-                } else {
-                    slotPosition = -1;
-                }
-                if (slotPosition >= 0) {
-                    // the slot phase only exists on Regular and Expert
-                    SeedPool(custom, RngSpots.FrogsFinalSlotMode + "@normal", slotPosition);
-                    SeedPool(custom, RngSpots.FrogsFinalSlotMode + "@hard", slotPosition);
-                }
-                break;
-            case "Final Phase Bulls Laser Pattern (0/1, blank for random. e.g. 00010001000)":
-                List<int> sides = new List<int>();
-                foreach (char character in value) {
-                    if (character == '0') {
-                        sides.Add(0);
-                    } else if (character == '1') {
-                        sides.Add(1);
-                    }
-                }
-                if (sides.Count > 0) {
-                    // the plan repeats per Bulls attack; the last side continues after it
-                    foreach (string suffix in new[] { "@normal", "@hard" }) {
-                        RngSpotConfig config = custom.GetOrCreateSpot(RngSpots.FrogsFinalBisonLaserSide + suffix);
-                        config.Pool.Clear();
-                        config.Sequence.Clear();
-                        config.LockPosition = null;
-                        config.Sequence.AddRange(sides);
-                        config.LoopSequence = true;
-                    }
-                }
-                break;
-        }
-    }
-
-    /// <summary>Pins a spot on every difficulty to the option whose label matches the legacy
-    /// value; unknown labels are ignored.</summary>
-    private static void SeedFrogsOptionByLabel(RngProfile custom, string spotId, string label, params string[] accepted) {
-        bool matches = accepted == null || accepted.Length == 0;
-        if (!matches) {
-            foreach (string candidate in accepted) {
-                if (candidate == label) {
-                    matches = true;
-                    break;
-                }
-            }
-        }
-        if (!matches) {
-            return;
-        }
-
-        RngSpot spot = RngSpots.FindByStoredKey(spotId);
-        if (spot == null || spot.Options == null) {
-            return;
-        }
-
-        foreach (Level.Mode mode in new[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard }) {
-            RngOption[] options = spot.Options(mode);
-            for (int i = 0; i < options.Length; i++) {
-                if (options[i].Label == label) {
-                    SeedPool(custom, spot.Key(mode), options[i].Value);
-                    break;
-                }
-            }
-        }
-    }
-
-    /// <summary>
-    /// Imports the legacy "RNG Goopy Le Grande" section. Positions resolve through the
-    /// live per-difficulty catalog, so the same string lands correctly everywhere.
-    /// </summary>
-    private static void ImportLegacyGoopyKey(RngProfile custom, string key, string value) {
-        if (string.IsNullOrEmpty(value)) {
-            return;
-        }
-
-        // legacy entry names carry the difficulty; the slug letters map 1:1 onto the game's
-        // cycle order, so the position works for every difficulty
-        switch (key) {
-            case "Phase 1 Jump Count Regular":
-                SeedJumpCountByNumber(custom, value);
-                break;
-            case "Phase 1 Jump Pattern Regular":
-                SeedJumpPatternBySlug(custom, value);
-                break;
-        }
-    }
-
-    private static void SeedJumpCountByNumber(RngProfile custom, string value) {
-        // legacy enum names ("Seven = 7") map to the count itself
-        int count;
-        string digits = new string(value.TakeWhile(c => char.IsDigit(c)).ToArray());
-        if (digits.Length == 0 || !int.TryParse(digits, out count) || count < 5 || count > 7) {
-            return;
-        }
-        foreach (Level.Mode mode in new[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard }) {
-            SeedPool(custom, RngSpots.SlimeJumpCount + "@" + RngSpot.ModeKey(mode), count - 5);
-        }
-    }
-
-    private static void SeedJumpPatternBySlug(RngProfile custom, string slug) {
-        // legacy slug letters map 1:1 onto the game's cycle order ("Low08" = position 8)
-        if (string.IsNullOrEmpty(slug) || slug.Length < 2) {
-            return;
-        }
-        string digits = new string(slug.SkipWhile(c => !char.IsDigit(c)).ToArray());
-        int position;
-        if (digits.Length == 0 || !int.TryParse(digits, out position) || position < 1) {
-            return;
-        }
-
-        foreach (Level.Mode mode in new[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard }) {
-            // each difficulty has its own cycle length; seed wherever the slug matches
-            int positionIndex = position - 1;
-            RngSpot spot = RngSpots.Find(RngSpots.SlimeJumpPatternStart);
-            if (spot == null || spot.Options == null) {
-                continue;
-            }
-            RngOption[] options = spot.Options(mode);
-            if (positionIndex >= options.Length) {
-                continue;
-            }
-            SeedPool(custom, RngSpots.SlimeJumpPatternStart + "@" + RngSpot.ModeKey(mode), positionIndex);
-        }
-    }
-
-    /// <summary>
-    /// Imports the legacy "RNG Hilda Berg" section. Legacy option names ("Shoot3",
-    /// "Tornado2") resolve through the live per-difficulty cycle by attack type and
-    /// per-type occurrence, so the same name lands on the right position everywhere.
-    /// </summary>
-    private static void ImportLegacyBlimpKey(RngProfile custom, string key, string value) {
-        if (string.IsNullOrEmpty(value)) {
-            return;
-        }
-
-        switch (key) {
-            case "2nd Blimp Phase Simple":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@easy", value);
-                break;
-            case "3rd Blimp Phase Simple":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@easy", value);
-                break;
-            case "Second Blimp Phase Regular":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@normal", value);
-                break;
-            case "Third Blimp Phase Regular":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@normal", value);
-                break;
-            case "Second Blimp Phase Expert":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@hard", value);
-                break;
-            case "Third Blimp Phase Expert":
-                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@hard", value);
-                break;
-            case "Constellation Phase Regular":
-                if (value == "Sagittarius") {
-                    SeedPool(custom, RngSpots.FlyingBlimpConstellation, 0);
-                } else if (value == "Gemini") {
-                    SeedPool(custom, RngSpots.FlyingBlimpConstellation, 1);
-                }
-                break;
-        }
-    }
-
-    /// <summary>Pins a blimp phase to the cycle position whose spot option matches the
-    /// legacy option name ("Shoot3" = "Shoot #3"); unknown names are ignored.</summary>
-    private static void SeedBlimpPattern(RngProfile custom, string key, string name) {
-        string letters = new string(name.TakeWhile(c => char.IsLetter(c)).ToArray());
-        string digits = name.Substring(letters.Length);
-        int occurrence;
-        if (letters.Length == 0 || digits.Length == 0 || !int.TryParse(digits, out occurrence) || occurrence < 1) {
-            return;
-        }
-
-        RngSpot spot = RngSpots.FindByStoredKey(key);
-        if (spot == null || spot.Options == null) {
-            return;
-        }
-
-        Level.Mode mode;
-        if (key.EndsWith("@easy", StringComparison.Ordinal)) {
-            mode = Level.Mode.Easy;
-        } else if (key.EndsWith("@hard", StringComparison.Ordinal)) {
-            mode = Level.Mode.Hard;
-        } else {
-            mode = Level.Mode.Normal;
-        }
-
-        string target = letters + " #" + occurrence;
-        RngOption[] options = spot.Options(mode);
-        for (int i = 0; i < options.Length; i++) {
-            if (options[i].Label == target) {
-                SeedPool(custom, key, options[i].Value);
-                return;
-            }
-        }
-    }
-
-    private static int IndexOfLegacy(string value, string[] names) {
-        if (names == null) {
-            return -1;
-        }
-        for (int i = 0; i < names.Length; i++) {
-            if (string.Equals(names[i], value, StringComparison.Ordinal)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private static void SeedStartPoolAllDifficulties(RngProfile custom, string spotId, int position) {
-        SeedPool(custom, spotId + "@easy", position);
-        SeedPool(custom, spotId + "@normal", position);
-        SeedPool(custom, spotId + "@hard", position);
-    }
-
-    private static void SeedPool(RngProfile custom, string key, int position) {
-        RngSpotConfig config = custom.GetOrCreateSpot(key);
-        config.Pool.Clear();
-        config.Sequence.Clear();
-        config.LockPosition = null;
-        // a legacy pinned option keeps its constant behavior
-        config.LoopSequence = true;
-        config.Pool.Add(new RngPoolEntry(position, 1f));
-    }
-
-    private static void SeedFloat(RngProfile custom, string key, float value) {
-        RngSpotConfig config = custom.GetOrCreateSpot(key);
-        config.Pool.Clear();
-        config.Sequence.Clear();
-        config.LockPosition = null;
-        // a legacy pinned float keeps its constant behavior
-        config.FloatSequence.Clear();
-        config.FloatSequence.Add(value);
-        config.LoopSequence = true;
-    }
 }

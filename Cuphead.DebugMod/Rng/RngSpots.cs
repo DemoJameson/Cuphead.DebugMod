@@ -263,13 +263,13 @@ internal static class RngSpots {
 
     public static readonly RngSpot[] Devil = {
         new RngSpot(
-            DevilPhase1PatternStart, "Phase 1", "Attack Order Start", RngShape.StartPool, true, true,
+            DevilPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
             mode => DevilStatePatterns(mode, LevelProperties.Devil.States.Main),
             "Which attack the fight's fixed cycle begins with. The game rolls a start position, then repeats the cycle in order."
         ),
         new RngSpot(
             DevilPhase1HeadFirst, "Phase 1", "First Head Attack", RngShape.StartPool, false, false,
-            mode => Fixed("Dragon first", "Spider first"),
+            mode => Fixed("Dragon", "Spider"),
             "Dragon and Spider heads strictly alternate; this picks which one comes first."
         ),
         new RngSpot(
@@ -330,23 +330,23 @@ internal static class RngSpots {
             null
         ) { PerEvent = true },
         new RngSpot(
-            DevilPhase1BouncerAngleStart, "Phase 1", "Bouncer Angle Start", RngShape.StartPool, true, true,
+            DevilPhase1BouncerAngleStart, "Phase 1", "Bouncer Angle", RngShape.StartPool, true, true,
             mode => DevilStringOptions(mode, LevelProperties.Devil.States.Main, state => state.pitchforkFourFlameBouncer.angleOffset),
             "The bouncer wave cycles through fixed angles; this picks where the cycle begins."
         ),
         new RngSpot(
-            DevilPhase1PinwheelAngleStart, "Phase 1", "Pinwheel Angle Start", RngShape.StartPool, false, true,
+            DevilPhase1PinwheelAngleStart, "Phase 1", "Pinwheel Angle", RngShape.StartPool, false, true,
             mode => DevilStringOptions(mode, LevelProperties.Devil.States.Main, state => state.pitchforkFiveFlameSpinner.angleOffset),
             null
         ),
         new RngSpot(
-            DevilPhase1RingAngleStart, "Phase 1", "Ring Angle Start", RngShape.StartPool, false, true,
+            DevilPhase1RingAngleStart, "Phase 1", "Ring Angle", RngShape.StartPool, false, true,
             mode => DevilStringOptions(mode, LevelProperties.Devil.States.Main, state => state.pitchforkSixFlameRing.angleOffset),
             null
         ),
 
         new RngSpot(
-            DevilPhase2PatternStart, "Phase 2", "Attack Order Start", RngShape.StartPool, true, true,
+            DevilPhase2PatternStart, "Phase 2", "Overall Pattern", RngShape.StartPool, true, true,
             mode => DevilStatePatterns(mode, LevelProperties.Devil.States.GiantHead),
             "Which eye attack the giant head starts its fixed cycle with."
         ),
@@ -380,7 +380,7 @@ internal static class RngSpots {
 
     public static readonly RngSpot[] Frogs = {
         new RngSpot(
-            FrogsPhase1PatternStart, "Phase 1", "Attack Order Start", RngShape.StartPool, true, true,
+            FrogsPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
             mode => FrogsStatePatterns(mode),
             "Which attack the fight's fixed cycle begins with. The game rolls a start position, then repeats the cycle in order. Simple and Regular list the two attacks in opposite order."
         ),
@@ -454,12 +454,12 @@ internal static class RngSpots {
 
     public static readonly RngSpot[] FlyingBlimp = {
         new RngSpot(
-            FlyingBlimpGeneric1PatternStart, "Second Blimp", "Attack Order Start", RngShape.StartPool, true, true,
+            FlyingBlimpGeneric1PatternStart, "Second Blimp", "Overall Pattern", RngShape.StartPool, true, true,
             mode => FlyingBlimpGenericOptions(mode, 0),
             "Which attack this blimp phase's fixed cycle begins with; it then repeats the cycle in order."
         ),
         new RngSpot(
-            FlyingBlimpGeneric2PatternStart, "Third Blimp", "Attack Order Start", RngShape.StartPool, true, true,
+            FlyingBlimpGeneric2PatternStart, "Third Blimp", "Overall Pattern", RngShape.StartPool, true, true,
             mode => FlyingBlimpGenericOptions(mode, 1),
             null
         ),
@@ -612,7 +612,7 @@ internal static class RngSpots {
                 for (int i = 0; i < state.patterns.Length; i++) {
                     labels[i] = PrettyPattern(state.patterns[i]);
                 }
-                return NumberedOptions(labels);
+                return NamedOptions(labels);
             }
         } catch (Exception) {
         }
@@ -633,7 +633,7 @@ internal static class RngSpots {
                 for (int i = 0; i < parts.Length; i++) {
                     parts[i] = parts[i].Trim();
                 }
-                return NumberedOptions(parts);
+                return NamedOptions(parts);
             }
         } catch (Exception) {
         }
@@ -654,7 +654,7 @@ internal static class RngSpots {
                 for (int i = 0; i < pink.Length; i++) {
                     labels[i] = pink[i] == 'P' ? "Parry" : "Regular";
                 }
-                return NumberedOptions(labels);
+                return NamedOptions(labels);
             }
         } catch (Exception) {
         }
@@ -667,7 +667,8 @@ internal static class RngSpots {
     // rolls together.
     // ------------------------------------------------------------------
 
-    /// <summary>One option per pitchfork order list, labeled by its mapped attack order.</summary>
+    /// <summary>One option per pitchfork order list, named "Set N" (edit the array below
+    /// to relabel the sets).</summary>
     private static RngOption[] DevilPitchforkOrderOptions(Level.Mode mode) {
         try {
             foreach (LevelProperties.Devil.State state in StatesFor(mode)) {
@@ -678,11 +679,12 @@ internal static class RngSpots {
                 if (lists == null || lists.Length == 0) {
                     return new RngOption[0];
                 }
-                string[] labels = new string[lists.Length];
+                string[] setNames = { "Set 1", "Set 2", "Set 3" };
+                RngOption[] options = new RngOption[lists.Length];
                 for (int i = 0; i < lists.Length; i++) {
-                    labels[i] = PrettyPitchforkList(lists[i]);
+                    options[i] = new RngOption(i < setNames.Length ? setNames[i] : "Set " + (i + 1), i);
                 }
-                return NumberedOptions(labels);
+                return options;
             }
         } catch (Exception) {
         }
@@ -721,18 +723,6 @@ internal static class RngSpots {
             options.Add(new RngOption(PrettyPitchforkEntry(parsed), parsed - 4));
         }
         return options.ToArray();
-    }
-
-    private static string PrettyPitchforkList(string list) {
-        string[] entries = list.Split(new[] { ',' });
-        List<string> labels = new List<string>();
-        foreach (string entry in entries) {
-            int parsed;
-            if (int.TryParse(entry.Trim(), out parsed)) {
-                labels.Add(PrettyPitchforkEntry(parsed));
-            }
-        }
-        return string.Join(" - ", labels.ToArray());
     }
 
     private static string PrettyPitchforkEntry(int parsed) {
@@ -809,7 +799,7 @@ internal static class RngSpots {
             for (int i = 0; i < state.patterns.Length; i++) {
                 labels[i] = PrettyFrogsPattern(state.patterns[i]);
             }
-            return NumberedOptions(labels);
+            return NamedOptions(labels);
         } catch (Exception) {
         }
         return new RngOption[0];
@@ -926,20 +916,20 @@ internal static class RngSpots {
             for (int i = 0; i < entries.Length; i++) {
                 string entry = entries[i].Trim();
                 if (entry.Length == 0) {
-                    labels[i] = "-" + (i + 1);
+                    labels[i] = "-";
                 } else if (entry[0] == 'H') {
-                    labels[i] = "High #" + (i + 1);
+                    labels[i] = "High";
                 } else if (entry[0] == 'L') {
-                    labels[i] = "Low #" + (i + 1);
+                    labels[i] = "Low";
                 } else if (entry[0] == 'R') {
-                    labels[i] = "Random Height #" + (i + 1);
+                    labels[i] = "Random Height";
                 } else if (entry[0] == 'D') {
                     labels[i] = "Delay";
                 } else {
                     labels[i] = entry;
                 }
             }
-            return NumberedOptions(labels);
+            return NamedOptions(labels);
         } catch (Exception) {
         }
         return new RngOption[0];
@@ -1115,7 +1105,7 @@ internal static class RngSpots {
                 for (int i = 0; i < state.patterns.Length; i++) {
                     labels[i] = PrettyFlyingBlimpPattern(state.patterns[i]);
                 }
-                return NumberedOptions(labels);
+                return NamedOptions(labels);
             }
         } catch (Exception) {
         }
@@ -1164,14 +1154,9 @@ internal static class RngSpots {
         return new string[0];
     }
 
-    /// <summary>One option per star position/type sequence of the live data.</summary>
+    /// <summary>One option per star position/type sequence of the live data, named "Set N".</summary>
     private static RngOption[] FlyingBlimpStarPatternOptions(Level.Mode mode, bool positions) {
-        string[] strings = FlyingBlimpStarStrings(mode, positions);
-        RngOption[] options = new RngOption[strings.Length];
-        for (int i = 0; i < strings.Length; i++) {
-            options[i] = new RngOption("Pattern " + (i + 1), i);
-        }
-        return options;
+        return SetOptions(FlyingBlimpStarStrings(mode, positions).Length);
     }
 
     /// <summary>The start options of one star sequence: position values, or star types
@@ -1186,7 +1171,7 @@ internal static class RngSpots {
         for (int i = 0; i < entries.Length; i++) {
             labels[i] = positions ? entries[i].Trim() : PrettyStarType(entries[i]);
         }
-        return NumberedOptions(labels);
+        return NamedOptions(labels);
     }
 
     /// <summary>Entry count of one star sequence; the resolver bounds the start against
@@ -1245,14 +1230,9 @@ internal static class RngSpots {
         return new string[0];
     }
 
-    /// <summary>One option per UFO sequence of the live data.</summary>
+    /// <summary>One option per UFO sequence of the live data, named "Set N".</summary>
     private static RngOption[] FlyingBlimpUfoPatternOptions(Level.Mode mode) {
-        string[] strings = FlyingBlimpUfoStrings(mode);
-        RngOption[] options = new RngOption[strings.Length];
-        for (int i = 0; i < strings.Length; i++) {
-            options[i] = new RngOption("Pattern " + (i + 1), i);
-        }
-        return options;
+        return SetOptions(FlyingBlimpUfoStrings(mode).Length);
     }
 
     /// <summary>The start options of one UFO sequence ("UFO A", "UFO B") with per-type
@@ -1268,7 +1248,7 @@ internal static class RngSpots {
             string entry = entries[i].Trim();
             labels[i] = entry.Length > 0 && entry[0] == 'B' ? "Yellow" : "Red";
         }
-        return NumberedOptions(labels);
+        return NamedOptions(labels);
     }
 
     /// <summary>Entry count of one UFO sequence.</summary>
@@ -1340,15 +1320,24 @@ internal static class RngSpots {
         return options;
     }
 
-    private static RngOption[] NumberedOptions(string[] labels) {
-        Dictionary<string, int> seen = new Dictionary<string, int>(StringComparer.Ordinal);
+    /// <summary>Maps labels 1:1 onto their index (duplicate labels are fine; rows are
+    /// identified by position, not name).</summary>
+    private static RngOption[] NamedOptions(string[] labels) {
         RngOption[] options = new RngOption[labels.Length];
         for (int i = 0; i < labels.Length; i++) {
-            int occurrence;
-            seen.TryGetValue(labels[i], out occurrence);
-            seen[labels[i]] = occurrence + 1;
-            options[i] = new RngOption(labels[i] + " #" + (occurrence + 1), i);
+            options[i] = new RngOption(labels[i], i);
         }
         return options;
+    }
+
+    /// <summary>Names for the set-style cyclers ("Set 1", "Set 2", ...). Each call site
+    /// that shows a set list passes its count here; edit a call site directly if a set
+    /// needs a more descriptive name.</summary>
+    private static RngOption[] SetOptions(int count) {
+        string[] labels = new string[count];
+        for (int i = 0; i < count; i++) {
+            labels[i] = "Set " + (i + 1);
+        }
+        return NamedOptions(labels);
     }
 }

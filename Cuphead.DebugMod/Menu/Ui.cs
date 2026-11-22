@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using UnityEngine.Events;
 using UnityEngine.UI;
 namespace BepInEx.CupheadDebugMod.Menu;
 
@@ -35,16 +34,6 @@ internal static class Ui {
         rt.pivot = new Vector2(0.5f, 1f);
         rt.anchoredPosition = new Vector2(0f, -y);
         rt.sizeDelta = new Vector2(0f, height);
-    }
-
-    /// <summary>Centered box of the given size.</summary>
-    public static void CenterBox(GameObject go, Vector2 size) {
-        RectTransform rt = Rect(go);
-        rt.anchorMin = new Vector2(0.5f, 0.5f);
-        rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.anchoredPosition = Vector2.zero;
-        rt.sizeDelta = size;
     }
 
     public static Image Panel(GameObject go, Color color) {
@@ -123,26 +112,6 @@ internal static class Ui {
         rt.offsetMax = new Vector2(-rightReserve, 0f);
         return Label(go, text, size, color, TextAnchor.MiddleLeft);
     }
-
-    /// <summary>A square slot anchored to the row's right edge, `rightOffset` pixels in from it.</summary>
-    public static GameObject RightSlot(GameObject row, string name, float rightOffset, float width, float height) {
-        GameObject go = Create(name, row.transform);
-        RectTransform rt = Rect(go);
-        rt.anchorMin = new Vector2(1f, 0.5f);
-        rt.anchorMax = new Vector2(1f, 0.5f);
-        rt.pivot = new Vector2(1f, 0.5f);
-        rt.anchoredPosition = new Vector2(-rightOffset, 0f);
-        rt.sizeDelta = new Vector2(width, height);
-        return go;
-    }
-
-    public static Image Dot(GameObject row, float rightOffset, float size, Color color) {
-        GameObject go = RightSlot(row, "ModifiedDot", rightOffset, size, size);
-        Image image = go.AddComponent<Image>();
-        image.color = color;
-        image.raycastTarget = false;
-        return image;
-    }
 }
 
 /// <summary>A simple checkbox (accent-filled square when on).</summary>
@@ -155,10 +124,6 @@ internal sealed class UiCheck {
 
     public GameObject Root {
         get { return root; }
-    }
-
-    public bool Value {
-        get { return value; }
     }
 
     public static UiCheck Create(Transform parent, string name, float size, bool value, Action<bool> onChanged) {
@@ -191,12 +156,6 @@ internal sealed class UiCheck {
         if (onChanged != null) {
             onChanged(value);
         }
-    }
-
-    /// <summary>Updates the visual state without firing the change callback.</summary>
-    public void SetVisual(bool newValue) {
-        value = newValue;
-        Refresh();
     }
 
     private void Toggle() {

@@ -24,10 +24,7 @@ internal static class MenuTheme {
     public static readonly Color Accent = new Color(1.00f, 0.81f, 0.06f);   // Cuphead gold
     public static readonly Color Text = new Color(0.95f, 0.95f, 0.96f);
     public static readonly Color TextDim = new Color(0.70f, 0.70f, 0.75f);
-    public static readonly Color Modified = new Color(1.00f, 0.62f, 0.20f);
     public static readonly Color ButtonBg = new Color(0.24f, 0.24f, 0.30f);
-    public static readonly Color ButtonHover = new Color(0.32f, 0.32f, 0.40f);
-    public static readonly Color ButtonPressed = new Color(0.18f, 0.18f, 0.22f);
 
     // Type badges on spot cards: "start" = the random start of a fixed cycle, "per attack"
     // = re-rolled independently every attack, "once" = decided once per fight, "order" =

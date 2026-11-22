@@ -263,7 +263,7 @@ internal sealed class RngPage {
             }
         }
 
-        y = AddNote(y, "Other bosses are still set up in the legacy settings window (F1). Per-attack spots show a cycler with a Random checkbox; start-position spots list their options instead.");
+        y = AddNote(y, "Other bosses are still set up in the legacy settings window (F1). Hover the badge on each card for how its randomness works.");
 
         content.sizeDelta = new Vector2(0f, y + 12f);
         content.anchoredPosition = new Vector2(0f, Mathf.Clamp(scrollY, 0f, Mathf.Max(0f, content.sizeDelta.y)));
@@ -609,11 +609,11 @@ internal sealed class RngPage {
         /// checkbox + plan steps); the backend decides where everything is stored (spot
         /// config in simple mode, the form itself in forms).</summary>
         private bool SupportsSequence {
-            get { return spot.PerEvent && spot.Shape == RngShape.Choice && sequenceBackend != null; }
+                    get { return SupportsSequences(spot) && sequenceBackend != null; }
         }
 
         public float Build(RectTransform content, float y) {
-            bool isConfigured = SupportsSequence ? IsChoiceConfigured() : binding.IsConfigured();
+                    bool isConfigured = SupportsSequence ? sequenceBackend.IsConfigured() : binding.IsConfigured();
             bool isExpanded = page.expanded.Contains(expansionKey);
 
             GameObject header = BuildCardHeader(
@@ -687,7 +687,7 @@ internal sealed class RngPage {
                 expandRect.pivot = new Vector2(0f, 0.5f);
                 expandRect.anchoredPosition = new Vector2(6f, 0f);
 
-                string summary = value >= 0 && value < options.Length ? options[value].Label : "random";
+                string summary = value >= 0 && value < options.Length ? options[value].Label : "Random";
                 GameObject summaryGo = Ui.Create("Summary", head.transform);
                 RectTransform summaryRect = Ui.Rect(summaryGo);
                 summaryRect.anchorMin = new Vector2(0f, 0.5f);
@@ -793,7 +793,7 @@ internal sealed class RngPage {
 
             if (!isConfigured) {
                 GameObject randomRow = Ui.Row(content, "Card_" + expansionKey + "_RandomNote", MenuTheme.RowBg, y, 28f);
-                Ui.RowLabel(randomRow, "random - the game picks naturally", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
+                Ui.RowLabel(randomRow, "Random - the game picks naturally", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
                 y += 28f;
             }
 
@@ -826,20 +826,6 @@ internal sealed class RngPage {
             }
 
             return y;
-        }
-
-        /// <summary>Active while the standing value is pinned or at least one plan step is
-        /// not the random sentinel - mirroring the float spots' activity rule.</summary>
-        private bool IsChoiceConfigured() {
-            if (sequenceBackend.HasPin()) {
-                return true;
-            }
-            foreach (int step in sequenceBackend.GetSteps()) {
-                if (step >= 0) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 
@@ -882,7 +868,7 @@ internal sealed class RngPage {
     private static string RandomSuffix(bool isConfigured) {
         // a drawn form is authoritative: an unpinned spot is naturally random, leftover
         // spot configs do not leak in, so there is no inheritance to surface
-        return isConfigured ? "" : "  (random)";
+        return isConfigured ? "" : "  (Random)";
     }
 
     /// <summary>
@@ -1070,7 +1056,7 @@ internal sealed class RngPage {
             orderRandomRect.anchoredPosition = new Vector2(12f, 0f);
             Ui.RowLabel(orderRow, "Random", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 46f, 610f);
 
-            string orderLabel = selectedOrder >= 0 && selectedOrder < orderOptions.Length ? orderOptions[selectedOrder].Label : "random";
+            string orderLabel = selectedOrder >= 0 && selectedOrder < orderOptions.Length ? orderOptions[selectedOrder].Label : "Random";
             UiCycle orderCycle = UiCycle.Create(orderRow.transform, "Order", 280f, MenuTheme.ControlSize, orderLabel,
                 () => CycleOrder(-1),
                 () => CycleOrder(+1));
@@ -1182,7 +1168,7 @@ internal sealed class RngPage {
         }
 
         public float Build(RectTransform content, float y) {
-            bool isConfigured = IsSpotConfigured(primaryBackend) || IsSpotConfigured(secondaryBackend);
+            bool isConfigured = primaryBackend.IsConfigured() || secondaryBackend.IsConfigured();
             bool isExpanded = page.expanded.Contains(expansionKey);
 
             GameObject header = BuildCardHeader(
@@ -1245,7 +1231,7 @@ internal sealed class RngPage {
 
             string summary;
             if (primaryRandom) {
-                summary = "random";
+                summary = "Random";
             } else {
                 string primaryLabel = primaryValue >= 0 && primaryValue < primaryOptions.Length ? primaryOptions[primaryValue].Label : "#" + (primaryValue + 1);
                 summary = primaryLabel + " - " + SecondaryLabel(secondaryValue, primaryValue);
@@ -1300,7 +1286,7 @@ internal sealed class RngPage {
             randomRect.anchoredPosition = new Vector2(12f, 0f);
             Ui.RowLabel(cyclerRow, "Random", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 46f, 610f);
 
-            string cyclerLabel = !primaryRandom && primaryValue < primaryOptions.Length ? primaryOptions[primaryValue].Label : "random";
+            string cyclerLabel = !primaryRandom && primaryValue < primaryOptions.Length ? primaryOptions[primaryValue].Label : "Random";
             UiCycle cycle = UiCycle.Create(cyclerRow.transform, "Pattern", 280f, MenuTheme.ControlSize, cyclerLabel,
                 () => CycleBlockPrimary(captured, -1),
                 () => CycleBlockPrimary(captured, +1));
@@ -1488,22 +1474,10 @@ internal sealed class RngPage {
 
         private string SecondaryLabel(int secondaryValue, int primaryValue) {
             if (secondaryValue < 0) {
-                return "random";
+                return "Random";
             }
             RngOption[] startOptions = startOptionsFor(mode, primaryValue);
             return secondaryValue < startOptions.Length ? startOptions[secondaryValue].Label : "#" + (secondaryValue + 1);
-        }
-
-        private static bool IsSpotConfigured(IntSequenceBackend backend) {
-            if (backend.HasPin()) {
-                return true;
-            }
-            foreach (int step in backend.GetSteps()) {
-                if (step >= 0) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 
@@ -1770,12 +1744,12 @@ internal sealed class RngPage {
                 } else {
                     summary.Append(spot.Label).Append(" = ");
                     if (pair.Value.IsFloat) {
-                        summary.Append(pair.Value.FloatValue < 0f ? "random" : pair.Value.FloatValue.ToString("0.00", CultureInfo.InvariantCulture));
+                        summary.Append(pair.Value.FloatValue < 0f ? "Random" : pair.Value.FloatValue.ToString("0.00", CultureInfo.InvariantCulture));
                     } else {
                         RngOption[] options;
                         optionsCache.TryGetValue(spot, out options);
                         if (pair.Value.IntValue < 0) {
-                            summary.Append("random");
+                            summary.Append("Random");
                         } else if (options != null && pair.Value.IntValue < options.Length) {
                             summary.Append(options[pair.Value.IntValue].Label);
                         } else {

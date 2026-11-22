@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using UnityEngine;
 using UnityEngine.UI;
 using BepInEx.CupheadDebugMod.Rng;
@@ -38,6 +37,20 @@ internal abstract class IntSequenceBackend {
     /// <summary>Writes the whole configuration; a null pin keeps the standing value random
     /// while the steps still play.</summary>
     public abstract void Write(int? pin, List<int> steps, bool loop);
+
+    /// <summary>Active while the standing value is pinned or at least one step is not the
+    /// random sentinel - mirroring the float spots' activity rule.</summary>
+    public bool IsConfigured() {
+        if (HasPin()) {
+            return true;
+        }
+        foreach (int step in GetSteps()) {
+            if (step >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 internal sealed class SpotIntBackend : IntSequenceBackend {
@@ -432,7 +445,7 @@ internal static class SequenceUi {
 
         // the standing cycler: the forced option while the checkbox is off, "random" while
         // it is on; clicking an arrow selects (and thereby unchecks the random box)
-        string label = hasPin && pin >= 0 && pin < options.Length ? options[pin].Label : "random";
+        string label = hasPin && pin >= 0 && pin < options.Length ? options[pin].Label : "Random";
         UiCycle cycle = UiCycle.Create(row.transform, "Standing", 280f, MenuTheme.ControlSize, label,
             () => CycleChoiceStanding(backend, options, -1, refresh),
             () => CycleChoiceStanding(backend, options, +1, refresh));
@@ -489,7 +502,7 @@ internal static class SequenceUi {
             GameObject stepRow = Ui.Row(content, keyPrefix + "_Step" + (i + 2), background, y, 40f);
 
             string initialLabel = capturedValue < 0
-                ? "random"
+                ? "Random"
                 : (capturedValue < options.Length ? options[capturedValue].Label : "#" + (capturedValue + 1));
             UiCycle cycle = UiCycle.Create(stepRow.transform, "Step", 280f, MenuTheme.ControlSize, initialLabel,
                 () => CycleChoiceStep(backend, options, captured, -1, refresh),
