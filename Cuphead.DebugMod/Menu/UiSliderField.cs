@@ -257,7 +257,7 @@ internal sealed class UiSliderField {
 
     public void SetBoxText(string text) {
         if (boxText != null) {
-            boxText.text = MenuTheme.MapGlyphs(text);
+            boxText.text = text;
         }
     }
 
@@ -421,7 +421,7 @@ internal sealed class UiSliderField {
         fillImage.rectTransform.sizeDelta = new Vector2(pct * trackWidth, 10f);
         handleImage.rectTransform.anchoredPosition = new Vector2(pct * trackWidth, 0f);
         if (!UiTextEdit.IsEditing || UiTextEdit.Owner != this) {
-            boxText.text = MenuTheme.MapGlyphs(Format(value));
+            boxText.text = Format(value);
         }
         UpdateGhostVisual();
     }

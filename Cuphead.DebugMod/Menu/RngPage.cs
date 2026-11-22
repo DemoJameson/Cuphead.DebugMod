@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -248,7 +248,14 @@ internal sealed class RngPage {
             }
 
             if (!string.IsNullOrEmpty(spot.CompoundWith)) {
-                y = AddCompoundCard(y, spot);
+                if (spot.PerEvent) {
+                    // per-round compounds (the UFO pattern) edit whole-round blocks
+                    RngSpot secondary = RngSpots.Find(spot.CompoundWith);
+                    CompoundSequenceCard card = new CompoundSequenceCard(this, spot, secondary, tab, new SpotIntBackend(spot, tab), new SpotIntBackend(secondary, tab), options, spot.CompoundStartOptions, spot.Id);
+                    y = card.Build(content, y);
+                } else {
+                    y = AddCompoundCard(y, spot);
+                }
             } else if (spot.Shape == RngShape.Float) {
                 y = AddFloatCard(y, spot);
             } else {
@@ -257,8 +264,6 @@ internal sealed class RngPage {
         }
 
         y = AddNote(y, "Other bosses are still set up in the legacy settings window (F1). Per-attack spots show a cycler with a Random checkbox; start-position spots list their options instead.");
-
-        y = AddFontCalibration(y);
 
         content.sizeDelta = new Vector2(0f, y + 12f);
         content.anchoredPosition = new Vector2(0f, Mathf.Clamp(scrollY, 0f, Mathf.Max(0f, content.sizeDelta.y)));
@@ -320,122 +325,6 @@ internal sealed class RngPage {
         return y + 52f + Gap;
     }
 
-    // ------------------------------------------------------------------
-    // Font calibration — determines MenuTheme.GlyphRemap for the active font
-    // ------------------------------------------------------------------
-
-    private float AddFontCalibration(float y) {
-        bool isExpanded = expanded.Contains("FontCalibration");
-
-        GameObject header = Ui.Row(content, "FontCal", MenuTheme.CardBg, y, MenuTheme.RowHeight);
-
-        GameObject expand = Ui.TextButton(header.transform, "Expand", isExpanded ? "-" : "+", MenuTheme.ControlSize, MenuTheme.ControlSize, () => {
-            if (isExpanded) {
-                expanded.Remove("FontCalibration");
-            } else {
-                expanded.Add("FontCalibration");
-            }
-            Refresh();
-        }, MenuTheme.FontSizeButton);
-        RectTransform expandRect = Ui.Rect(expand);
-        expandRect.anchorMin = new Vector2(0f, 0.5f);
-        expandRect.anchorMax = new Vector2(0f, 0.5f);
-        expandRect.pivot = new Vector2(0f, 0.5f);
-        expandRect.anchoredPosition = new Vector2(6f, 0f);
-
-        Ui.RowLabel(header, "Font calibration", MenuTheme.FontSizeLabel, MenuTheme.Text, 40f, 130f);
-        Font gameFont = MenuTheme.ResolveFont();
-        GameObject fontNameGo = Ui.Create("FontName", header.transform);
-        RectTransform fontNameRect = Ui.Rect(fontNameGo);
-        fontNameRect.anchorMin = new Vector2(1f, 0.5f);
-        fontNameRect.anchorMax = new Vector2(1f, 0.5f);
-        fontNameRect.pivot = new Vector2(1f, 0.5f);
-        fontNameRect.anchoredPosition = new Vector2(-MenuTheme.Padding, 0f);
-        fontNameRect.sizeDelta = new Vector2(240f, MenuTheme.RowHeight);
-        Ui.Label(fontNameGo, gameFont != null ? gameFont.name : "(none)", MenuTheme.FontSizeSmall, MenuTheme.TextDim, TextAnchor.MiddleRight);
-
-        y += MenuTheme.RowHeight;
-        if (!isExpanded) {
-            return y + Gap;
-        }
-
-        if (gameFont == null) {
-            GameObject noFontRow = Ui.Row(content, "FontCal_NoFont", MenuTheme.RowBg, y, 30f);
-            Ui.RowLabel(noFontRow, "Menu font is Arial; there is nothing to calibrate.", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-            return y + 30f + Gap;
-        }
-
-        GameObject infoRow = Ui.Row(content, "FontCal_Info", MenuTheme.RowBg, y, 34f);
-        Ui.RowLabel(infoRow,
-            "Each big glyph is one ASCII character drawn in the menu font; underneath are its hex code and an Arial reference. Report every cell that disagrees with its reference as a hex pair for MenuTheme.GlyphRemap (written:sent), e.g. 31:7C. Orange cells share their glyph with another character.",
-            MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-        y += 34f;
-
-        // Detect characters that share one glyph (aliasing): the usual source of wrong symbols.
-        HashSet<char> aliased = new HashSet<char>();
-        try {
-            StringBuilder probes = new StringBuilder();
-            for (int c = 0x20; c <= 0x7E; c++) {
-                probes.Append((char)c);
-            }
-            gameFont.RequestCharactersInTexture(probes.ToString(), MenuTheme.FontSizeLabel, FontStyle.Normal);
-
-            Dictionary<int, char> firstOwner = new Dictionary<int, char>();
-            for (int c = 0x20; c <= 0x7E; c++) {
-                CharacterInfo info;
-                if (gameFont.GetCharacterInfo((char)c, out info) && info.index > 0) {
-                    char first;
-                    if (firstOwner.TryGetValue(info.index, out first)) {
-                        aliased.Add(first);
-                        aliased.Add((char)c);
-                    } else {
-                        firstOwner[info.index] = (char)c;
-                    }
-                }
-            }
-        } catch (Exception) {
-            // Dynamic-font metadata unavailable; the user reads the cells visually instead.
-        }
-
-        Font arial = Resources.GetBuiltinResource<Font>("Arial.ttf");
-        const int columns = 8;
-        // cells shrink on narrow aspect ratios so the grid never overflows the page
-        float cellWidth = Mathf.Min(100f, Mathf.Max(60f, (ContentWidth - 2f * MenuTheme.Padding) / columns));
-        const float cellHeight = 66f;
-
-        for (int c = 0x20; c <= 0x7E; c++) {
-            int position = c - 0x20;
-            int column = position % columns;
-            if (column == 0) {
-                GameObject row = Ui.Row(content, "FontCal_Row" + (position / columns), (position / columns) % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt, y, cellHeight);
-                y += cellHeight;
-            }
-            float rowTop = y - cellHeight;
-
-            float cellX = MenuTheme.Padding + column * cellWidth;
-            GameObject glyphGo = Ui.Create("FontCal_Glyph_" + c, content);
-            RectTransform glyphRect = Ui.Rect(glyphGo);
-            glyphRect.anchorMin = new Vector2(0f, 1f);
-            glyphRect.anchorMax = new Vector2(0f, 1f);
-            glyphRect.pivot = new Vector2(0f, 1f);
-            glyphRect.anchoredPosition = new Vector2(cellX + 4f, -(rowTop + 6f));
-            glyphRect.sizeDelta = new Vector2(cellWidth - 10f, 34f);
-            Color glyphColor = aliased.Contains((char)c) ? MenuTheme.Modified : MenuTheme.Text;
-            Ui.LabelWithFont(glyphGo, ((char)c).ToString(), gameFont, 26, glyphColor, TextAnchor.MiddleCenter);
-
-            GameObject refGo = Ui.Create("FontCal_Ref_" + c, content);
-            RectTransform refRect = Ui.Rect(refGo);
-            refRect.anchorMin = new Vector2(0f, 1f);
-            refRect.anchorMax = new Vector2(0f, 1f);
-            refRect.pivot = new Vector2(0f, 1f);
-            refRect.anchoredPosition = new Vector2(cellX + 4f, -(rowTop + 44f));
-            refRect.sizeDelta = new Vector2(cellWidth - 10f, 18f);
-            string reference = c == 0x20 ? "20 SP" : string.Format(CultureInfo.InvariantCulture, "{0:X2} {1}", c, (char)c);
-            Ui.LabelWithFont(refGo, reference, arial, MenuTheme.FontSizeSmall - 1, MenuTheme.TextDim, TextAnchor.MiddleLeft);
-        }
-
-        return y + Gap;
-    }
 
     // ------------------------------------------------------------------
     // StartPool cards
@@ -452,16 +341,19 @@ internal sealed class RngPage {
     }
 
     /// <summary>
-    /// Renders a compound spot (an ordered list plus a "which comes first" pick inside it,
-    /// e.g. the pitchfork) as one card editing both of its spots.
+    /// Renders a compound spot (an ordered list plus a "where it starts" pick inside it,
+    /// e.g. the pitchfork or the moon-phase star sequences) as one card editing both of
+    /// its spots. The group labels and the start-option builder come from the spot.
     /// </summary>
     private float AddCompoundCard(float y, RngSpot spot) {
         RngSpot secondary = RngSpots.Find(spot.CompoundWith);
         CompoundCard card = new CompoundCard(
-            this, spot, spot.Options(tab),
+            this, spot, tab, spot.Options(tab),
             new PatternCard.SpotBinding(spot, tab),
             new PatternCard.SpotBinding(secondary, tab),
-            orderIndex => RngSpots.DevilPitchforkTypeOptions(tab, orderIndex),
+            spot.CompoundStartOptions,
+            spot.CompoundPrimaryLabel ?? "Pattern",
+            spot.CompoundSecondaryLabel ?? "Start at",
             spot.Id);
         return card.Build(content, y);
     }
@@ -517,8 +409,9 @@ internal sealed class RngPage {
     /// Small type badge at a spot card's right edge, telling the randomness kinds apart at
     /// a glance: skip-to-start = the random start of a fixed cycle, die = re-rolled
     /// independently every attack, gem = decided once per fight, stacked list = one ordered
-    /// list picked per fight and then walked. Hovering shows a tooltip with the full
-    /// explanation.
+    /// list picked per fight and then walked, refresh arrow = a fresh cycle start position
+    /// on every round of the attack, shuffle = a fresh sequence and start on every round.
+    /// Hovering shows a tooltip with the full explanation.
     /// </summary>
     private static float AddSpotBadge(GameObject row, RngSpot spot, float rightOffset) {
         RngBadgeKind kind = spot.Badge ?? (
@@ -539,6 +432,16 @@ internal sealed class RngPage {
                 hint = "The game picks one attack order once per fight and then walks it. Pin an order, and optionally which attack comes first inside it.";
                 background = MenuTheme.BadgeOrder;
                 icon = UiIcons.OrderList;
+                break;
+            case RngBadgeKind.CyclePerRound:
+                hint = "A start position inside a fixed cycle, re-rolled on every round of this attack - each round then plays the cycle from there. The single-attack picks (die badge) have no such cycle behind them.";
+                background = MenuTheme.BadgeCycle;
+                icon = UiIcons.CycleRefresh;
+                break;
+            case RngBadgeKind.Sequence:
+                hint = "Every attack round rolls a fresh sequence and its start, then walks it in order. Each block below pins one whole round.";
+                background = MenuTheme.BadgeSequence;
+                icon = UiIcons.Shuffle;
                 break;
             case RngBadgeKind.PerAttack:
                 hint = "Rolled independently every time this attack fires. A plan of steps can be forced before natural randomness resumes.";
@@ -737,15 +640,141 @@ internal sealed class RngPage {
             }
 
             if (SupportsSequence) {
-                // the per-attack editor: the standing value, the plan steps after it, and
-                // the option pips - no radio list, this spot is rolled independently
-                y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
-                y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                if (spot.RadioPlan) {
+                    // the radio-plan style: every round's start is picked from a
+                    // collapsible radio list that shows the whole cycle order
+                    y = BuildRadioPlan(content, y);
+                } else {
+                    // the per-attack editor: the standing value, the plan steps after it, and
+                    // the option pips - no radio list, this spot is rolled independently
+                    y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                    y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                }
             } else {
                 y = BuildRadioBody(content, isConfigured, y);
             }
 
             return y + Gap;
+        }
+
+        /// <summary>The radio-plan editor for per-event spots whose rounds pick a start
+        /// inside a fixed cycle (Goopy's jump pattern): the standing round plus every plan
+        /// step is a collapsible radio list over the cycle, so the order stays visible
+        /// while the plan stays compact.</summary>
+        private float BuildRadioPlan(RectTransform content, float y) {
+            int blockCount = 1 + sequenceBackend.GetSteps().Count;
+            for (int block = 0; block < blockCount; block++) {
+                bool isLast = block == blockCount - 1;
+                string blockKey = expansionKey + "_r" + block;
+                bool expanded = page.expanded.Contains(blockKey);
+                int value = block == 0 ? (sequenceBackend.HasPin() ? sequenceBackend.GetPin() : -1) : StepAt(block - 1);
+                int captured = block;
+
+                Color background = block % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt;
+                GameObject head = Ui.Row(content, "Card_" + blockKey + "_Head", background, y, 34f);
+
+                GameObject expand = Ui.TextButton(head.transform, "Expand", expanded ? "-" : "+", 28f, 28f, () => {
+                    if (page.expanded.Contains(blockKey)) {
+                        page.expanded.Remove(blockKey);
+                    } else {
+                        page.expanded.Add(blockKey);
+                    }
+                    page.Refresh();
+                }, MenuTheme.FontSizeButton);
+                RectTransform expandRect = Ui.Rect(expand);
+                expandRect.anchorMin = new Vector2(0f, 0.5f);
+                expandRect.anchorMax = new Vector2(0f, 0.5f);
+                expandRect.pivot = new Vector2(0f, 0.5f);
+                expandRect.anchoredPosition = new Vector2(6f, 0f);
+
+                string summary = value >= 0 && value < options.Length ? options[value].Label : "random";
+                GameObject summaryGo = Ui.Create("Summary", head.transform);
+                RectTransform summaryRect = Ui.Rect(summaryGo);
+                summaryRect.anchorMin = new Vector2(0f, 0.5f);
+                summaryRect.anchorMax = new Vector2(1f, 0.5f);
+                summaryRect.pivot = new Vector2(0f, 0.5f);
+                summaryRect.offsetMin = new Vector2(40f, 0f);
+                summaryRect.offsetMax = new Vector2(isLast ? -180f : -40f, 0f);
+                Ui.Label(summaryGo, (block == 0 ? "Every round: " : "Round " + (block + 1) + ": ") + summary, MenuTheme.FontSizeSmall, value >= 0 ? MenuTheme.Text : MenuTheme.TextDim, TextAnchor.MiddleLeft);
+
+                if (isLast) {
+                    UiCheck loopCheck = UiCheck.Create(head.transform, "Loop", MenuTheme.CheckSize, sequenceBackend.GetLoop(), on => {
+                        sequenceBackend.Write(sequenceBackend.HasPin() ? sequenceBackend.GetPin() : (int?)null, sequenceBackend.GetSteps(), on);
+                        page.Refresh();
+                    });
+                    RectTransform loopRect = Ui.Rect(loopCheck.Root);
+                    loopRect.anchorMin = new Vector2(1f, 0.5f);
+                    loopRect.anchorMax = new Vector2(1f, 0.5f);
+                    loopRect.pivot = new Vector2(1f, 0.5f);
+                    loopRect.anchoredPosition = new Vector2(-46f, 0f);
+                    SequenceUi.PlaceRightLabel(head, "RepeatLabel", "Repeat?", 82f, 90f);
+                }
+
+                if (block > 0) {
+                    GameObject remove = Ui.TextButton(head.transform, "Remove", "x", 28f, 28f, () => RemoveRadioBlock(captured), MenuTheme.FontSizeSmall);                    RectTransform removeRect = Ui.Rect(remove);
+                    removeRect.anchorMin = new Vector2(1f, 0.5f);
+                    removeRect.anchorMax = new Vector2(1f, 0.5f);
+                    removeRect.pivot = new Vector2(1f, 0.5f);
+                    removeRect.anchoredPosition = new Vector2(-10f, 0f);
+                }
+
+                y += 34f + 2f;
+                if (!expanded) {
+                    continue;
+                }
+
+                // the cycle as a radio list: "Random" plus one row per entry in order
+                y = AddRadioRow(content, blockKey, 0, "Random", -1, value, picked => SetRadioBlock(captured, picked), y);
+                for (int i = 0; i < options.Length; i++) {
+                    y = AddRadioRow(content, blockKey, i + 1, options[i].Label, options[i].Value, value, picked => SetRadioBlock(captured, picked), y);
+                }
+                y += 4f;
+            }
+
+            return y;
+        }
+
+        private int StepAt(int index) {
+            List<int> steps = sequenceBackend.GetSteps();
+            return index < steps.Count ? steps[index] : -1;
+        }
+
+        private void SetRadioBlock(int block, int value) {
+            if (block == 0) {
+                sequenceBackend.Write(value < 0 ? (int?)null : value, sequenceBackend.GetSteps(), sequenceBackend.GetLoop());
+            } else {
+                List<int> steps = sequenceBackend.GetSteps();
+                int index = block - 1;
+                while (steps.Count <= index) {
+                    steps.Add(-1);
+                }
+                steps[index] = value;
+                sequenceBackend.Write(sequenceBackend.HasPin() ? sequenceBackend.GetPin() : (int?)null, steps, sequenceBackend.GetLoop());
+            }
+            page.Refresh();
+        }
+
+        private void RemoveRadioBlock(int block) {
+            if (block <= 0) {
+                return;
+            }
+            List<int> steps = sequenceBackend.GetSteps();
+            int index = block - 1;
+            if (index < steps.Count) {
+                steps.RemoveAt(index);
+            }
+            sequenceBackend.Write(sequenceBackend.HasPin() ? sequenceBackend.GetPin() : (int?)null, steps, sequenceBackend.GetLoop());
+
+            int blockCount = 1 + steps.Count;
+            for (int j = block + 1; j <= blockCount; j++) {
+                string oldKey = expansionKey + "_r" + j;
+                if (page.expanded.Contains(oldKey)) {
+                    page.expanded.Remove(oldKey);
+                    page.expanded.Add(expansionKey + "_r" + (j - 1));
+                }
+            }
+            page.expanded.Remove(expansionKey + "_r" + blockCount);
+            page.Refresh();
         }
 
         /// <summary>The start-position editor: options as radio rows, always clickable -
@@ -922,6 +951,42 @@ internal sealed class RngPage {
         }
     }
 
+    /// <summary>Small caption naming one group inside a card body.</summary>
+    private static float AddGroupLabel(RectTransform content, string key, string label, float y) {
+        GameObject row = Ui.Row(content, "Group_" + key, MenuTheme.CardBg, y, 30f);
+        Ui.RowLabel(row, label, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
+        return y + 30f;
+    }
+
+    /// <summary>One radio row: options are always clickable - selecting one pins it,
+    /// unselecting it goes back to random.</summary>
+    private static float AddRadioRow(RectTransform content, string key, int rowIndex, string label, int value, int selected, Action<int> onSelect, float y) {
+        GameObject row = Ui.Row(content, "Card_" + key + "_Opt" + rowIndex, rowIndex % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt, y, 40f);
+        int captured = value;
+
+        UiCheck check = UiCheck.Create(row.transform, "Select", MenuTheme.CheckSize, selected == value, on => {
+            if (onSelect != null) {
+                onSelect(on ? captured : -1);
+            }
+        });
+        RectTransform checkRect = Ui.Rect(check.Root);
+        checkRect.anchorMin = new Vector2(0f, 0.5f);
+        checkRect.anchorMax = new Vector2(0f, 0.5f);
+        checkRect.pivot = new Vector2(0f, 0.5f);
+        checkRect.anchoredPosition = new Vector2(12f, 0f);
+
+        GameObject labelGo = Ui.Create("OptLabel", row.transform);
+        RectTransform labelRect = Ui.Rect(labelGo);
+        labelRect.anchorMin = new Vector2(0f, 0.5f);
+        labelRect.anchorMax = new Vector2(1f, 0.5f);
+        labelRect.pivot = new Vector2(0f, 0.5f);
+        labelRect.offsetMin = new Vector2(46f, 0f);
+        labelRect.offsetMax = new Vector2(-MenuTheme.Padding, 0f);
+        Ui.Label(labelGo, label, MenuTheme.FontSizeLabel, MenuTheme.Text, TextAnchor.MiddleLeft);
+
+        return y + 40f + 2f;
+    }
+
     /// <summary>
     /// Compound card for a spot whose value is an ordered list plus a "which attack comes
     /// first" pick inside it (the pitchfork). Group 1 pins which order (or leaves it to the
@@ -932,19 +997,25 @@ internal sealed class RngPage {
     private sealed class CompoundCard {
         private readonly RngPage page;
         private readonly RngSpot primary;
+        private readonly Level.Mode mode;
         private readonly PatternCard.Binding orderBinding;
         private readonly PatternCard.Binding typeBinding;
         private readonly RngOption[] orderOptions;
-        private readonly Func<int, RngOption[]> typeOptionsFor;
+        private readonly Func<Level.Mode, int, RngOption[]> typeOptionsFor;
+        private readonly string primaryGroupLabel;
+        private readonly string secondaryGroupLabel;
         private readonly string expansionKey;
 
-        public CompoundCard(RngPage page, RngSpot primary, RngOption[] orderOptions, PatternCard.Binding orderBinding, PatternCard.Binding typeBinding, Func<int, RngOption[]> typeOptionsFor, string expansionKey) {
+        public CompoundCard(RngPage page, RngSpot primary, Level.Mode mode, RngOption[] orderOptions, PatternCard.Binding orderBinding, PatternCard.Binding typeBinding, Func<Level.Mode, int, RngOption[]> typeOptionsFor, string primaryGroupLabel, string secondaryGroupLabel, string expansionKey) {
             this.page = page;
             this.primary = primary;
+            this.mode = mode;
             this.orderBinding = orderBinding;
             this.typeBinding = typeBinding;
             this.orderOptions = orderOptions;
             this.typeOptionsFor = typeOptionsFor;
+            this.primaryGroupLabel = primaryGroupLabel;
+            this.secondaryGroupLabel = secondaryGroupLabel;
             this.expansionKey = expansionKey;
         }
 
@@ -980,26 +1051,77 @@ internal sealed class RngPage {
                 selectedOrder = -1;
             }
 
-            y = AddGroupLabel(content, expansionKey + "_OrderLabel", "Attack order", y);
-            y = AddRadio(content, expansionKey, 0, "Random", -1, selectedOrder, SelectOrder, y);
-            for (int i = 0; i < orderOptions.Length; i++) {
-                y = AddRadio(content, expansionKey, i + 1, orderOptions[i].Label, orderOptions[i].Value, selectedOrder, SelectOrder, y);
-            }
+            // the order group uses the per-roll selection idiom: arrows with pips and a
+            // separate Random checkbox, since the game picks one order independently
+            y = AddGroupLabel(content, expansionKey + "_OrderLabel", primaryGroupLabel, y);
+            GameObject orderRow = Ui.Row(content, "Card_" + expansionKey + "_OrderCycler", MenuTheme.RowBg, y, 40f);
+            UiCheck orderRandom = UiCheck.Create(orderRow.transform, "Random", MenuTheme.CheckSize, selectedOrder < 0, on => {
+                orderBinding.Set(on ? -1 : 0);
+                int pinnedType = typeBinding.Selected();
+                if (on || (pinnedType >= 0 && !OrderContainsType(0, pinnedType))) {
+                    typeBinding.Set(-1);
+                }
+                page.Refresh();
+            });
+            RectTransform orderRandomRect = Ui.Rect(orderRandom.Root);
+            orderRandomRect.anchorMin = new Vector2(0f, 0.5f);
+            orderRandomRect.anchorMax = new Vector2(0f, 0.5f);
+            orderRandomRect.pivot = new Vector2(0f, 0.5f);
+            orderRandomRect.anchoredPosition = new Vector2(12f, 0f);
+            Ui.RowLabel(orderRow, "Random", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 46f, 610f);
 
-            y = AddGroupLabel(content, expansionKey + "_TypeLabel", "First attack", y);
+            string orderLabel = selectedOrder >= 0 && selectedOrder < orderOptions.Length ? orderOptions[selectedOrder].Label : "random";
+            UiCycle orderCycle = UiCycle.Create(orderRow.transform, "Order", 280f, MenuTheme.ControlSize, orderLabel,
+                () => CycleOrder(-1),
+                () => CycleOrder(+1));
+            RectTransform orderCycleRect = Ui.Rect(orderCycle.Root);
+            orderCycleRect.anchorMin = new Vector2(0f, 0.5f);
+            orderCycleRect.anchorMax = new Vector2(0f, 0.5f);
+            orderCycleRect.pivot = new Vector2(0f, 0.5f);
+            orderCycleRect.anchoredPosition = new Vector2(124f, 0f);
+
+            y += 40f;
+            y = SequenceUi.BuildChoicePips(content, "Card_" + expansionKey + "_OrderPips", MenuTheme.RowBg, orderOptions, selectedOrder, y);
+
+            y = AddGroupLabel(content, expansionKey + "_TypeLabel", secondaryGroupLabel, y);
             if (selectedOrder < 0) {
                 // no order pinned: the first attack cannot deviate from the game's own roll
-                y = AddRadio(content, expansionKey + "_Type", 0, "Random", -1, -1, SelectType, y);
+                y = AddRadioRow(content, expansionKey + "_Type", 0, "Random", -1, -1, SelectType, y);
             } else {
-                RngOption[] typeOptions = typeOptionsFor(selectedOrder);
+                RngOption[] typeOptions = typeOptionsFor(mode, selectedOrder);
                 int selectedType = typeBinding.Selected();
-                y = AddRadio(content, expansionKey + "_Type", 0, "Random", -1, selectedType, SelectType, y);
+                y = AddRadioRow(content, expansionKey + "_Type", 0, "Random", -1, selectedType, SelectType, y);
                 for (int i = 0; i < typeOptions.Length; i++) {
-                    y = AddRadio(content, expansionKey + "_Type", i + 1, typeOptions[i].Label, typeOptions[i].Value, selectedType, SelectType, y);
+                    y = AddRadioRow(content, expansionKey + "_Type", i + 1, typeOptions[i].Label, typeOptions[i].Value, selectedType, SelectType, y);
                 }
             }
 
             return y + Gap;
+        }
+
+        private void CycleOrder(int direction) {
+            int count = orderOptions.Length;
+            if (count == 0) {
+                return;
+            }
+            int current = orderBinding.Selected();
+            if (current >= count) {
+                current = -1;
+            }
+            int next;
+            if (current < 0) {
+                next = direction > 0 ? 0 : count - 1;
+            } else {
+                next = ((current + direction) % count + count) % count;
+            }
+            orderBinding.Set(next);
+            // a freshly chosen order that does not contain the pinned first attack resets
+            // the first attack to random
+            int selectedType = typeBinding.Selected();
+            if (selectedType >= 0 && !OrderContainsType(next, selectedType)) {
+                typeBinding.Set(-1);
+            }
+            page.Refresh();
         }
 
         private void SelectOrder(int index) {
@@ -1019,7 +1141,7 @@ internal sealed class RngPage {
         }
 
         private bool OrderContainsType(int orderIndex, int typeValue) {
-            RngOption[] typeOptions = typeOptionsFor(orderIndex);
+            RngOption[] typeOptions = typeOptionsFor(mode, orderIndex);
             foreach (RngOption option in typeOptions) {
                 if (option.Value == typeValue) {
                     return true;
@@ -1027,40 +1149,361 @@ internal sealed class RngPage {
             }
             return false;
         }
+    }
 
-        private float AddGroupLabel(RectTransform content, string key, string label, float y) {
-            GameObject row = Ui.Row(content, "Group_" + key, MenuTheme.CardBg, y, 30f);
-            Ui.RowLabel(row, label, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-            return y + 30f;
+    /// <summary>
+    /// Compound sequence card for a per-event compound spot (the UFO pattern): each attack
+    /// round rolls a fresh sequence and its start, and the card edits both with one
+    /// collapsible block per round - the sequence as a cycler with pips, the start as a
+    /// plain radio list. The + button appends further blocks; the last block carries the
+    /// Repeat? flag, which governs both spots' loop so they stay in sync.
+    /// </summary>
+    private sealed class CompoundSequenceCard {
+        private readonly RngPage page;
+        private readonly RngSpot primary;
+        private readonly RngSpot secondary;
+        private readonly Level.Mode mode;
+        private readonly IntSequenceBackend primaryBackend;
+        private readonly IntSequenceBackend secondaryBackend;
+        private readonly RngOption[] primaryOptions;
+        private readonly Func<Level.Mode, int, RngOption[]> startOptionsFor;
+        private readonly string expansionKey;
+
+        public CompoundSequenceCard(RngPage page, RngSpot primary, RngSpot secondary, Level.Mode mode, IntSequenceBackend primaryBackend, IntSequenceBackend secondaryBackend, RngOption[] primaryOptions, Func<Level.Mode, int, RngOption[]> startOptionsFor, string expansionKey) {
+            this.page = page;
+            this.primary = primary;
+            this.secondary = secondary;
+            this.mode = mode;
+            this.primaryBackend = primaryBackend;
+            this.secondaryBackend = secondaryBackend;
+            this.primaryOptions = primaryOptions;
+            this.startOptionsFor = startOptionsFor;
+            this.expansionKey = expansionKey;
         }
 
-        private float AddRadio(RectTransform content, string key, int rowIndex, string label, int value, int selected, Action<int> onSelect, float y) {
-            GameObject row = Ui.Row(content, "Card_" + key + "_Opt" + rowIndex, rowIndex % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt, y, 40f);
-            int captured = value;
+        public float Build(RectTransform content, float y) {
+            bool isConfigured = IsSpotConfigured(primaryBackend) || IsSpotConfigured(secondaryBackend);
+            bool isExpanded = page.expanded.Contains(expansionKey);
 
-            // radio behavior: one option per group; options are always clickable - selecting
-            // one pins it, unselecting it goes back to random
-            UiCheck check = UiCheck.Create(row.transform, "Select", MenuTheme.CheckSize, selected == value, on => {
-                if (onSelect != null) {
-                    onSelect(on ? captured : -1);
+            GameObject header = BuildCardHeader(
+                content, expansionKey, y, primary, isExpanded, isConfigured,
+                () => {
+                    if (isExpanded) {
+                        page.expanded.Remove(expansionKey);
+                    } else {
+                        page.expanded.Add(expansionKey);
+                    }
+                    page.Refresh();
+                },
+                AppendBlock);
+
+            y += MenuTheme.RowHeight;
+            if (!isExpanded) {
+                return y + Gap;
+            }
+
+            if (!string.IsNullOrEmpty(primary.Hint)) {
+                GameObject hintRow = Ui.Row(content, "Card_" + expansionKey + "_Hint", MenuTheme.CardBg, y, 30f);
+                Ui.RowLabel(hintRow, primary.Hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
+                y += 30f;
+            }
+
+            int blockCount = 1 + primaryBackend.GetSteps().Count;
+            for (int block = 0; block < blockCount; block++) {
+                y = BuildBlock(content, block, block == blockCount - 1, y);
+            }
+
+            return y + Gap;
+        }
+
+        /// <summary>One round: a collapsible block holding the pattern cycler and the
+        /// starting-UFO radio list.</summary>
+        private float BuildBlock(RectTransform content, int block, bool isLast, float y) {
+            string blockKey = expansionKey + "_b" + block;
+            bool expanded = page.expanded.Contains(blockKey);
+            int primaryValue = BlockPrimaryValue(block);
+            int secondaryValue = BlockSecondaryValue(block);
+            bool primaryRandom = primaryValue < 0;
+            int captured = block;
+
+            Color background = block % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt;
+            GameObject header = Ui.Row(content, "Card_" + blockKey + "_Head", background, y, 34f);
+
+            GameObject expand = Ui.TextButton(header.transform, "Expand", expanded ? "-" : "+", 28f, 28f, () => {
+                if (page.expanded.Contains(blockKey)) {
+                    page.expanded.Remove(blockKey);
+                } else {
+                    page.expanded.Add(blockKey);
                 }
+                page.Refresh();
+            }, MenuTheme.FontSizeButton);
+            RectTransform expandRect = Ui.Rect(expand);
+            expandRect.anchorMin = new Vector2(0f, 0.5f);
+            expandRect.anchorMax = new Vector2(0f, 0.5f);
+            expandRect.pivot = new Vector2(0f, 0.5f);
+            expandRect.anchoredPosition = new Vector2(6f, 0f);
+
+            string summary;
+            if (primaryRandom) {
+                summary = "random";
+            } else {
+                string primaryLabel = primaryValue >= 0 && primaryValue < primaryOptions.Length ? primaryOptions[primaryValue].Label : "#" + (primaryValue + 1);
+                summary = primaryLabel + " - " + SecondaryLabel(secondaryValue, primaryValue);
+            }
+            GameObject summaryGo = Ui.Create("Summary", header.transform);
+            RectTransform summaryRect = Ui.Rect(summaryGo);
+            summaryRect.anchorMin = new Vector2(0f, 0.5f);
+            summaryRect.anchorMax = new Vector2(1f, 0.5f);
+            summaryRect.pivot = new Vector2(0f, 0.5f);
+            summaryRect.offsetMin = new Vector2(40f, 0f);
+            summaryRect.offsetMax = new Vector2(isLast ? -180f : -40f, 0f);
+            Ui.Label(summaryGo, "Round " + (block + 1) + ": " + summary, MenuTheme.FontSizeSmall, primaryRandom ? MenuTheme.TextDim : MenuTheme.Text, TextAnchor.MiddleLeft);
+
+            if (isLast) {
+                UiCheck loopCheck = UiCheck.Create(header.transform, "Loop", MenuTheme.CheckSize, primaryBackend.GetLoop(), on => {
+                    primaryBackend.Write(PrimaryWritePin(), primaryBackend.GetSteps(), on);
+                    secondaryBackend.Write(SecondaryWritePin(), secondaryBackend.GetSteps(), on);
+                    page.Refresh();
+                });
+                RectTransform loopRect = Ui.Rect(loopCheck.Root);
+                loopRect.anchorMin = new Vector2(1f, 0.5f);
+                loopRect.anchorMax = new Vector2(1f, 0.5f);
+                loopRect.pivot = new Vector2(1f, 0.5f);
+                loopRect.anchoredPosition = new Vector2(-46f, 0f);
+                SequenceUi.PlaceRightLabel(header, "RepeatLabel", "Repeat?", 82f, 90f);
+            }
+
+            if (block > 0) {
+                GameObject remove = Ui.TextButton(header.transform, "Remove", "x", 28f, 28f, () => RemoveBlock(captured), MenuTheme.FontSizeSmall);
+                RectTransform removeRect = Ui.Rect(remove);
+                removeRect.anchorMin = new Vector2(1f, 0.5f);
+                removeRect.anchorMax = new Vector2(1f, 0.5f);
+                removeRect.pivot = new Vector2(1f, 0.5f);
+                removeRect.anchoredPosition = new Vector2(-10f, 0f);
+            }
+
+            y += 34f + 2f;
+            if (!expanded) {
+                return y;
+            }
+
+            // pattern part: the cycler with pips, exactly the per-roll selection idiom
+            y = AddGroupLabel(content, blockKey + "_PatternLabel", primary.CompoundPrimaryLabel ?? "Pattern", y);
+            GameObject cyclerRow = Ui.Row(content, "Card_" + blockKey + "_Cycler", background, y, 40f);
+            UiCheck randomCheck = UiCheck.Create(cyclerRow.transform, "Random", MenuTheme.CheckSize, primaryRandom, on => {
+                SetBlockPrimary(captured, on ? -1 : 0);
             });
-            RectTransform checkRect = Ui.Rect(check.Root);
-            checkRect.anchorMin = new Vector2(0f, 0.5f);
-            checkRect.anchorMax = new Vector2(0f, 0.5f);
-            checkRect.pivot = new Vector2(0f, 0.5f);
-            checkRect.anchoredPosition = new Vector2(12f, 0f);
+            RectTransform randomRect = Ui.Rect(randomCheck.Root);
+            randomRect.anchorMin = new Vector2(0f, 0.5f);
+            randomRect.anchorMax = new Vector2(0f, 0.5f);
+            randomRect.pivot = new Vector2(0f, 0.5f);
+            randomRect.anchoredPosition = new Vector2(12f, 0f);
+            Ui.RowLabel(cyclerRow, "Random", MenuTheme.FontSizeSmall, MenuTheme.TextDim, 46f, 610f);
 
-            GameObject labelGo = Ui.Create("OptLabel", row.transform);
-            RectTransform labelRect = Ui.Rect(labelGo);
-            labelRect.anchorMin = new Vector2(0f, 0.5f);
-            labelRect.anchorMax = new Vector2(1f, 0.5f);
-            labelRect.pivot = new Vector2(0f, 0.5f);
-            labelRect.offsetMin = new Vector2(46f, 0f);
-            labelRect.offsetMax = new Vector2(-MenuTheme.Padding, 0f);
-            Ui.Label(labelGo, label, MenuTheme.FontSizeLabel, MenuTheme.Text, TextAnchor.MiddleLeft);
+            string cyclerLabel = !primaryRandom && primaryValue < primaryOptions.Length ? primaryOptions[primaryValue].Label : "random";
+            UiCycle cycle = UiCycle.Create(cyclerRow.transform, "Pattern", 280f, MenuTheme.ControlSize, cyclerLabel,
+                () => CycleBlockPrimary(captured, -1),
+                () => CycleBlockPrimary(captured, +1));
+            RectTransform cycleRect = Ui.Rect(cycle.Root);
+            cycleRect.anchorMin = new Vector2(0f, 0.5f);
+            cycleRect.anchorMax = new Vector2(0f, 0.5f);
+            cycleRect.pivot = new Vector2(0f, 0.5f);
+            cycleRect.anchoredPosition = new Vector2(124f, 0f);
 
-            return y + 40f + 2f;
+            y += 40f;
+            y = SequenceUi.BuildChoicePips(content, "Card_" + blockKey + "_Pips", background, primaryOptions, primaryValue, y);
+
+            // starting-UFO part: a plain radio list, locked to random while the pattern is
+            y = AddGroupLabel(content, blockKey + "_StartLabel", secondary.CompoundSecondaryLabel ?? "Start", y);
+            if (primaryRandom) {
+                y = AddRadioRow(content, blockKey, 0, "Random", -1, -1, null, y);
+            } else {
+                RngOption[] startOptions = startOptionsFor(mode, primaryValue);
+                y = AddRadioRow(content, blockKey, 0, "Random", -1, secondaryValue, value => SetBlockSecondary(captured, value), y);
+                for (int i = 0; i < startOptions.Length; i++) {
+                    y = AddRadioRow(content, blockKey, i + 1, startOptions[i].Label, startOptions[i].Value, secondaryValue, value => SetBlockSecondary(captured, value), y);
+                }
+            }
+
+            return y + 4f;
+        }
+
+        private void AppendBlock() {
+            List<int> primarySteps = primaryBackend.GetSteps();
+            int primarySeed = primarySteps.Count > 0 ? primarySteps[primarySteps.Count - 1] : primaryBackend.GetPin();
+            if (primarySeed < 0 || primarySeed >= primaryOptions.Length) {
+                primarySeed = 0;
+            }
+            primarySteps.Add(primarySeed);
+            primaryBackend.Write(PrimaryWritePin(), primarySteps, primaryBackend.GetLoop());
+
+            List<int> secondarySteps = secondaryBackend.GetSteps();
+            int secondarySeed = secondarySteps.Count > 0 ? secondarySteps[secondarySteps.Count - 1] : secondaryBackend.GetPin();
+            if (secondarySeed < 0 || secondarySeed >= startOptionsFor(mode, primarySeed).Length) {
+                secondarySeed = -1;
+            }
+            secondarySteps.Add(secondarySeed);
+            secondaryBackend.Write(SecondaryWritePin(), secondarySteps, secondaryBackend.GetLoop());
+            page.Refresh();
+        }
+
+        private void RemoveBlock(int block) {
+            if (block <= 0) {
+                return;
+            }
+            int index = block - 1;
+            List<int> primarySteps = primaryBackend.GetSteps();
+            if (index < primarySteps.Count) {
+                primarySteps.RemoveAt(index);
+            }
+            primaryBackend.Write(PrimaryWritePin(), primarySteps, primaryBackend.GetLoop());
+            List<int> secondarySteps = secondaryBackend.GetSteps();
+            if (index < secondarySteps.Count) {
+                secondarySteps.RemoveAt(index);
+            }
+            secondaryBackend.Write(SecondaryWritePin(), secondarySteps, secondaryBackend.GetLoop());
+
+            // blocks after the removed one shift down one, and so do their expand states
+            int blockCount = 1 + primaryBackend.GetSteps().Count;
+            for (int j = block + 1; j <= blockCount; j++) {
+                string oldKey = expansionKey + "_b" + j;
+                if (page.expanded.Contains(oldKey)) {
+                    page.expanded.Remove(oldKey);
+                    page.expanded.Add(expansionKey + "_b" + (j - 1));
+                }
+            }
+            page.expanded.Remove(expansionKey + "_b" + blockCount);
+            page.Refresh();
+        }
+
+        private void CycleBlockPrimary(int block, int direction) {
+            int count = primaryOptions.Length;
+            if (count == 0) {
+                return;
+            }
+            if (block == 0) {
+                int current = primaryBackend.GetPin();
+                if (current >= count) {
+                    current = -1;
+                }
+                int next = current < 0
+                    ? (direction > 0 ? 0 : count - 1)
+                    : ((current + direction) % count + count) % count;
+                primaryBackend.Write(next, primaryBackend.GetSteps(), primaryBackend.GetLoop());
+            } else {
+                List<int> steps = primaryBackend.GetSteps();
+                int index = block - 1;
+                if (index >= steps.Count) {
+                    return;
+                }
+                int current = steps[index];
+                int next = current < 0 || current >= count
+                    ? (direction > 0 ? 0 : count - 1)
+                    : ((current + direction) % count + count) % count;
+                steps[index] = next;
+                primaryBackend.Write(PrimaryWritePin(), steps, primaryBackend.GetLoop());
+            }
+            ResetInvalidSecondary(block);
+            page.Refresh();
+        }
+
+        private void SetBlockPrimary(int block, int value) {
+            if (block == 0) {
+                primaryBackend.Write(value < 0 ? (int?)null : value, primaryBackend.GetSteps(), primaryBackend.GetLoop());
+            } else {
+                List<int> steps = primaryBackend.GetSteps();
+                int index = block - 1;
+                if (index >= steps.Count) {
+                    return;
+                }
+                steps[index] = value;
+                primaryBackend.Write(PrimaryWritePin(), steps, primaryBackend.GetLoop());
+            }
+            ResetInvalidSecondary(block);
+            page.Refresh();
+        }
+
+        private void SetBlockSecondary(int block, int value) {
+            if (block == 0) {
+                secondaryBackend.Write(value < 0 ? (int?)null : value, secondaryBackend.GetSteps(), secondaryBackend.GetLoop());
+            } else {
+                List<int> steps = secondaryBackend.GetSteps();
+                int index = block - 1;
+                while (steps.Count <= index) {
+                    steps.Add(-1);
+                }
+                steps[index] = value;
+                secondaryBackend.Write(SecondaryWritePin(), steps, secondaryBackend.GetLoop());
+            }
+            page.Refresh();
+        }
+
+        /// <summary>Switching a block's pattern can invalidate its pinned start (a shorter
+        /// sequence); such a start falls back to random, mirroring the pitchfork rule.</summary>
+        private void ResetInvalidSecondary(int block) {
+            int primaryValue = BlockPrimaryValue(block);
+            if (primaryValue < 0) {
+                return;
+            }
+            int count = startOptionsFor(mode, primaryValue).Length;
+            if (block == 0) {
+                if (secondaryBackend.GetPin() >= count) {
+                    secondaryBackend.Write(null, secondaryBackend.GetSteps(), secondaryBackend.GetLoop());
+                }
+            } else {
+                List<int> steps = secondaryBackend.GetSteps();
+                int index = block - 1;
+                if (index < steps.Count && steps[index] >= count) {
+                    steps[index] = -1;
+                    secondaryBackend.Write(SecondaryWritePin(), steps, secondaryBackend.GetLoop());
+                }
+            }
+        }
+
+        private int BlockPrimaryValue(int block) {
+            if (block == 0) {
+                return primaryBackend.GetPin();
+            }
+            List<int> steps = primaryBackend.GetSteps();
+            int index = block - 1;
+            return index < steps.Count ? steps[index] : -1;
+        }
+
+        private int BlockSecondaryValue(int block) {
+            if (block == 0) {
+                return secondaryBackend.GetPin();
+            }
+            List<int> steps = secondaryBackend.GetSteps();
+            int index = block - 1;
+            return index < steps.Count ? steps[index] : -1;
+        }
+
+        private int? PrimaryWritePin() {
+            return primaryBackend.HasPin() ? primaryBackend.GetPin() : (int?)null;
+        }
+
+        private int? SecondaryWritePin() {
+            return secondaryBackend.HasPin() ? secondaryBackend.GetPin() : (int?)null;
+        }
+
+        private string SecondaryLabel(int secondaryValue, int primaryValue) {
+            if (secondaryValue < 0) {
+                return "random";
+            }
+            RngOption[] startOptions = startOptionsFor(mode, primaryValue);
+            return secondaryValue < startOptions.Length ? startOptions[secondaryValue].Label : "#" + (secondaryValue + 1);
+        }
+
+        private static bool IsSpotConfigured(IntSequenceBackend backend) {
+            if (backend.HasPin()) {
+                return true;
+            }
+            foreach (int step in backend.GetSteps()) {
+                if (step >= 0) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 
@@ -1375,13 +1818,20 @@ internal sealed class RngPage {
                 if (!string.IsNullOrEmpty(spot.CompoundWith)) {
                     // one card for the compound spot and its secondary, both bound to this form
                     RngSpot secondary = RngSpots.Find(spot.CompoundWith);
-                    CompoundCard card = new CompoundCard(
-                        page, spot, options,
-                        new PatternCard.FormBinding(stageId, mode, formIndex, spot),
-                        new PatternCard.FormBinding(stageId, mode, formIndex, secondary),
-                        orderIndex => RngSpots.DevilPitchforkTypeOptions(mode, orderIndex),
-                        "form:" + setKey + ":" + formIndex + ":" + spot.Id);
-                    y = card.Build(content, y);
+                    if (spot.PerEvent) {
+                        CompoundSequenceCard card = new CompoundSequenceCard(page, spot, secondary, mode, new FormIntBackend(stageId, mode, formIndex, spot), new FormIntBackend(stageId, mode, formIndex, secondary), options, spot.CompoundStartOptions, "form:" + setKey + ":" + formIndex + ":" + spot.Id);
+                        y = card.Build(content, y);
+                    } else {
+                        CompoundCard card = new CompoundCard(
+                            page, spot, mode, options,
+                            new PatternCard.FormBinding(stageId, mode, formIndex, spot),
+                            new PatternCard.FormBinding(stageId, mode, formIndex, secondary),
+                            spot.CompoundStartOptions,
+                            spot.CompoundPrimaryLabel ?? "Pattern",
+                            spot.CompoundSecondaryLabel ?? "Start at",
+                            "form:" + setKey + ":" + formIndex + ":" + spot.Id);
+                        y = card.Build(content, y);
+                    }
                 } else if (spot.Shape == RngShape.Float) {
                     // identical to the simple-mode float card: random, pinned values or a
                     // sequence stored inside this form

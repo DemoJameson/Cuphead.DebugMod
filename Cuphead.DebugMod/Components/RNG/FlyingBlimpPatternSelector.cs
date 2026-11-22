@@ -1,92 +1,143 @@
-﻿using System.Net.Configuration;
-using System.Reflection;
+using System;
+using BepInEx.CupheadDebugMod.Rng;
 using HarmonyLib;
 using MonoMod.Cil;
-using static BepInEx.CupheadDebugMod.Config.Settings;
-using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
+// All values come from RngState, which passes vanilla results through untouched and only
+// resolves configured spots (see Rng/RngSpots.cs for the catalog).
 [HarmonyPatch]
-public class FlyingBlimpPatternSelector : PluginComponent {
+internal class FlyingBlimpPatternSelector : PluginComponent {
 
-    [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(BaronessLevel.OnStateChanged))]
-    [HarmonyILManipulator]
-    public static void ConstellationPatternManipulator(ILContext il) {
-        ILCursor ilCursor = new(il);
-        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("Rand::Bool"))) {
-            ilCursor.Remove();
+    private static Level.Mode Mode => Level.ScoringData.difficulty;
 
-            ilCursor.Emit(OpCodes.Call, typeof(FlyingBlimpPatternSelector).GetMethod(nameof(SelectConstellation), BindingFlags.Static | BindingFlags.Public));
-
-        }
-    }
-
-    // Sets the leading attack in the sequence.
+    // Sets the leading attack of a Generic blimp phase. Each phase is entered once per
+    // fight and its cycle is consumed with a pre-increment (NextPattern), so the spot
+    // resolves with preIncrement=true; the cycle comes from the live per-difficulty data
+    // and the two phases are told apart by state identity, not by health thresholds.
     [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(FlyingBlimpLevel.OnStateChanged))]
     [HarmonyPrefix]
+    private static void PhasePatternManipulator(FlyingBlimpLevel __instance) {
+        LevelProperties.FlyingBlimp.State state = __instance.properties.CurrentState;
+        if (state.stateName != LevelProperties.FlyingBlimp.States.Generic) {
+            return;
+        }
 
-    // pattern index seems to get regenerated in phases 2 and 3
-    public static void PhaseBlimpPatternManipulator(ref FlyingBlimpLevel __instance) {
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-#if v1_0
-            if (IsWithinPhase(0.62f, 0.46f, __instance)) {
-#else
-            if (IsWithinPhase(0.65f, 0.45f, __instance)) {
-#endif
-                if (FlyingBlimpPhaseBlimp2PatternEasy.Value != FlyingBlimpPhaseBlimp2PatternsEasy.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsEasy>((int) FlyingBlimpPhaseBlimp2PatternEasy.Value);
-                }
-            }
-#if v1_0
-            else if (IsWithinPhase(0.23f, 0.00f, __instance)) {
-#else
-            else if (IsWithinPhase(0.20f, 0.00f, __instance)) {
-#endif
-                if (FlyingBlimpPhaseBlimp3PatternEasy.Value != FlyingBlimpPhaseBlimp3PatternsEasy.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsEasy>((int) FlyingBlimpPhaseBlimp3PatternEasy.Value);
-                }
-            }
-        } else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            if (IsWithinPhase(0.77f, 0.64f, __instance)) {
-                if (FlyingBlimpPhaseBlimp2PatternNormal.Value != FlyingBlimpPhaseBlimp2PatternsNormal.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsNormal>((int) FlyingBlimpPhaseBlimp2PatternNormal.Value);
-                }
-            } else if (IsWithinPhase(0.46f, 0.34f, __instance)) {
-                if (FlyingBlimpPhaseBlimp3PatternNormal.Value != FlyingBlimpPhaseBlimp3PatternsNormal.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsNormal>((int) FlyingBlimpPhaseBlimp3PatternNormal.Value);
-                }
-            }
-        } else if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            if (IsWithinPhase(0.8f, 0.67f, __instance)) {
-                if (FlyingBlimpPhaseBlimp2PatternHard.Value != FlyingBlimpPhaseBlimp2PatternsHard.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp2PatternsHard>((int) FlyingBlimpPhaseBlimp2PatternHard.Value);
-                }
-            } else if (IsWithinPhase(0.51f, 0.39f, __instance)) {
-                if (FlyingBlimpPhaseBlimp3PatternHard.Value != FlyingBlimpPhaseBlimp3PatternsHard.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<FlyingBlimpPhaseBlimp3PatternsHard>((int) FlyingBlimpPhaseBlimp3PatternHard.Value);
-                }
-            }
+        int genericIndex = RngSpots.FlyingBlimpGenericIndex(Mode, state);
+        if (genericIndex < 0) {
+            return;
+        }
+        string spotId = genericIndex == 0 ? RngSpots.FlyingBlimpGeneric1PatternStart : RngSpots.FlyingBlimpGeneric2PatternStart;
+        state.patternIndex = RngState.Index(spotId, Mode, state.patternIndex, state.patterns.Length, true);
+    }
+
+    // The Regular-only constellation phase coin-flips between Sagittarius and Gemini
+    // (Rand.Bool, true = Sagittarius in every game version); decided once per fight.
+    [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(FlyingBlimpLevel.OnStateChanged))]
+    [HarmonyILManipulator]
+    private static void ConstellationManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        while (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("Rand::Bool"))) {
+            cursor.EmitDelegate<Func<bool, bool>>(rolled =>
+                RngState.Index(RngSpots.FlyingBlimpConstellation, Mode, rolled ? 0 : 1, 2, false) == 0);
+            cursor.Index++;
         }
     }
 
-    public static bool SelectConstellation() {
-        if (FlyingBlimpConstellationPatternNormal.Value != FlyingBlimpConstellationPatternsNormal.Random) {
-            return FlyingBlimpConstellationPatternNormal.Value == FlyingBlimpConstellationPatternsNormal.Sagittarius;
+    // ---- Moon phase (Regular and Expert only; Simple never reaches it) ----
+
+    // Which sequence is picked, and where each starts. stars_cr runs once per fight and
+    // rolls, in IL order: the position string, the type string, the type start index and
+    // the position start index. The start delegates need the entry count of the string
+    // the round actually picked, so the string picks stash their index for them.
+    private static int chosenPositionString = -1;
+    private static int chosenTypeString = -1;
+    private static int chosenUfoString = -1;
+
+    [HarmonyPatch(typeof(FlyingBlimpLevelMoonLady), "stars_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void StarsManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        int stringPicks = 0;
+        while (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("ArrayExtensions::GetRandom"))) {
+            bool positions = stringPicks == 0;
+            cursor.EmitDelegate<Func<string, string>>(rolled => {
+                string[] strings = FlyingBlimpStarStringsFor(positions);
+                int vanilla = Array.IndexOf(strings, rolled);
+                if (vanilla < 0) {
+                    return rolled;
+                }
+                int pick = RngState.Index(positions ? RngSpots.FlyingBlimpMoonStarPositions : RngSpots.FlyingBlimpMoonStarTypes, Mode, vanilla, strings.Length, false);
+                if (positions) {
+                    chosenPositionString = pick;
+                } else {
+                    chosenTypeString = pick;
+                }
+                return strings[pick];
+            });
+            stringPicks++;
+            cursor.Index++;
         }
-        else {
-            return Rand.Bool();
+
+        cursor.Index = 0;
+        int startPicks = 0;
+        while (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            bool typeStart = startPicks == 0;
+            cursor.EmitDelegate<Func<int, int>>(rolled =>
+                RngState.Index(typeStart ? RngSpots.FlyingBlimpMoonStarTypesStart : RngSpots.FlyingBlimpMoonStarPositionsStart, Mode, rolled,
+                    typeStart ? RngSpots.FlyingBlimpStarStartCount(Mode, false, chosenTypeString) : RngSpots.FlyingBlimpStarStartCount(Mode, true, chosenPositionString),
+                    false));
+            startPicks++;
+            cursor.Index++;
         }
     }
 
-    protected static bool IsWithinPhase(float phaseStart, float phaseEnd, FlyingBlimpLevel __instance) {
-        // i'm not actually sure on the inclusivity of values here ( <, > vs <=, >=). i'm taking a guess.
-        return (__instance.properties.CurrentState.stateName == LevelProperties.FlyingBlimp.States.Generic &&
-        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health <= phaseStart &&
-        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health > phaseEnd);
+    // One UFO sequence and its start index, both re-rolled per attack round.
+    [HarmonyPatch(typeof(FlyingBlimpLevelMoonLady), "ufo_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void UfoManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("ArrayExtensions::GetRandom"))) {
+            cursor.EmitDelegate<Func<string, string>>(rolled => {
+                string[] strings = RngSpots.FlyingBlimpUfoStrings(Mode);
+                int vanilla = Array.IndexOf(strings, rolled);
+                if (vanilla < 0) {
+                    return rolled;
+                }
+                int pick = RngState.Index(RngSpots.FlyingBlimpMoonUfoPattern, Mode, vanilla, strings.Length, false);
+                chosenUfoString = pick;
+                return strings[pick];
+            });
+        }
+
+        cursor.Index = 0;
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            cursor.EmitDelegate<Func<int, int>>(rolled =>
+                RngState.Index(RngSpots.FlyingBlimpMoonUfoStart, Mode, rolled, RngSpots.FlyingBlimpUfoStartCount(Mode, chosenUfoString), false));
+        }
     }
 
+    // Each star rolls its own horizontal speed.
+    [HarmonyPatch(typeof(FlyingBlimpLevelStars), "move_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void StarSpeedManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After,
+                i => (i.OpCode == OpCodes.Ldfld || i.OpCode == OpCodes.Ldflda) && i.Operand.ToString().Contains("speedX"),
+                i => (i.OpCode == OpCodes.Call || i.OpCode == OpCodes.Callvirt) && i.Operand.ToString().Contains("MinMax::RandomFloat"))) {
+            cursor.EmitDelegate<Func<float, float>>(rolled =>
+                RngState.Float(RngSpots.FlyingBlimpMoonStarSpeed, Mode, rolled));
+        }
+    }
 
-
+    private static string[] FlyingBlimpStarStringsFor(bool positions) {
+        return RngSpots.FlyingBlimpStarStrings(Mode, positions);
+    }
 }

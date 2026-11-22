@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Text;
+using System.IO;
+using System.Reflection;
 using UnityEngine;
 
 namespace BepInEx.CupheadDebugMod.Menu;
@@ -31,11 +31,14 @@ internal static class MenuTheme {
 
     // Type badges on spot cards: "start" = the random start of a fixed cycle, "per attack"
     // = re-rolled independently every attack, "once" = decided once per fight, "order" =
-    // one ordered list picked per fight and then walked.
+    // one ordered list picked per fight and then walked, "cycle" = a fresh start position
+    // into a fixed cycle on every round of the attack.
     public static readonly Color BadgeStart = new Color(0.22f, 0.38f, 0.55f);
     public static readonly Color BadgePerAttack = new Color(0.62f, 0.34f, 0.08f);
     public static readonly Color BadgeOnce = new Color(0.40f, 0.26f, 0.52f);
     public static readonly Color BadgeOrder = new Color(0.14f, 0.44f, 0.34f);
+    public static readonly Color BadgeCycle = new Color(0.65f, 0.18f, 0.18f);
+    public static readonly Color BadgeSequence = new Color(0.72f, 0.28f, 0.55f);
 
     // Layout. Canvas units are "1080p pixels" of the game's actively painted scene: the
     // canvas scale is the painted height (Camera.main.pixelRect) divided by
@@ -63,49 +66,47 @@ internal static class MenuTheme {
     public static readonly int FontSizeButton = 20;
 
     /// <summary>
-    /// Use one of the game's own fonts for the menu instead of Arial. The game fonts are
-    /// stylized custom-mapped fonts: their glyph table draws the ASCII punctuation/digit
-    /// block (0x21-0x3F) with inverted shift state ('!' glyph sits where '1' is expected,
-    /// ',' where '<' is expected, ...), so all menu text is routed through MapGlyphs()
-    /// which swaps those pairs back. Letters are unaffected.
+    /// Use one of the game's own fonts for the menu instead of Arial. The game ships a
+    /// whole font family (see FontLoader.FontType on 1.2+); pick one with FontName below.
     /// </summary>
     public static bool UseGameFont = true;
 
     /// <summary>
-    /// Optional: exact name of a Unity Font to use instead of the automatic game font pick.
-    /// Empty = the game's handwriting body font (CupheadHenriette on 1.2+; the first loaded
-    /// "Cuphead" font on 1.0/1.1). Useful names on 1.2+: "CupheadHenriette_A_merged",
-    /// "CupheadMemphis_Medium_merged", "CupheadFelix_Regular_merged".
-    /// NOTE: different game fonts may use different glyph tables — if some characters still
-    /// render oddly after switching fonts, tune the GlyphRemap constants below.
+    /// Prefer the bundled font (Fonts/Bundles/*.assetbundle, see Fonts/README.md) over the
+    /// game's own fonts. When no bundle is embedded for the running game version the menu
+    /// falls back to the game-font logic below.
     /// </summary>
-    public static string FontName = "";
+    public static bool UseBundledFont = true;
 
     /// <summary>
-    /// Per-character glyph remap for the game font. Format: hex pairs "written:sent"
-    /// separated by semicolons. The handwriting font's glyph table has a few wrong slots:
-    /// the '1' slot contains the '!' artwork (and '<'/',' and '>'/'.' are aliased too),
-    /// while the real '1' glyph lives in the '|' (0x7C) slot — hence "31:7C". Determined
-    /// with the "Font calibration" section at the bottom of the RNG page; re-verify there
-    /// if the resolved font ever changes.
+    /// Exact name of the Unity Font to use, as it exists in memory (e.g.
+    /// "CupheadMemphis-Medium", "CupheadVogue-Bold", "CupheadHenriette-A"). The menu needs
+    /// a font whose glyph table draws ASCII normally: CupheadMemphis and CupheadVogue do,
+    /// while CupheadHenriette (the game's handwriting font) draws '!' in the '1' slot and
+    /// aliases '<'/',' and '>'/'.', so it is not usable here without a character remap.
+    /// Empty = the automatic pick (the first loaded "Cuphead" font on 1.0/1.1, the
+    /// handwriting font on 1.2+).
     /// </summary>
-    public static string GlyphRemap = "31:7C;27:3A;";
+    //public static string FontName = "CupheadVogue-Bold";
+    public static string FontName = "CupheadMemphis-Medium";
 
-    /// <summary>True when the resolved font is a game font (and MapGlyphs is active).</summary>
-    public static bool UsingGameFont {
-        get; private set;
-    }
-
+    /// <summary>
     private static Font cachedFont;
-    private static Dictionary<char, char> remapTable;
-    private static string remapParsedFrom;
+    private static Font bundledFont;
+    private static bool bundledFontAttempted;
 
     public static Font ResolveFont() {
         if (cachedFont != null) {
             return cachedFont;
         }
 
-        UsingGameFont = false;
+        if (UseBundledFont) {
+            Font font = TryLoadBundledFont();
+            if (font != null) {
+                cachedFont = font;
+                return cachedFont;
+            }
+        }
 
         if (UseGameFont) {
             if (!string.IsNullOrEmpty(FontName)) {
@@ -115,7 +116,6 @@ internal static class MenuTheme {
                     foreach (Font font in all) {
                         if (font != null && font.name == FontName) {
                             cachedFont = font;
-                            UsingGameFont = true;
                             return cachedFont;
                         }
                     }
@@ -128,7 +128,6 @@ internal static class MenuTheme {
                         Font loaded = FontLoader.GetFont(type);
                         if (loaded != null) {
                             cachedFont = loaded;
-                            UsingGameFont = true;
                             return cachedFont;
                         }
                     } catch (Exception) {
@@ -139,10 +138,9 @@ internal static class MenuTheme {
             } else {
 #if !v1_0 && !v1_1
                 try {
-                    Font loaded = FontLoader.GetFont(FontLoader.FontType.CupheadHenriette_A_merged);
+                    Font loaded = FontLoader.GetFont(FontLoader.FontType.CupheadMemphis_Medium_merged);
                     if (loaded != null) {
                         cachedFont = loaded;
-                        UsingGameFont = true;
                         return cachedFont;
                     }
                 } catch (Exception) {
@@ -154,7 +152,6 @@ internal static class MenuTheme {
                     foreach (Font font in fonts) {
                         if (font != null && font.name.IndexOf("Cuphead", StringComparison.OrdinalIgnoreCase) >= 0) {
                             cachedFont = font;
-                            UsingGameFont = true;
                             return cachedFont;
                         }
                     }
@@ -167,55 +164,60 @@ internal static class MenuTheme {
     }
 
     /// <summary>
-    /// Converts text written as normal ASCII into the codepoints the game font's glyph
-    /// table expects, so a human can write text naturally and it still renders correctly.
-    /// No-op for Arial (which needs no correction) and when the remap table is empty.
+    /// Loads the menu font from the embedded Fonts/Bundles/*.assetbundle matching the
+    /// running game version's engine (5_6 for 1.0/1.1, 2017_4 for 1.2/1.3+; see
+    /// Fonts/README.md for how the bundles are built). Attempted only once; when no
+    /// bundle is embedded for this build the game-font logic takes over unchanged.
     /// </summary>
-    public static string MapGlyphs(string text) {
-        if (string.IsNullOrEmpty(text) || !UsingGameFont) {
-            return text;
+    private static Font TryLoadBundledFont() {
+        if (bundledFontAttempted) {
+            return bundledFont;
+        }
+        bundledFontAttempted = true;
+
+        try {
+#if !v1_0 && !v1_1
+            string suffix = "2017_4";
+#else
+            string suffix = "5_6";
+#endif
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            string resourceName = null;
+            foreach (string name in assembly.GetManifestResourceNames()) {
+                if (name.IndexOf("Fonts.Bundles", StringComparison.OrdinalIgnoreCase) >= 0
+                    && name.IndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= 0
+                    && name.EndsWith(".assetbundle", StringComparison.OrdinalIgnoreCase)) {
+                    resourceName = name;
+                    break;
+                }
+            }
+            if (resourceName == null) {
+                return null;
+            }
+
+            byte[] bytes;
+            using (Stream stream = assembly.GetManifestResourceStream(resourceName)) {
+                if (stream == null) {
+                    return null;
+                }
+                bytes = new byte[stream.Length];
+                stream.Read(bytes, 0, bytes.Length);
+            }
+
+            AssetBundle bundle = AssetBundle.LoadFromMemory(bytes);
+            if (bundle == null) {
+                return null;
+            }
+            Font[] fonts = bundle.LoadAllAssets<Font>();
+            bundle.Unload(false);
+            if (fonts != null && fonts.Length > 0 && fonts[0] != null) {
+                bundledFont = fonts[0];
+                Debug.Log("Cuphead.DebugMod: bundled menu font loaded from " + resourceName);
+            }
+        } catch (Exception) {
+            // no bundle, or a bundle that does not load cleanly; keep the fallback
         }
 
-        EnsureRemapTable();
-        if (remapTable.Count == 0) {
-            return text;
-        }
-
-        StringBuilder sb = new StringBuilder(text.Length);
-        for (int i = 0; i < text.Length; i++) {
-            char replacement;
-            if (remapTable.TryGetValue(text[i], out replacement)) {
-                sb.Append(replacement);
-            } else {
-                sb.Append(text[i]);
-            }
-        }
-        return sb.ToString();
-    }
-
-    private static void EnsureRemapTable() {
-        if (remapParsedFrom == GlyphRemap) {
-            return;
-        }
-        remapParsedFrom = GlyphRemap;
-        remapTable = new Dictionary<char, char>();
-
-        string[] entries = GlyphRemap.Split(new[] { ';' });
-        for (int i = 0; i < entries.Length; i++) {
-            string entry = entries[i].Trim();
-            if (entry.Length == 0) {
-                continue;
-            }
-            int separator = entry.IndexOf(':');
-            if (separator <= 0) {
-                continue;
-            }
-            int written;
-            int sent;
-            if (int.TryParse(entry.Substring(0, separator).Trim(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out written)
-                && int.TryParse(entry.Substring(separator + 1).Trim(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out sent)) {
-                remapTable[(char)written] = (char)sent;
-            }
-        }
+        return bundledFont;
     }
 }

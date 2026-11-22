@@ -81,15 +81,6 @@ public class Settings : PluginComponent {
 
     public static ConfigEntry<ForestPlatformingAcornSpawnerDirections> ForestPlatformingAcornSpawnerDirection;
     public static ConfigEntry<ForestPlatformingAcornSpawnerYIndexes> ForestPlatformingAcornSpawnerYIndex;
-    public static ConfigEntry<SlimePhaseOneJumpCountsNormal> SlimePhaseOneJumpCountNormal;
-    public static ConfigEntry<SlimePhaseOneJumpPatternsNormal> SlimePhaseOneJumpPatternNormal;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsEasy> FlyingBlimpPhaseBlimp2PatternEasy;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsEasy> FlyingBlimpPhaseBlimp3PatternEasy;
-    public static ConfigEntry<FlyingBlimpConstellationPatternsNormal> FlyingBlimpConstellationPatternNormal;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsNormal> FlyingBlimpPhaseBlimp2PatternNormal;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsNormal> FlyingBlimpPhaseBlimp3PatternNormal;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp2PatternsHard> FlyingBlimpPhaseBlimp2PatternHard;
-    public static ConfigEntry<FlyingBlimpPhaseBlimp3PatternsHard> FlyingBlimpPhaseBlimp3PatternHard;
     public static ConfigEntry<FlowerPhaseGeneric1PatternsNormal> FlowerPhaseGeneric1PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric2PatternsNormal> FlowerPhaseGeneric2PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric3PatternsNormal> FlowerPhaseGeneric3PatternNormal;
@@ -338,15 +329,6 @@ public class Settings : PluginComponent {
 
         ForestPlatformingAcornSpawnerDirection = config.Bind("RNG Forest Follies", "Acorn Spawner Facing Direction", ForestPlatformingAcornSpawnerDirections.Random, --order);
         ForestPlatformingAcornSpawnerYIndex = config.Bind("RNG Forest Follies", "Acorn Spawner Y Coordinate", ForestPlatformingAcornSpawnerYIndexes.Random, --order);
-        SlimePhaseOneJumpCountNormal = config.Bind("RNG Goopy Le Grande", "Phase 1 Jump Count Regular", SlimePhaseOneJumpCountsNormal.Random, --order);
-        SlimePhaseOneJumpPatternNormal = config.Bind("RNG Goopy Le Grande", "Phase 1 Jump Pattern Regular", SlimePhaseOneJumpPatternsNormal.Random, --order);
-        FlyingBlimpPhaseBlimp2PatternEasy = config.Bind("RNG Hilda Berg", "2nd Blimp Phase Simple", FlyingBlimpPhaseBlimp2PatternsEasy.Random, --order);
-        FlyingBlimpPhaseBlimp3PatternEasy = config.Bind("RNG Hilda Berg", "3rd Blimp Phase Simple", FlyingBlimpPhaseBlimp3PatternsEasy.Random, --order);
-        FlyingBlimpConstellationPatternNormal = config.Bind("RNG Hilda Berg", "Constellation Phase Regular", FlyingBlimpConstellationPatternsNormal.Random, --order);
-        FlyingBlimpPhaseBlimp2PatternNormal = config.Bind("RNG Hilda Berg", "Second Blimp Phase Regular", FlyingBlimpPhaseBlimp2PatternsNormal.Random, --order);
-        FlyingBlimpPhaseBlimp3PatternNormal = config.Bind("RNG Hilda Berg", "Third Blimp Phase Regular", FlyingBlimpPhaseBlimp3PatternsNormal.Random, --order);
-        FlyingBlimpPhaseBlimp2PatternHard = config.Bind("RNG Hilda Berg", "Second Blimp Phase Expert", FlyingBlimpPhaseBlimp2PatternsHard.Random, --order);
-        FlyingBlimpPhaseBlimp3PatternHard = config.Bind("RNG Hilda Berg", "Third Blimp Phase Expert", FlyingBlimpPhaseBlimp3PatternsHard.Random, --order);
         FlowerPhaseGeneric1PatternNormal = config.Bind("RNG Cagney Carnation", "First Generic Phase Regular", FlowerPhaseGeneric1PatternsNormal.Random, --order);
         FlowerPhaseGeneric2PatternNormal = config.Bind("RNG Cagney Carnation", "Second Generic Phase Regular", FlowerPhaseGeneric2PatternsNormal.Random, --order);
         FlowerPhaseGeneric3PatternNormal = config.Bind("RNG Cagney Carnation", "Third Generic Phase Regular", FlowerPhaseGeneric3PatternsNormal.Random, --order);

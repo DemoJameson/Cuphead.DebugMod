@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using BepInEx;
 
@@ -1296,7 +1297,7 @@ internal static class RngProfiles {
                 continue;
             }
 
-            if (section != "RNG The Devil" && section != "RNG Ribby And Croaks") {
+            if (section != "RNG The Devil" && section != "RNG Ribby And Croaks" && section != "RNG Goopy Le Grande" && section != "RNG Hilda Berg") {
                 continue;
             }
 
@@ -1308,8 +1309,12 @@ internal static class RngProfiles {
             string value = line.Substring(separator + 1).Trim();
             if (section == "RNG The Devil") {
                 ImportLegacyKey(custom, key, value);
-            } else {
+            } else if (section == "RNG Ribby And Croaks") {
                 ImportLegacyFrogKey(custom, key, value);
+            } else if (section == "RNG Goopy Le Grande") {
+                ImportLegacyGoopyKey(custom, key, value);
+            } else {
+                ImportLegacyBlimpKey(custom, key, value);
             }
         }
     }
@@ -1550,6 +1555,138 @@ internal static class RngProfiles {
                     SeedPool(custom, spot.Key(mode), options[i].Value);
                     break;
                 }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Imports the legacy "RNG Goopy Le Grande" section. Positions resolve through the
+    /// live per-difficulty catalog, so the same string lands correctly everywhere.
+    /// </summary>
+    private static void ImportLegacyGoopyKey(RngProfile custom, string key, string value) {
+        if (string.IsNullOrEmpty(value)) {
+            return;
+        }
+
+        // legacy entry names carry the difficulty; the slug letters map 1:1 onto the game's
+        // cycle order, so the position works for every difficulty
+        switch (key) {
+            case "Phase 1 Jump Count Regular":
+                SeedJumpCountByNumber(custom, value);
+                break;
+            case "Phase 1 Jump Pattern Regular":
+                SeedJumpPatternBySlug(custom, value);
+                break;
+        }
+    }
+
+    private static void SeedJumpCountByNumber(RngProfile custom, string value) {
+        // legacy enum names ("Seven = 7") map to the count itself
+        int count;
+        string digits = new string(value.TakeWhile(c => char.IsDigit(c)).ToArray());
+        if (digits.Length == 0 || !int.TryParse(digits, out count) || count < 5 || count > 7) {
+            return;
+        }
+        foreach (Level.Mode mode in new[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard }) {
+            SeedPool(custom, RngSpots.SlimeJumpCount + "@" + RngSpot.ModeKey(mode), count - 5);
+        }
+    }
+
+    private static void SeedJumpPatternBySlug(RngProfile custom, string slug) {
+        // legacy slug letters map 1:1 onto the game's cycle order ("Low08" = position 8)
+        if (string.IsNullOrEmpty(slug) || slug.Length < 2) {
+            return;
+        }
+        string digits = new string(slug.SkipWhile(c => !char.IsDigit(c)).ToArray());
+        int position;
+        if (digits.Length == 0 || !int.TryParse(digits, out position) || position < 1) {
+            return;
+        }
+
+        foreach (Level.Mode mode in new[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard }) {
+            // each difficulty has its own cycle length; seed wherever the slug matches
+            int positionIndex = position - 1;
+            RngSpot spot = RngSpots.Find(RngSpots.SlimeJumpPatternStart);
+            if (spot == null || spot.Options == null) {
+                continue;
+            }
+            RngOption[] options = spot.Options(mode);
+            if (positionIndex >= options.Length) {
+                continue;
+            }
+            SeedPool(custom, RngSpots.SlimeJumpPatternStart + "@" + RngSpot.ModeKey(mode), positionIndex);
+        }
+    }
+
+    /// <summary>
+    /// Imports the legacy "RNG Hilda Berg" section. Legacy option names ("Shoot3",
+    /// "Tornado2") resolve through the live per-difficulty cycle by attack type and
+    /// per-type occurrence, so the same name lands on the right position everywhere.
+    /// </summary>
+    private static void ImportLegacyBlimpKey(RngProfile custom, string key, string value) {
+        if (string.IsNullOrEmpty(value)) {
+            return;
+        }
+
+        switch (key) {
+            case "2nd Blimp Phase Simple":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@easy", value);
+                break;
+            case "3rd Blimp Phase Simple":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@easy", value);
+                break;
+            case "Second Blimp Phase Regular":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@normal", value);
+                break;
+            case "Third Blimp Phase Regular":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@normal", value);
+                break;
+            case "Second Blimp Phase Expert":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric1PatternStart + "@hard", value);
+                break;
+            case "Third Blimp Phase Expert":
+                SeedBlimpPattern(custom, RngSpots.FlyingBlimpGeneric2PatternStart + "@hard", value);
+                break;
+            case "Constellation Phase Regular":
+                if (value == "Sagittarius") {
+                    SeedPool(custom, RngSpots.FlyingBlimpConstellation, 0);
+                } else if (value == "Gemini") {
+                    SeedPool(custom, RngSpots.FlyingBlimpConstellation, 1);
+                }
+                break;
+        }
+    }
+
+    /// <summary>Pins a blimp phase to the cycle position whose spot option matches the
+    /// legacy option name ("Shoot3" = "Shoot #3"); unknown names are ignored.</summary>
+    private static void SeedBlimpPattern(RngProfile custom, string key, string name) {
+        string letters = new string(name.TakeWhile(c => char.IsLetter(c)).ToArray());
+        string digits = name.Substring(letters.Length);
+        int occurrence;
+        if (letters.Length == 0 || digits.Length == 0 || !int.TryParse(digits, out occurrence) || occurrence < 1) {
+            return;
+        }
+
+        RngSpot spot = RngSpots.FindByStoredKey(key);
+        if (spot == null || spot.Options == null) {
+            return;
+        }
+
+        Level.Mode mode;
+        if (key.EndsWith("@easy", StringComparison.Ordinal)) {
+            mode = Level.Mode.Easy;
+        } else if (key.EndsWith("@hard", StringComparison.Ordinal)) {
+            mode = Level.Mode.Hard;
+        } else {
+            mode = Level.Mode.Normal;
+        }
+
+        string target = letters + " #" + occurrence;
+        RngOption[] options = spot.Options(mode);
+        for (int i = 0; i < options.Length; i++) {
+            if (options[i].Label == target) {
+                SeedPool(custom, key, options[i].Value);
+                return;
             }
         }
     }

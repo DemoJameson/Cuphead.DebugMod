@@ -111,6 +111,9 @@
 
     <ItemGroup>
         <EmbeddedResource Remove="libs\**" />
+        <None Remove="libs\**" />
+        <None Remove="Fonts\Bundles\**" />
+        <EmbeddedResource Include="Fonts\Bundles\*.assetbundle" />
     </ItemGroup>
 
     <ItemGroup>

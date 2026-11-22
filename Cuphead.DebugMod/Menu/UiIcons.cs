@@ -18,6 +18,8 @@ internal static class UiIcons {
     private static Sprite dice;
     private static Sprite gem;
     private static Sprite orderList;
+    private static Sprite cycleRefresh;
+    private static Sprite shuffle;
 
     public static Sprite TriangleUp {
         get { return triangleUp != null ? triangleUp : triangleUp = Build(12, 12, IsTriangleUp); }
@@ -60,6 +62,14 @@ internal static class UiIcons {
 
     public static Sprite OrderList {
         get { return orderList != null ? orderList : orderList = Build(12, 12, IsOrderList); }
+    }
+
+    public static Sprite CycleRefresh {
+        get { return cycleRefresh != null ? cycleRefresh : cycleRefresh = Build(12, 12, IsCycleRefresh); }
+    }
+
+    public static Sprite Shuffle {
+        get { return shuffle != null ? shuffle : shuffle = Build(12, 12, IsShuffle); }
     }
 
     private static Sprite Build(int width, int height, Func<int, int, bool> inside) {
@@ -139,5 +149,25 @@ internal static class UiIcons {
     private static bool IsOrderList(int x, int y) {
         // three stacked bars, the universal "list" glyph
         return x >= 1 && x <= 10 && (y >= 2 && y <= 3 || y >= 5 && y <= 6 || y >= 8 && y <= 9);
+    }
+
+    private static bool IsCycleRefresh(int x, int y) {
+        // a ring with a gap at the top plus an arrowhead, the "re-roll/repeat" glyph
+        float dx = x - 5.5f;
+        float dy = y - 5.5f;
+        float dist = Mathf.Sqrt(dx * dx + dy * dy);
+        bool ring = dist >= 3.2f && dist <= 5.0f && !(x >= 4 && x <= 7 && y <= 3);
+        bool arrowhead = y >= 1 && y <= 3 && Mathf.Abs(x - 5.5f) <= (y - 0.5f) * 1.2f;
+        return ring || arrowhead;
+    }
+
+    private static bool IsShuffle(int x, int y) {
+        // two crossing diagonals with arrowheads on the right edge, the "re-rolled
+        // sequence" glyph
+        bool lineA = x >= 1 && x <= 8 && Mathf.Abs(y - (9 - x)) <= 1f;
+        bool lineB = x >= 1 && x <= 8 && Mathf.Abs(y - (x + 2)) <= 1f;
+        bool headTop = x >= 7 && x <= 10 && y >= 1 && y <= 4 && (x + y) >= 10;
+        bool headBottom = x >= 7 && x <= 10 && y >= 7 && y <= 10 && (x - y) >= -3;
+        return lineA || lineB || headTop || headBottom;
     }
 }

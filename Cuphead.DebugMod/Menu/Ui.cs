@@ -64,24 +64,6 @@ internal static class Ui {
         label.horizontalOverflow = HorizontalWrapMode.Wrap;
         label.verticalOverflow = VerticalWrapMode.Overflow;
         label.raycastTarget = false;
-        label.text = MenuTheme.MapGlyphs(text);
-        return label;
-    }
-
-    /// <summary>
-    /// Label with an explicit font and no glyph mapping — used for trusted reference text
-    /// (e.g. the Arial references in the font calibration section).
-    /// </summary>
-    public static Text LabelWithFont(GameObject go, string text, Font font, int size, Color color, TextAnchor align) {
-        Text label = go.AddComponent<Text>();
-        label.font = font != null ? font : MenuTheme.ResolveFont();
-        label.fontSize = size;
-        label.color = color;
-        label.alignment = align;
-        label.supportRichText = false;
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
-        label.verticalOverflow = VerticalWrapMode.Overflow;
-        label.raycastTarget = false;
         label.text = text;
         return label;
     }
@@ -296,7 +278,7 @@ internal sealed class UiCycle {
 
     public void SetText(string text) {
         if (valueLabel != null) {
-            valueLabel.text = MenuTheme.MapGlyphs(text);
+            valueLabel.text = text;
         }
     }
 }

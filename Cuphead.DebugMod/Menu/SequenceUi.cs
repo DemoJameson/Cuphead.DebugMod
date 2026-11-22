@@ -266,7 +266,7 @@ internal static class SequenceUi {
 
     /// <summary>Right-aligned caption for a control (e.g. the "Repeat?" label that names the
     /// loop checkbox on slider and cycler rows).</summary>
-    private static Text PlaceRightLabel(GameObject row, string name, string text, float rightOffset, float width) {
+    public static Text PlaceRightLabel(GameObject row, string name, string text, float rightOffset, float width) {
         GameObject go = Ui.Create(name, row.transform);
         RectTransform rt = Ui.Rect(go);
         rt.anchorMin = new Vector2(1f, 0.5f);
@@ -458,7 +458,7 @@ internal static class SequenceUi {
     }
 
     /// <summary>One dot per option under a cycler row; the selected option is lit.</summary>
-    private static float BuildChoicePips(RectTransform content, string key, Color background, RngOption[] options, int selected, float y) {
+    public static float BuildChoicePips(RectTransform content, string key, Color background, RngOption[] options, int selected, float y) {
         GameObject pipRow = Ui.Row(content, key, background, y, 20f);
         for (int i = 0; i < options.Length; i++) {
             GameObject pip = Ui.Create("Pip" + i, pipRow.transform);
