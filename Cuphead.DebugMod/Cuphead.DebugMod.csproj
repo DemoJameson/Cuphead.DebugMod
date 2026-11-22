@@ -143,4 +143,29 @@
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_Windows.zip&quot; ." WorkingDirectory="$(WindowsPackageDirectory)" />
         <Exec Condition="'$(OS)' != 'Windows_NT'" Command="/bin/rm -f &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; &amp;&amp; /usr/bin/zip -rq &quot;$(RepositoryRoot)/out/Cuphead_v$(Configuration)_DebugMode_v$(Version)_macOS.zip&quot; ." WorkingDirectory="$(MacPackageDirectory)" />
     </Target>
+
+    <!-- Dev deployment: puts the freshly built dll + pdb into the Steam game's BepInEx
+         scripts folder after every build, so a rebuild is immediately testable in game.
+         Skips when no Cuphead install is found at the expected path, and copy failures
+         (e.g. the game currently running) only warn instead of failing the build.
+         Disable with -p:DeployToCupheadGame=false; override with -p:CupheadGameDir=... -->
+    <Target Name="DeployToCupheadGame" AfterTargets="Build" Condition="'$(DeployToCupheadGame)' != 'false'">
+        <PropertyGroup>
+            <CupheadGameDir Condition="'$(CupheadGameDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Cuphead</CupheadGameDir>
+            <CupheadScriptsDir>$(CupheadGameDir)\BepInEx\scripts</CupheadScriptsDir>
+        </PropertyGroup>
+
+        <ItemGroup>
+            <CupheadDeployFiles Include="$(TargetDir)Cuphead.DebugMod.dll;$(TargetDir)Cuphead.DebugMod.pdb" />
+        </ItemGroup>
+
+        <Message Condition="!Exists('$(CupheadGameDir)')" Importance="high" Text="Deploy skipped: no Cuphead install found at $(CupheadGameDir)" />
+        <MakeDir Condition="Exists('$(CupheadGameDir)')" Directories="$(CupheadScriptsDir)" ContinueOnError="WarnAndContinue" />
+        <Copy Condition="Exists('$(CupheadGameDir)')"
+              SourceFiles="@(CupheadDeployFiles)"
+              DestinationFolder="$(CupheadScriptsDir)"
+              SkipUnchangedFiles="true"
+              ContinueOnError="WarnAndContinue" />
+        <Message Condition="Exists('$(CupheadGameDir)')" Importance="high" Text="Deployed Cuphead.DebugMod to $(CupheadScriptsDir)" />
+    </Target>
 </Project>

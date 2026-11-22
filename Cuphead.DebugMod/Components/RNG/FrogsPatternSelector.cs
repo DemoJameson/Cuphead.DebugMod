@@ -1,143 +1,71 @@
-﻿using System;
-using BepInEx.CupheadDebugMod.Config;
+using System;
+using BepInEx.CupheadDebugMod.Rng;
 using HarmonyLib;
 using MonoMod.Cil;
-using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
+// All values come from RngState, which passes vanilla results through untouched and only
+// resolves configured spots (see Rng/RngSpots.cs for the catalog).
 [HarmonyPatch]
-public class FrogsPatternSelector : PluginComponent {
-    private static int bisonPatternIndex;
+internal class FrogsPatternSelector : PluginComponent {
 
-    // Sets the leading attack. Subsequent attacks work as normal.
+    private static Level.Mode Mode => Level.ScoringData.difficulty;
+
+    // Sets the leading attack. The game consumes its pattern index with a pre-increment
+    // (AbstractLevelState.NextPattern advances before using it), so the spot resolves
+    // with preIncrement=true.
     [HarmonyPatch(typeof(FrogsLevel), nameof(FrogsLevel.Start))]
     [HarmonyPrefix]
-
     public static void PhaseOnePatternManipulator(ref FrogsLevel __instance) {
-        if (Settings.FrogsPhaseOnePattern.Value == FrogsPhaseOnePatterns.Punches) {
-            __instance.properties.CurrentState.patternIndex = 1;
-        } else if (Settings.FrogsPhaseOnePattern.Value == FrogsPhaseOnePatterns.Fireflies) {
-            __instance.properties.CurrentState.patternIndex = 0;
-        }
+        LevelProperties.Frogs.State state = __instance.properties.CurrentState;
+        state.patternIndex = RngState.Index(RngSpots.FrogsPhase1PatternStart, Mode, state.patternIndex, state.patterns.Length, true);
     }
 
-    // Forces the attack to be the selected one every time.
-
-    [HarmonyPatch(typeof(FrogsLevelMorphed), nameof(FrogsLevelMorphed.pattern_cr), MethodType.Enumerator)]
+    // Every fireflies volley rolls one fly sequence index from the level's own pattern
+    // list; that index is resolved against the Fireflies Pattern spot before the game
+    // indexes the list with it.
+    [HarmonyPatch(typeof(FrogsLevelTall), nameof(FrogsLevelTall.fireflies_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
-    private static void PhaseFinalPatternForcer(ILContext il) {
-        ILCursor ilCursor = new(il);
-        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<mode>"))) {
-            // I am checking for Settings.FrogsPhaseFinalPattern.Value dynamically during this function call.
-            // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
-            // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.FrogsPhaseFinalPattern.Value
-            // The mode store is also the one point in the coroutine that runs exactly once per attack, so the bulls
-            // laser direction counter is reset here whenever the selected mode is Bison.
-            ilCursor.EmitDelegate<Func<int, int>>(mode => {
-                int result = Settings.FrogsPhaseFinalPattern.Value == FrogsPhaseFinalPatterns.Random ?
-                    UnityEngine.Random.Range(0, 3)
-                    :
-                    (int) Settings.FrogsPhaseFinalPattern.Value - 1;
-                if (result == (int) Slots.Mode.Bison) {
-                    bisonPatternIndex = 0;
-                }
-                return result;
-            });
-            ilCursor.Index++; // avoid infinite loops
-        }
-    }
-
-    [HarmonyPatch(typeof(FrogsLevelMorphed), "bison_cr", MethodType.Enumerator)]
-    [HarmonyILManipulator]
-    private static void BisonLaserPatternManipulator(ILContext il) {
+    public static void PhaseOneFirefliesPatternManipulator(ILContext il) {
         ILCursor cursor = new(il);
         if (cursor.TryGotoNext(MoveType.After, i =>
                 i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
-            cursor.EmitDelegate<Func<int, int>>(GetBisonLaserDirection);
+            cursor.EmitDelegate<Func<int, int>>(rolledIndex =>
+                RngState.Index(RngSpots.FrogsPhase1FirefliesPattern, Mode, rolledIndex, RngSpots.FrogsFirefliesStrings(Mode).Length, false));
         }
     }
 
-    private static int GetBisonLaserDirection(int randomDirection) {
-        string pattern = Settings.FrogsPhaseFinalBisonLaserPattern.Value;
-        if (string.IsNullOrEmpty(pattern)) {
-            return randomDirection;
-        }
-
-        string directions = "";
-        foreach (char character in pattern) {
-            if (character == '0' || character == '1') {
-                directions += character;
-            }
-        }
-
-        if (directions.Length == 0) {
-            return randomDirection;
-        }
-
-        int direction = directions[bisonPatternIndex % directions.Length] - '0';
-        bisonPatternIndex++;
-        return direction;
-    }
-
-
-    [HarmonyPatch(typeof(FrogsLevelTall), nameof(FrogsLevelTall.fireflies_cr), MethodType.Enumerator)]
+    // The slot machine rolls one attack per spin (0=Snakes, 1=Tigers, 2=Bulls). The
+    // charm-triggered demon (Oni, mode 3) branch rolls nothing and passes through.
+    [HarmonyPatch(typeof(FrogsLevelMorphed), nameof(FrogsLevelMorphed.pattern_cr), MethodType.Enumerator)]
     [HarmonyILManipulator]
-    private static void PhaseOneFirefliesPatternForcer(ILContext il) {
-        ILCursor ilCursor = new(il);
-        while (ilCursor.TryGotoNext(MoveType.Before, i => i.OpCode == OpCodes.Stfld && i.Operand.ToString().Contains("<patternString>"))) {
-            ilCursor.EmitDelegate<Func<string, string>>(x => GetFirefliesPattern());
-            ilCursor.Index++; // avoid infinite loops
+    public static void PhaseFinalSlotModeManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            cursor.EmitDelegate<Func<int, int>>(rolledMode => {
+                int pick = RngState.Index(RngSpots.FrogsFinalSlotMode, Mode, rolledMode, 3, false);
+                // the Bulls laser plan restarts every time a Bulls attack begins
+                if (pick == (int)Slots.Mode.Bison) {
+                    RngState.ResetEventCounter(RngSpots.FrogsFinalBisonLaserSide);
+                }
+                return pick;
+            });
         }
     }
 
-    private static string GetFirefliesPattern() {
-        // I am checking for Settings.ClownDashDelay.Value dynamically during this function call.
-        // This is because a HarmonyTranspiler only gets called once when the script is loaded upon game bootup...
-        // ...so the function call itself that gets injected into the IL code needs to check the value as it is set by Settings.ClownDashDelay.Value
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-            return Settings.FrogsPhaseOneFirefliesPatternEasy.Value == FrogsPhaseOneFirefliesPatternsEasy.Random
-                ? firefliesPatternStringsEasy[UnityEngine.Random.Range(0, 3)]
-                : firefliesPatternStringsEasy[(int) Settings.FrogsPhaseOneFirefliesPatternEasy.Value - 1];
-        } else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            return Settings.FrogsPhaseOneFirefliesPatternNormal.Value == FrogsPhaseOneFirefliesPatternsNormal.Random
-                ? firefliesPatternStringsNormal[UnityEngine.Random.Range(0, 4)]
-                : firefliesPatternStringsNormal[(int) Settings.FrogsPhaseOneFirefliesPatternNormal.Value - 1];
-        } else // hard difficulty
-          {
-            return Settings.FrogsPhaseOneFirefliesPatternHard.Value == FrogsPhaseOneFirefliesPatternsHard.Random
-                ? firefliesPatternStringsHard[UnityEngine.Random.Range(0, 7)]
-                : firefliesPatternStringsHard[(int) Settings.FrogsPhaseOneFirefliesPatternHard.Value - 1];
+    // Every bison laser rolls its Up/Down side independently. This is the coroutine's
+    // first Random.Range, so the demon branch's own rolls further down stay vanilla.
+    [HarmonyPatch(typeof(FrogsLevelMorphed), "bison_cr", MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    public static void PhaseFinalBisonLaserManipulator(ILContext il) {
+        ILCursor cursor = new(il);
+        if (cursor.TryGotoNext(MoveType.After, i =>
+                i.OpCode == OpCodes.Call && i.Operand.ToString().Contains("UnityEngine.Random::Range(System.Int32,System.Int32)"))) {
+            cursor.EmitDelegate<Func<int, int>>(rolledSide =>
+                RngState.Index(RngSpots.FrogsFinalBisonLaserSide, Mode, rolledSide, 2, false));
         }
-
     }
-
-
-    readonly static string[] firefliesPatternStringsEasy = {
-        "D:1, S:2, D:1.5, S:1, D:1, S:1",
-        "D:1.5, S:1, D:1.5, S:1, D:1, S:2",
-        "D:0.5, S:2, D:1, S:1, D:0.5, S:1"
-    };
-
-    readonly static string[] firefliesPatternStringsNormal = {
-        "D:1, S:2, D:1, S:2, D:1, S:1, D:1, S:2",
-        "D:1, S:2, D:1, S:2, D:1, S:2",
-        "D:1, S:2, D:1, S:1, D:1, S:2, D:1, S:2",
-        "D:1, S:2, D:1, S:2, D:1, S:1"
-    };
-
-    readonly static string[] firefliesPatternStringsHard = {
-        "D:1, S:2, D:2.5, S:2, D:1.5, S:1",
-        "D:0.5, S:1, D:2, S:1, D:1.5, S:2",
-        "D:1, S:2, D:2.2, S:2",
-        "D:1, S:2, D:2, S:1, D:1, S:1",
-        "D:0.5, S:1, D:2.5, S:2, D:2.1, S:2",
-        "D:1.4, S:2, D:2.4, S:2",
-        "D:1, S:1, D:1.8, S:2, D:1.5, S:1"
-    };
-
-
-
-
 }

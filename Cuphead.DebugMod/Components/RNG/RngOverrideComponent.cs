@@ -12,9 +12,6 @@ public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
         { "ForestPlatformingAcornSpawnerDirection", ForestPlatformingAcornSpawnerDirections.Left1 },
         { "ForestPlatformingAcornSpawnerYIndex", ForestPlatformingAcornSpawnerYIndexes.B_50 },
-        { "FrogsPhaseOnePattern", FrogsPhaseOnePatterns.Fireflies },
-        { "FrogsPhaseOneFirefliesPatternNormal", FrogsPhaseOneFirefliesPatternsNormal.Two_Two_One },
-        { "FrogsPhaseFinalPattern", FrogsPhaseFinalPatterns.Bison },
         { "SlimePhaseOneJumpCountNormal", SlimePhaseOneJumpCountsNormal.Seven },
         { "SlimePhaseOneJumpPatternNormal", SlimePhaseOneJumpPatternsNormal.Low08 },
         { "FlyingBlimpConstellationPatternNormal", FlyingBlimpConstellationPatternsNormal.Gemini },
@@ -63,12 +60,7 @@ public class RngOverrideComponent : PluginComponent {
         { "DicePalaceCigarSpitAttackCountNormal", DicePalaceCigarSpitAttackCountsNormal.One1 },
         { "DicePalaceRabbitPattern", DicePalaceRabbitPatterns.Wand05 },
         { "DicePalaceRabbitParryDirection", DicePalaceRabbitParryDirections.Top },
-        { "DicePalaceRoulettePattern", DicePalaceRoulettePatterns.Marble },
-        { "DevilPhaseOnePattern", DevilPhaseOnePatterns.Pitchfork2 },
-        { "DevilPhaseOneHeadType", DevilPhaseOneHeadTypes.Dragon },
-        { "DevilPhaseOnePitchforkType", DevilPhaseOnePitchforkTypes.Bouncer },
-        { "DevilPhaseOneBouncerParryIndex", DevilPhaseOneBouncerParryIndexes.Three },
-        { "DevilPhaseOneBouncerAngleNormal", DevilPhaseOneBouncerAnglesNormal.F_70 }
+        { "DicePalaceRoulettePattern", DicePalaceRoulettePatterns.Marble }
     };
     private readonly List<FieldInfo> trackedEntries = new();
     private bool isActive;
@@ -150,8 +142,7 @@ public class RngOverrideComponent : PluginComponent {
             return false;
         }
 
-        return fieldName.StartsWith("Frogs", StringComparison.Ordinal)
-            || fieldName.StartsWith("Slime", StringComparison.Ordinal)
+        return fieldName.StartsWith("Slime", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingBlimp", StringComparison.Ordinal)
             || fieldName.StartsWith("Flower", StringComparison.Ordinal)
             || fieldName.StartsWith("ForestPlatforming", StringComparison.Ordinal)
@@ -168,7 +159,8 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("FlyingMermaid", StringComparison.Ordinal)
             || fieldName.StartsWith("Train", StringComparison.Ordinal)
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
-            || fieldName.StartsWith("Devil", StringComparison.Ordinal);
+            // The Devil's and Ribby & Croaks' spots live in the new RNG profile system (Rng/RngProfiles).
+            ;
     }
 
     private void CaptureOriginalValues() {
