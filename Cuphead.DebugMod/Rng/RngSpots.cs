@@ -40,16 +40,36 @@ internal enum RngBadgeKind {
 
     /// <summary>A whole sequence (and where it starts) re-rolled on every round of the
     /// attack.</summary>
-    Sequence
+    Sequence,
+
+    /// <summary>A start position the game can only roll for part of the list; the radio
+    /// list shows the rest grayed out and unselectable.</summary>
+    Restricted
 }
 
 internal sealed class RngOption {
     public readonly string Label;
     public readonly int Value;
+    public readonly bool Selectable;
 
-    public RngOption(string label, int value) {
+    /// <summary>Per-column label texts for multi-column radio rows; null when the option
+    /// renders as the plain Label string. Columns are drawn as separate texts inside
+    /// fixed-width rects so they line up across rows in any (proportional) font.</summary>
+    public readonly string[] Columns;
+
+    public RngOption(string label, int value, bool selectable = true) {
         Label = label;
         Value = value;
+        Selectable = selectable;
+    }
+
+    /// <summary>The label of a column option is its " / "-joined form (used by summaries
+    /// and previews); the radio row draws the columns individually.</summary>
+    public RngOption(string[] columns, int value, bool selectable = true) {
+        Columns = columns;
+        Label = string.Join(" / ", columns);
+        Value = value;
+        Selectable = selectable;
     }
 }
 
@@ -264,6 +284,16 @@ internal static class RngSpots {
     // Forest Follies (run 'n gun; platforming stages always run on Normal)
     public const string ForestFolliesAcornSide = "ForestFollies/Acorn/SideStart";
     public const string ForestFolliesAcornHeight = "ForestFollies/Acorn/HeightStart";
+
+    // Cagney Carnation (the phase cycles have start rolls on Regular only; the Easy and
+    // Expert cycles are single-entry)
+    public const string FlowerMainPatternStart = "Flower/Phase1/PatternStart";
+    public const string FlowerGeneric1PatternStart = "Flower/Phase2/PatternStart";
+    public const string FlowerGeneric2PatternStart = "Flower/Phase3/PatternStart";
+    public const string FlowerHeadLungeStart = "Flower/HeadLunge/Start";
+    public const string FlowerPodHandsType = "Flower/PodHands/Type";
+    public const string FlowerPodHandsCount = "Flower/PodHands/Count";
+    public const string FlowerBlinkCount = "Flower/Blink/Count";
 
     public static readonly RngSpot[] Devil = {
         new RngSpot(
@@ -528,6 +558,44 @@ internal static class RngSpots {
         )
     };
 
+    public static readonly RngSpot[] Flower = {
+        new RngSpot(
+            FlowerMainPatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, false, true,
+            mode => FlowerPatternOptions(mode, 0),
+            "Which attack the fight's fixed cycle begins with."
+        ) { Available = mode => mode == Level.Mode.Normal },
+        new RngSpot(
+            FlowerGeneric1PatternStart, "Phase 2", "Overall Pattern", RngShape.StartPool, false, true,
+            mode => FlowerPatternOptions(mode, 1),
+            "Which attack this phase's fixed cycle begins with (from 89% boss health)."
+        ) { Available = mode => mode == Level.Mode.Normal },
+        new RngSpot(
+            FlowerGeneric2PatternStart, "Phase 3", "Overall Pattern", RngShape.StartPool, false, true,
+            mode => FlowerPatternOptions(mode, 2),
+            "Which attack this phase's fixed cycle begins with (from 68% boss health)."
+        ) { Available = mode => mode == Level.Mode.Normal },
+        new RngSpot(
+            FlowerHeadLungeStart, "Head Lunge", "Head Lunge Start", RngShape.StartPool, true, false,
+            mode => FlowerLaserOptions(mode),
+            "The head lunges in a fixed top/bottom order; this picks which lunge the first one is."
+        ),
+        new RngSpot(
+            FlowerPodHandsType, "Pod Hands", "Attack Type Start", RngShape.StartPool, true, false,
+            mode => FlowerPodTypeOptions(mode),
+            "The starting entry is rolled once at the start of the fight and then followed in order across phases. Each row shows the attack type that entry produces in every pod-hands phase (Phase 2 / Phase 3 on Regular); grayed rows can never be rolled as a start. The type applies the moment the Pod Hands starts, not the moment that the decision to do Pod Hands is locked in, which may lead to confusion when crossing a phase threshold just before this attack."
+        ) { Badge = RngBadgeKind.Restricted },
+        new RngSpot(
+            FlowerPodHandsCount, "Pod Hands", "Volley Count Start", RngShape.StartPool, true, false,
+            mode => FlowerPodCountOptions(mode),
+            "The starting entry is rolled once at the start of the fight and then followed in order across phases. Each row shows the volley count that entry produces in every pod-hands phase (Phase 2 / Phase 3 on Regular); on Regular, rows 15-17 overflow Phase 3's shorter cycle and wrap to row 0. The count applies the moment the Pod Hands starts, not the moment that the decision to do Pod Hands is locked in, which may lead to confusion when crossing a phase threshold just before this attack."
+        ),
+        new RngSpot(
+            FlowerBlinkCount, "Blink", "Blink Count", RngShape.Choice, false, false,
+            mode => Numbered(2, 3),
+            "Idle loops the flower plays between blinks, re-rolled after every blink - this gates the fight's pacing."
+        ) { PerEvent = true }
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -539,6 +607,7 @@ internal static class RngSpots {
         all.AddRange(Veggies);
         all.AddRange(FlyingBlimp);
         all.AddRange(ForestFollies);
+        all.AddRange(Flower);
         return all.ToArray();
     }
 
@@ -562,7 +631,8 @@ internal static class RngSpots {
         { "Slime", "Goopy Le Grande" },
         { "Veggies", "The Root Pack" },
         { "FlyingBlimp", "Hilda Berg" },
-        { "ForestFollies", "Forest Follies" }
+        { "ForestFollies", "Forest Follies" },
+        { "Flower", "Cagney Carnation" }
     };
 
     public static string StageLabel(string stageId) {
@@ -610,7 +680,7 @@ internal static class RngSpots {
         return states;
     }
 
-    private static FieldInfo FindField(Type type, string name) {
+    internal static FieldInfo FindField(Type type, string name) {
         while (type != null) {
             FieldInfo field = type.GetField(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
             if (field != null) {
@@ -1087,27 +1157,6 @@ internal static class RngSpots {
         return states;
     }
 
-    /// <summary>The 0-based occurrence index of the given state among the Generic states
-    /// (0 = the "second blimp" phase, 1 = the "third blimp" phase); -1 when it is not
-    /// Generic. Identified by object identity, so per-version trigger differences are
-    /// irrelevant.</summary>
-    public static int FlyingBlimpGenericIndex(Level.Mode mode, LevelProperties.FlyingBlimp.State currentState) {
-        try {
-            int index = 0;
-            foreach (LevelProperties.FlyingBlimp.State state in FlyingBlimpStatesFor(mode)) {
-                if (state.stateName != LevelProperties.FlyingBlimp.States.Generic) {
-                    continue;
-                }
-                if (ReferenceEquals(state, currentState)) {
-                    return index;
-                }
-                index++;
-            }
-        } catch (Exception) {
-        }
-        return -1;
-    }
-
     /// <summary>One option per entry of the given Generic phase's fixed cycle, labeled by
     /// attack type and per-type occurrence ("Shoot #2", "Tornado #1") in cycle order.</summary>
     private static RngOption[] FlyingBlimpGenericOptions(Level.Mode mode, int genericIndex) {
@@ -1365,6 +1414,173 @@ internal static class RngSpots {
         } catch (Exception) {
         }
         return fallback;
+    }
+
+    // ------------------------------------------------------------------
+    // Cagney Carnation option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Flower.GetMode(mode); the three phase
+    // cycles sit at state indices 0-2 (Phase 1-3).
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Flower.State[]> FlowerStatesCache = new Dictionary<Level.Mode, LevelProperties.Flower.State[]>();
+
+    private static LevelProperties.Flower.State[] FlowerStatesFor(Level.Mode mode) {
+        LevelProperties.Flower.State[] states;
+        if (FlowerStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Flower properties = LevelProperties.Flower.GetMode(mode);
+            states = (LevelProperties.Flower.State[])FindField(typeof(LevelProperties.Flower), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Flower.State[0];
+        }
+
+        FlowerStatesCache[mode] = states;
+        return states;
+    }
+
+    private static string FlowerPatternLabel(LevelProperties.Flower.Pattern pattern) {
+        switch (pattern) {
+            case LevelProperties.Flower.Pattern.Laser:
+                return "Head Lunge";
+            case LevelProperties.Flower.Pattern.PodHands:
+                return "Pod Hands";
+            case LevelProperties.Flower.Pattern.GattlingGun:
+                return "Gatling Gun";
+            case LevelProperties.Flower.Pattern.VineHands:
+                return "Vine Hands";
+            default:
+                return pattern.ToString();
+        }
+    }
+
+    /// <summary>One option per entry of the phase's fixed attack cycle (0 = Phase 1,
+    /// 1 = Phase 2, 2 = Phase 3).</summary>
+    private static RngOption[] FlowerPatternOptions(Level.Mode mode, int stateIndex) {
+        try {
+            LevelProperties.Flower.State[] states = FlowerStatesFor(mode);
+            if (stateIndex < 0 || stateIndex >= states.Length) {
+                return new RngOption[0];
+            }
+            LevelProperties.Flower.Pattern[] patterns = states[stateIndex].patterns;
+            RngOption[] options = new RngOption[patterns.Length];
+            for (int i = 0; i < patterns.Length; i++) {
+                options[i] = new RngOption(FlowerPatternLabel(patterns[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the head-lunge top/bottom order.</summary>
+    private static RngOption[] FlowerLaserOptions(Level.Mode mode) {
+        try {
+            string[] entries = FlowerStatesFor(mode)[0].laser.attackType.Split(new[] { ',' });
+            string[] labels = new string[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                labels[i] = entries[i].Trim() == "T" ? "Top" : "Bottom";
+            }
+            return NamedOptions(labels);
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>The states whose attack cycle contains pod hands, in fight order (Regular
+    /// runs two - Phases 2 and 3; Simple and Expert one each). Their per-state pod-hands
+    /// data decides what each cycle index produces.</summary>
+    private static List<LevelProperties.Flower.State> FlowerPodHandsStates(Level.Mode mode) {
+        List<LevelProperties.Flower.State> result = new List<LevelProperties.Flower.State>();
+        try {
+            foreach (LevelProperties.Flower.State state in FlowerStatesFor(mode)) {
+                if (Array.IndexOf(state.patterns, LevelProperties.Flower.Pattern.PodHands) >= 0) {
+                    result.Add(state);
+                }
+            }
+        } catch (Exception) {
+        }
+        return result;
+    }
+
+    private static string FlowerPodTypeText(string entry) {
+        return entry.Trim() == "S" ? "Carrots" : "Boomerang";
+    }
+
+    /// <summary>One row per entry of the pod-hands type cycle: the attack type each index
+    /// produces in every pod-hands phase (Regular shows two phases). Rows the game's start
+    /// roll can never land on (non-carrots entries, and entries past the roll domain) are
+    /// display-only; the radio list renders them grayed out.</summary>
+    private static RngOption[] FlowerPodTypeOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Flower.State[] states = FlowerStatesFor(mode);
+            List<LevelProperties.Flower.State> phases = FlowerPodHandsStates(mode);
+            if (states == null || states.Length == 0 || phases.Count == 0) {
+                return new RngOption[0];
+            }
+            string[] rollDomain = states[0].podHands.attacktype.Split(new[] { ',' });
+
+            string[][] columns = new string[phases.Count][];
+            int rows = rollDomain.Length;
+            for (int c = 0; c < phases.Count; c++) {
+                columns[c] = phases[c].podHands.attacktype.Split(new[] { ',' });
+                rows = Math.Max(rows, columns[c].Length);
+            }
+
+            RngOption[] options = new RngOption[rows];
+            for (int i = 0; i < rows; i++) {
+                string[] parts = new string[phases.Count];
+                for (int c = 0; c < phases.Count; c++) {
+                    parts[c] = i < columns[c].Length ? FlowerPodTypeText(columns[c][i]) : "-";
+                }
+                bool selectable = i < rollDomain.Length && rollDomain[i].Trim() == "S";
+                options[i] = new RngOption(parts, i, selectable);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One row per entry of the pod-hands volley-count cycle: the count that
+    /// index produces in every pod-hands phase. Every start is reachable, so all rows are
+    /// selectable; counts past a phase's cycle length wrap to its first entry (the game's
+    /// own out-of-bounds guard restarts the index at 0). Rendered as one plain label -
+    /// single digits have the same width in any font.</summary>
+    private static RngOption[] FlowerPodCountOptions(Level.Mode mode) {
+        try {
+            List<LevelProperties.Flower.State> phases = FlowerPodHandsStates(mode);
+            if (phases.Count == 0) {
+                return new RngOption[0];
+            }
+
+            string[][] columns = new string[phases.Count][];
+            int rows = 0;
+            for (int c = 0; c < phases.Count; c++) {
+                columns[c] = phases[c].podHands.attackAmount.Split(new[] { ',' });
+                rows = Math.Max(rows, columns[c].Length);
+            }
+
+            RngOption[] options = new RngOption[rows];
+            for (int i = 0; i < rows; i++) {
+                string[] parts = new string[phases.Count];
+                for (int c = 0; c < phases.Count; c++) {
+                    string text;
+                    if (i < columns[c].Length) {
+                        text = columns[c][i].Trim();
+                    } else {
+                        text = columns[c].Length > 0 ? columns[c][0].Trim() + " (wrap)" : "-";
+                    }
+                    parts[c] = text;
+                }
+                options[i] = new RngOption(string.Join(" / ", parts), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
     }
 
     private static RngOption[] Fixed(params string[] labels) {

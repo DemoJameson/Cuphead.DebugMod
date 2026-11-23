@@ -29,13 +29,15 @@ internal static class MenuTheme {
     // Type badges on spot cards: "start" = the random start of a fixed cycle, "per attack"
     // = re-rolled independently every attack, "once" = decided once per fight, "order" =
     // one ordered list picked per fight and then walked, "cycle" = a fresh start position
-    // into a fixed cycle on every round of the attack.
+    // into a fixed cycle on every round of the attack, "restricted" = a start the game can
+    // only roll for part of the list.
     public static readonly Color BadgeStart = new Color(0.22f, 0.38f, 0.55f);
     public static readonly Color BadgePerAttack = new Color(0.62f, 0.34f, 0.08f);
     public static readonly Color BadgeOnce = new Color(0.40f, 0.26f, 0.52f);
     public static readonly Color BadgeOrder = new Color(0.14f, 0.44f, 0.34f);
     public static readonly Color BadgeCycle = new Color(0.65f, 0.18f, 0.18f);
     public static readonly Color BadgeSequence = new Color(0.72f, 0.28f, 0.55f);
+    public static readonly Color BadgeRestricted = new Color(0.45f, 0.45f, 0.50f);
 
     // Layout. Canvas units are "1080p pixels" of the game's actively painted scene: the
     // canvas scale is the painted height (Camera.main.pixelRect) divided by
@@ -55,6 +57,7 @@ internal static class MenuTheme {
     public static readonly float CheckSize = 28f;   // checkbox squares
     public static readonly float SliderWidth = 640f;   // float value sliders
     public static readonly float BadgeSize = 26f;   // square type badge on spot cards
+    public static readonly float RadioSeparatorWidth = 28f;   // gap between multi-column radio label columns (the "/" column)
 
     // Text
     public static readonly int FontSizeTitle = 28;

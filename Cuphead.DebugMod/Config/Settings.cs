@@ -79,17 +79,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> RngMenu;
     public static ConfigEntry<bool> EnablePatternForms;
 
-    public static ConfigEntry<FlowerPhaseGeneric1PatternsNormal> FlowerPhaseGeneric1PatternNormal;
-    public static ConfigEntry<FlowerPhaseGeneric2PatternsNormal> FlowerPhaseGeneric2PatternNormal;
-    public static ConfigEntry<FlowerPhaseGeneric3PatternsNormal> FlowerPhaseGeneric3PatternNormal;
-    public static ConfigEntry<FlowerPhaseGenericHeadLungePatternsNormal> FlowerPhaseGenericHeadLungePatternNormal;
-    public static ConfigEntry<FlowerPodHandsAttackCountIndexesEasy> FlowerPodHandsAttackCountIndexEasy;
-    public static ConfigEntry<FlowerPodHandsAttackCountIndexesNormal> FlowerPodHandsAttackCountIndexNormal;
-    public static ConfigEntry<FlowerPodHandsAttackCountIndexesHard> FlowerPodHandsAttackCountIndexHard;
-    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesEasy> FlowerPodHandsAttackTypeIndexEasy;
-    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesNormal> FlowerPodHandsAttackTypeIndexNormal;
-    public static ConfigEntry<FlowerPodHandsAttackTypeIndexesHard> FlowerPodHandsAttackTypeIndexHard;
-    public static ConfigEntry<FlowerBlinkCounts> FlowerBlinkCount;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss1Easy;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss2Easy;
     public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss3Easy;
@@ -325,17 +314,6 @@ public class Settings : PluginComponent {
         ShowSimpleExpertRNG.SettingChanged += ShowSimpleExpertRNGOnSettingChanged;
         ShowUnusedLevels = config.Bind("Misc", "Show Unused Levels / Items", false, --order);
 
-        FlowerPhaseGeneric1PatternNormal = config.Bind("RNG Cagney Carnation", "First Generic Phase Regular", FlowerPhaseGeneric1PatternsNormal.Random, --order);
-        FlowerPhaseGeneric2PatternNormal = config.Bind("RNG Cagney Carnation", "Second Generic Phase Regular", FlowerPhaseGeneric2PatternsNormal.Random, --order);
-        FlowerPhaseGeneric3PatternNormal = config.Bind("RNG Cagney Carnation", "Third Generic Phase Regular", FlowerPhaseGeneric3PatternsNormal.Random, --order);
-        FlowerPhaseGenericHeadLungePatternNormal = config.Bind("RNG Cagney Carnation", "Generic Phase Head Lunge Regular", FlowerPhaseGenericHeadLungePatternsNormal.Random, --order);
-        FlowerPodHandsAttackCountIndexEasy = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Simple", FlowerPodHandsAttackCountIndexesEasy.Random, --order);
-        FlowerPodHandsAttackCountIndexNormal = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Regular", FlowerPodHandsAttackCountIndexesNormal.Random, --order);
-        FlowerPodHandsAttackCountIndexHard = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Count Index Expert", FlowerPodHandsAttackCountIndexesHard.Random, --order);
-        FlowerPodHandsAttackTypeIndexEasy = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Simple", FlowerPodHandsAttackTypeIndexesEasy.Random, --order);
-        FlowerPodHandsAttackTypeIndexNormal = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Regular", FlowerPodHandsAttackTypeIndexesNormal.Random, --order);
-        FlowerPodHandsAttackTypeIndexHard = config.Bind("RNG Cagney Carnation", "Pod Hands Attack Type Index Expert", FlowerPodHandsAttackTypeIndexesHard.Random, --order);
-        FlowerBlinkCount = config.Bind("RNG Cagney Carnation", "Blink Count", FlowerBlinkCounts.Random, --order);
         BaronessMiniboss1Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 1 Simple", BaronessMinibossesEasy.Random, --order);
         BaronessMiniboss2Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Simple", BaronessMinibossesEasy.Random, --order);
         BaronessMiniboss3Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Simple", BaronessMinibossesEasy.Random, --order);

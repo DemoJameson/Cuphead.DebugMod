@@ -13,24 +13,32 @@ internal class FlyingBlimpPatternSelector : PluginComponent {
 
     private static Level.Mode Mode => Level.ScoringData.difficulty;
 
-    // Sets the leading attack of a Generic blimp phase. Each phase is entered once per
-    // fight and its cycle is consumed with a pre-increment (NextPattern), so the spot
-    // resolves with preIncrement=true; the cycle comes from the live per-difficulty data
-    // and the two phases are told apart by state identity, not by health thresholds.
-    [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(FlyingBlimpLevel.OnStateChanged))]
-    [HarmonyPrefix]
+    // Sets the leading attack of both Generic blimp phases. Each phase's cycle start is
+    // decided once per fight when the level's State objects are constructed, and
+    // NextPattern only walks the index forward from there - nothing re-rolls it when a
+    // state becomes current. Both spots are therefore resolved up-front against the
+    // fight's own states, in Generic order; NextPattern advances the index before
+    // reading it, hence preIncrement.
+    [HarmonyPatch(typeof(FlyingBlimpLevel), nameof(FlyingBlimpLevel.PartialInit))]
+    [HarmonyPostfix]
     private static void PhasePatternManipulator(FlyingBlimpLevel __instance) {
-        LevelProperties.FlyingBlimp.State state = __instance.properties.CurrentState;
-        if (state.stateName != LevelProperties.FlyingBlimp.States.Generic) {
+        LevelProperties.FlyingBlimp.State[] states = (LevelProperties.FlyingBlimp.State[])RngSpots.FindField(
+            typeof(LevelProperties.FlyingBlimp), "states").GetValue(__instance.properties);
+        if (states == null) {
             return;
         }
-
-        int genericIndex = RngSpots.FlyingBlimpGenericIndex(Mode, state);
-        if (genericIndex < 0) {
-            return;
+        int genericIndex = 0;
+        foreach (LevelProperties.FlyingBlimp.State state in states) {
+            if (state.stateName != LevelProperties.FlyingBlimp.States.Generic) {
+                continue;
+            }
+            if (genericIndex > 1 || state.patterns.Length < 2) {
+                return;
+            }
+            string spotId = genericIndex == 0 ? RngSpots.FlyingBlimpGeneric1PatternStart : RngSpots.FlyingBlimpGeneric2PatternStart;
+            state.patternIndex = RngState.Index(spotId, Mode, state.patternIndex, state.patterns.Length, true);
+            genericIndex++;
         }
-        string spotId = genericIndex == 0 ? RngSpots.FlyingBlimpGeneric1PatternStart : RngSpots.FlyingBlimpGeneric2PatternStart;
-        state.patternIndex = RngState.Index(spotId, Mode, state.patternIndex, state.patterns.Length, true);
     }
 
     // The Regular-only constellation phase coin-flips between Sagittarius and Gemini

@@ -410,7 +410,8 @@ internal sealed class RngPage {
     /// a glance: skip-to-start = the random start of a fixed cycle, die = re-rolled
     /// independently every attack, gem = decided once per fight, stacked list = one ordered
     /// list picked per fight and then walked, refresh arrow = a fresh cycle start position
-    /// on every round of the attack, shuffle = a fresh sequence and start on every round.
+    /// on every round of the attack, shuffle = a fresh sequence and start on every round,
+    /// padlock = a start the game can only roll for part of the list.
     /// Hovering shows a tooltip with the full explanation.
     /// </summary>
     private static float AddSpotBadge(GameObject row, RngSpot spot, float rightOffset) {
@@ -442,6 +443,11 @@ internal sealed class RngPage {
                 hint = "Every attack round rolls a fresh sequence and its start, then walks it in order. Each block below pins one whole round.";
                 background = MenuTheme.BadgeSequence;
                 icon = UiIcons.Shuffle;
+                break;
+            case RngBadgeKind.Restricted:
+                hint = "Only some entries can be the starting one - the game's roll can never land on the grayed-out ones.";
+                background = MenuTheme.BadgeRestricted;
+                icon = UiIcons.LockClosed;
                 break;
             case RngBadgeKind.PerAttack:
                 hint = "Rolled independently every time this attack fires. A plan of steps can be forced before natural randomness resumes.";
@@ -634,9 +640,7 @@ internal sealed class RngPage {
             }
 
             if (!string.IsNullOrEmpty(spot.Hint)) {
-                GameObject hintRow = Ui.Row(content, "Card_" + expansionKey + "_Hint", MenuTheme.CardBg, y, 30f);
-                Ui.RowLabel(hintRow, spot.Hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-                y += 30f;
+                y = AddHintRow(content, expansionKey, spot.Hint, y);
             }
 
             if (SupportsSequence) {
@@ -725,8 +729,9 @@ internal sealed class RngPage {
 
                 // the cycle as a radio list: "Random" plus one row per entry in order
                 y = AddRadioRow(content, blockKey, 0, "Random", -1, value, picked => SetRadioBlock(captured, picked), y);
+                float[] radioColumnWidths = MeasureColumnWidths(content, options);
                 for (int i = 0; i < options.Length; i++) {
-                    y = AddRadioRow(content, blockKey, i + 1, options[i].Label, options[i].Value, value, picked => SetRadioBlock(captured, picked), y);
+                    y = AddRadioRowCore(content, blockKey, i + 1, options[i].Columns, radioColumnWidths, options[i].Label, options[i].Value, value, picked => SetRadioBlock(captured, picked), y, options[i].Selectable);
                 }
                 y += 4f;
             }
@@ -777,8 +782,9 @@ internal sealed class RngPage {
             page.Refresh();
         }
 
-        /// <summary>The start-position editor: options as radio rows, always clickable -
-        /// selecting one pins it, unselecting goes back to random.</summary>
+        /// <summary>The start-position editor: options as radio rows - selecting one pins
+        /// it, unselecting goes back to random. Display-only rows (not selectable) render
+        /// grayed out.</summary>
         private float BuildRadioBody(RectTransform content, bool isConfigured, float y) {
             int selected = binding.Selected();
             if (selected >= options.Length) {
@@ -797,32 +803,15 @@ internal sealed class RngPage {
                 y += 28f;
             }
 
+            float[] columnWidths = MeasureColumnWidths(content, options);
             for (int i = 0; i < options.Length; i++) {
-                GameObject row = Ui.Row(content, "Card_" + expansionKey + "_Opt" + i, i % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt, y, 40f);
-                int captured = i;
-
-                // radio behavior: only one option can be selected at a time; options are
-                // always clickable - selecting one pins it, unselecting it goes back to random
-                UiCheck check = UiCheck.Create(row.transform, "Select", MenuTheme.CheckSize, selected == i, on => {
-                    binding.Set(on ? captured : -1);
+                // display-only rows (the game's roll can never land there) render dimmed
+                // and ignore clicks - handled inside the shared radio row
+                int index = i;
+                y = AddRadioRowCore(content, expansionKey, i, options[i].Columns, columnWidths, options[i].Label, i, selected, picked => {
+                    binding.Set(picked);
                     page.Refresh();
-                });
-                RectTransform checkRect = Ui.Rect(check.Root);
-                checkRect.anchorMin = new Vector2(0f, 0.5f);
-                checkRect.anchorMax = new Vector2(0f, 0.5f);
-                checkRect.pivot = new Vector2(0f, 0.5f);
-                checkRect.anchoredPosition = new Vector2(12f, 0f);
-
-                GameObject labelGo = Ui.Create("OptLabel", row.transform);
-                RectTransform labelRect = Ui.Rect(labelGo);
-                labelRect.anchorMin = new Vector2(0f, 0.5f);
-                labelRect.anchorMax = new Vector2(1f, 0.5f);
-                labelRect.pivot = new Vector2(0f, 0.5f);
-                labelRect.offsetMin = new Vector2(46f, 0f);
-                labelRect.offsetMax = new Vector2(-MenuTheme.Padding, 0f);
-                Ui.Label(labelGo, options[i].Label, MenuTheme.FontSizeLabel, MenuTheme.Text, TextAnchor.MiddleLeft);
-
-                y += 40f + 2f;
+                }, y, options[i].Selectable);
             }
 
             return y;
@@ -915,9 +904,7 @@ internal sealed class RngPage {
             }
 
             if (!string.IsNullOrEmpty(spot.Hint)) {
-                GameObject hintRow = Ui.Row(content, "Card_" + expansionKey + "_Hint", MenuTheme.CardBg, y, 30f);
-                Ui.RowLabel(hintRow, spot.Hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-                y += 30f;
+                y = AddHintRow(content, expansionKey, spot.Hint, y);
             }
 
             y = SequenceUi.BuildFloatFirstRow(content, "Card_" + expansionKey, 0, backend, range, page.Refresh, y, page.ContentWidth);
@@ -944,9 +931,27 @@ internal sealed class RngPage {
         return y + 30f;
     }
 
-    /// <summary>One radio row: options are always clickable - selecting one pins it,
-    /// unselecting it goes back to random.</summary>
-    private static float AddRadioRow(RectTransform content, string key, int rowIndex, string label, int value, int selected, Action<int> onSelect, float y) {
+    /// <summary>One hint row under a card header. Grows with its text: long descriptions
+    /// wrap to any number of lines, measured via the label's preferred height.</summary>
+    private static float AddHintRow(RectTransform content, string key, string hint, float y) {
+        GameObject hintRow = Ui.Row(content, "Card_" + key + "_Hint", MenuTheme.CardBg, y, 30f);
+        Text hintText = Ui.RowLabel(hintRow, hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 12f);
+
+        float height = Mathf.Max(30f, hintText.preferredHeight + 12f);
+        Ui.Rect(hintRow).sizeDelta = new Vector2(0f, height);
+        return y + height;
+    }
+
+    /// <summary>One radio row. Rows whose option is not selectable render dimmed and
+    /// ignore clicks - the game's starting roll can never land on them. Options with
+    /// column texts render each column as its own centered text in a measured-width rect
+    /// hugging the left edge (separated by "/"), so columns line up across rows in any
+    /// font.</summary>
+    private static float AddRadioRow(RectTransform content, string key, int rowIndex, string label, int value, int selected, Action<int> onSelect, float y, bool selectable = true) {
+        return AddRadioRowCore(content, key, rowIndex, null, null, label, value, selected, onSelect, y, selectable);
+    }
+
+    private static float AddRadioRowCore(RectTransform content, string key, int rowIndex, string[] columns, float[] columnWidths, string label, int value, int selected, Action<int> onSelect, float y, bool selectable) {
         GameObject row = Ui.Row(content, "Card_" + key + "_Opt" + rowIndex, rowIndex % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt, y, 40f);
         int captured = value;
 
@@ -955,6 +960,9 @@ internal sealed class RngPage {
                 onSelect(on ? captured : -1);
             }
         });
+        if (!selectable) {
+            check.SetInteractable(false);
+        }
         RectTransform checkRect = Ui.Rect(check.Root);
         checkRect.anchorMin = new Vector2(0f, 0.5f);
         checkRect.anchorMax = new Vector2(0f, 0.5f);
@@ -968,9 +976,78 @@ internal sealed class RngPage {
         labelRect.pivot = new Vector2(0f, 0.5f);
         labelRect.offsetMin = new Vector2(46f, 0f);
         labelRect.offsetMax = new Vector2(-MenuTheme.Padding, 0f);
-        Ui.Label(labelGo, label, MenuTheme.FontSizeLabel, MenuTheme.Text, TextAnchor.MiddleLeft);
+
+        Color labelColor = selectable ? MenuTheme.Text : MenuTheme.TextDim;
+        if (columns != null && columnWidths != null && columns.Length > 1) {
+            // each column is its own text centered in a measured-width rect hugging the
+            // left edge; the separators sit at the same position on every row regardless
+            // of the font's character widths
+            float x = 0f;
+            for (int c = 0; c < columns.Length; c++) {
+                float columnWidth = c < columnWidths.Length ? columnWidths[c] : 60f;
+                GameObject columnGo = Ui.Create("Col" + c, labelGo.transform);
+                RectTransform columnRect = Ui.Rect(columnGo);
+                columnRect.anchorMin = new Vector2(0f, 0.5f);
+                columnRect.anchorMax = new Vector2(0f, 0.5f);
+                columnRect.pivot = new Vector2(0.5f, 0.5f);
+                columnRect.sizeDelta = new Vector2(columnWidth, labelRect.rect.height);
+                columnRect.anchoredPosition = new Vector2(x + columnWidth / 2f, 0f);
+                Ui.Label(columnGo, columns[c], MenuTheme.FontSizeLabel, labelColor, TextAnchor.MiddleCenter);
+                x += columnWidth;
+
+                if (c < columns.Length - 1) {
+                    GameObject separatorGo = Ui.Create("Sep" + c, labelGo.transform);
+                    RectTransform separatorRect = Ui.Rect(separatorGo);
+                    separatorRect.anchorMin = new Vector2(0f, 0.5f);
+                    separatorRect.anchorMax = new Vector2(0f, 0.5f);
+                    separatorRect.pivot = new Vector2(0.5f, 0.5f);
+                    separatorRect.sizeDelta = new Vector2(MenuTheme.RadioSeparatorWidth, labelRect.rect.height);
+                    separatorRect.anchoredPosition = new Vector2(x + MenuTheme.RadioSeparatorWidth / 2f, 0f);
+                    Ui.Label(separatorGo, "/", MenuTheme.FontSizeLabel, MenuTheme.TextDim, TextAnchor.MiddleCenter);
+                    x += MenuTheme.RadioSeparatorWidth;
+                }
+            }
+        } else {
+            Ui.Label(labelGo, label, MenuTheme.FontSizeLabel, labelColor, TextAnchor.MiddleLeft);
+        }
 
         return y + 40f + 2f;
+    }
+
+    /// <summary>Pixel width of each column in a multi-column radio label: the widest
+    /// column text of the option set, measured with the menu font plus a little padding.
+    /// Null when the option set has no column labels.</summary>
+    private static float[] MeasureColumnWidths(RectTransform content, RngOption[] options) {
+        int count = 0;
+        foreach (RngOption option in options) {
+            if (option.Columns != null) {
+                count = option.Columns.Length;
+                break;
+            }
+        }
+        if (count == 0) {
+            return null;
+        }
+
+        GameObject measurerGo = Ui.Create("ColumnMeasure", content);
+        Text measurer = Ui.Label(measurerGo, string.Empty, MenuTheme.FontSizeLabel, Color.white, TextAnchor.MiddleLeft);
+        measurer.horizontalOverflow = HorizontalWrapMode.Overflow;
+        float[] widths = new float[count];
+        foreach (RngOption option in options) {
+            if (option.Columns == null) {
+                continue;
+            }
+            for (int c = 0; c < count && c < option.Columns.Length; c++) {
+                measurer.text = option.Columns[c];
+                widths[c] = Mathf.Max(widths[c], measurer.preferredWidth);
+            }
+        }
+        UnityEngine.Object.DestroyImmediate(measurerGo);
+
+        for (int c = 0; c < count; c++) {
+            widths[c] += 8f;
+        }
+        return widths;
     }
 
     /// <summary>
@@ -1027,9 +1104,7 @@ internal sealed class RngPage {
             }
 
             if (!string.IsNullOrEmpty(primary.Hint)) {
-                GameObject hintRow = Ui.Row(content, "Card_" + expansionKey + "_Hint", MenuTheme.CardBg, y, 30f);
-                Ui.RowLabel(hintRow, primary.Hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-                y += 30f;
+                y = AddHintRow(content, expansionKey, primary.Hint, y);
             }
 
             int selectedOrder = orderBinding.Selected();
@@ -1077,8 +1152,9 @@ internal sealed class RngPage {
                 RngOption[] typeOptions = typeOptionsFor(mode, selectedOrder);
                 int selectedType = typeBinding.Selected();
                 y = AddRadioRow(content, expansionKey + "_Type", 0, "Random", -1, selectedType, SelectType, y);
+                float[] typeColumnWidths = MeasureColumnWidths(content, typeOptions);
                 for (int i = 0; i < typeOptions.Length; i++) {
-                    y = AddRadioRow(content, expansionKey + "_Type", i + 1, typeOptions[i].Label, typeOptions[i].Value, selectedType, SelectType, y);
+                    y = AddRadioRowCore(content, expansionKey + "_Type", i + 1, typeOptions[i].Columns, typeColumnWidths, typeOptions[i].Label, typeOptions[i].Value, selectedType, SelectType, y, typeOptions[i].Selectable);
                 }
             }
 
@@ -1189,9 +1265,7 @@ internal sealed class RngPage {
             }
 
             if (!string.IsNullOrEmpty(primary.Hint)) {
-                GameObject hintRow = Ui.Row(content, "Card_" + expansionKey + "_Hint", MenuTheme.CardBg, y, 30f);
-                Ui.RowLabel(hintRow, primary.Hint, MenuTheme.FontSizeSmall, MenuTheme.TextDim, 40f, 0f);
-                y += 30f;
+                y = AddHintRow(content, expansionKey, primary.Hint, y);
             }
 
             int blockCount = 1 + primaryBackend.GetSteps().Count;
@@ -1306,8 +1380,9 @@ internal sealed class RngPage {
             } else {
                 RngOption[] startOptions = startOptionsFor(mode, primaryValue);
                 y = AddRadioRow(content, blockKey, 0, "Random", -1, secondaryValue, value => SetBlockSecondary(captured, value), y);
+                float[] startColumnWidths = MeasureColumnWidths(content, startOptions);
                 for (int i = 0; i < startOptions.Length; i++) {
-                    y = AddRadioRow(content, blockKey, i + 1, startOptions[i].Label, startOptions[i].Value, secondaryValue, value => SetBlockSecondary(captured, value), y);
+                    y = AddRadioRowCore(content, blockKey, i + 1, startOptions[i].Columns, startColumnWidths, startOptions[i].Label, startOptions[i].Value, secondaryValue, value => SetBlockSecondary(captured, value), y, startOptions[i].Selectable);
                 }
             }
 

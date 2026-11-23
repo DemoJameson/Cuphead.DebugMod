@@ -10,9 +10,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
-        { "FlowerPhaseGeneric1PatternNormal", FlowerPhaseGeneric1PatternsNormal.HeadLunge },
-        { "FlowerPhaseGeneric2PatternNormal", FlowerPhaseGeneric2PatternsNormal.HeadLunge },
-        { "FlowerPhaseGenericHeadLungePatternNormal", FlowerPhaseGenericHeadLungePatternsNormal.Bottom1 },
         { "BaronessMiniboss1Normal", BaronessMinibossesNormal.Waffle },
         { "BaronessMiniboss2Normal", BaronessMinibossesNormal.CandyCorn },
         { "BaronessMiniboss3Normal", BaronessMinibossesNormal.Cupcake },
@@ -135,8 +132,7 @@ public class RngOverrideComponent : PluginComponent {
             return false;
         }
 
-        return fieldName.StartsWith("Flower", StringComparison.Ordinal)
-            || fieldName.StartsWith("Baroness", StringComparison.Ordinal)
+        return fieldName.StartsWith("Baroness", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingBird", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingGenie", StringComparison.Ordinal)
             || fieldName.StartsWith("Clown", StringComparison.Ordinal)
@@ -149,8 +145,9 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("FlyingMermaid", StringComparison.Ordinal)
             || fieldName.StartsWith("Train", StringComparison.Ordinal)
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
-            // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's
-            // and Forest Follies' spots live in the new RNG profile system (Rng/RngProfiles).
+            // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's,
+            // Forest Follies' and Cagney Carnation's spots live in the new RNG profile
+            // system (Rng/RngProfiles).
             ;
     }
 

@@ -167,6 +167,17 @@ internal sealed class UiCheck {
             fill.enabled = value;
         }
     }
+
+    /// <summary>Grays the check out and ignores clicks - for display-only rows (options
+    /// the game's roll can never land on).</summary>
+    public void SetInteractable(bool interactable) {
+        if (button != null) {
+            button.interactable = interactable;
+        }
+        if (fill != null) {
+            fill.color = interactable ? MenuTheme.Accent : MenuTheme.TextDim;
+        }
+    }
 }
 
 /// <summary>A [prev value next] cycler for enum-style options.</summary>

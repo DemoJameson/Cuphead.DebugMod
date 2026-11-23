@@ -619,6 +619,21 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(forestHeight.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
         }
 
+        // Ported from the old Cagney Carnation preset: the Phase 1 and Phase 2 cycles
+        // start with the head lunge, and the first head lunge goes bottom.
+        RngSpot flowerPhase1 = RngSpots.Find(RngSpots.FlowerMainPatternStart);
+        RngSpot flowerPhase2 = RngSpots.Find(RngSpots.FlowerGeneric1PatternStart);
+        RngSpot flowerLungeStart = RngSpots.Find(RngSpots.FlowerHeadLungeStart);
+        if (flowerPhase1 != null) {
+            perfect.GetOrCreateSpot(flowerPhase1.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (flowerPhase2 != null) {
+            perfect.GetOrCreateSpot(flowerPhase2.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (flowerLungeStart != null) {
+            perfect.GetOrCreateSpot(flowerLungeStart.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 
