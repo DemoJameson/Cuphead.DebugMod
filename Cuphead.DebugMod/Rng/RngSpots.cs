@@ -44,7 +44,11 @@ internal enum RngBadgeKind {
 
     /// <summary>A start position the game can only roll for part of the list; the radio
     /// list shows the rest grayed out and unselectable.</summary>
-    Restricted
+    Restricted,
+
+    /// <summary>A per-pass pattern pick plus a once-per-fight walked index (the candy
+    /// corn's turn driver).</summary>
+    IndexedPattern
 }
 
 internal sealed class RngOption {
@@ -120,8 +124,23 @@ internal sealed class RngSpot {
         get; set;
     }
 
+    /// <summary>True for per-event spots whose roll happens exactly once per fight (the
+    /// Baroness miniboss picks, the waffle's path): they use the same cycler editor, but
+    /// the footer's constant-pin warning does not apply (a pin is just one outcome vanilla
+    /// can roll) and plans never advance past their first step, so they are hidden.</summary>
+    public bool OncePerFight {
+        get; set;
+    }
+
     /// <summary>Optional badge override; derived from the shape when unset.</summary>
     public RngBadgeKind? Badge {
+        get; set;
+    }
+
+    /// <summary>Optional per-difficulty editor override: when it returns true, the spot
+    /// renders as the plain radio list instead of the per-attack cycler (used where the
+    /// cycler only makes sense when a sibling pattern pick has multiple options).</summary>
+    public Func<Level.Mode, bool> RadioEditor {
         get; set;
     }
 
@@ -294,6 +313,25 @@ internal static class RngSpots {
     public const string FlowerPodHandsType = "Flower/PodHands/Type";
     public const string FlowerPodHandsCount = "Flower/PodHands/Count";
     public const string FlowerBlinkCount = "Flower/Blink/Count";
+
+    // Baroness Von Bon Bon (the miniboss roster differs per difficulty; the picks are
+    // made once per fight)
+    public const string BaronessMiniboss1 = "Baroness/Miniboss1/Pick";
+    public const string BaronessMiniboss2 = "Baroness/Miniboss2/Pick";
+    public const string BaronessMiniboss3 = "Baroness/Miniboss3/Pick";
+    public const string BaronessWafflePath = "Baroness/Waffle/Path";
+    public const string BaronessWaffleSplitDelay = "Baroness/Waffle/SplitDelay";
+    public const string BaronessWaffleSplitOrder = "Baroness/Waffle/SplitOrder";
+    public const string BaronessShotgunPattern = "Baroness/Shotgun/Pattern";
+    public const string BaronessShotgunStart = "Baroness/Shotgun/Start";
+    public const string BaronessShotgunDelay = "Baroness/Shotgun/Delay";
+    public const string BaronessHeadTossStart = "Baroness/HeadToss/Start";
+    public const string BaronessHeadTossDelay = "Baroness/HeadToss/Delay";
+    public const string BaronessCornTurnStart = "Baroness/CornTurn/Start";
+    public const string BaronessCornTurnPattern = "Baroness/CornTurn/Pattern";
+    public const string BaronessCornTurnMiniDelay = "Baroness/CornTurn/MiniDelay";
+    public const string BaronessJellybeanPattern = "Baroness/Jellybeans/Pattern";
+    public const string BaronessJellybeanDelay = "Baroness/Jellybeans/Delay";
 
     public static readonly RngSpot[] Devil = {
         new RngSpot(
@@ -596,6 +634,97 @@ internal static class RngSpots {
         ) { PerEvent = true }
     };
 
+    public static readonly RngSpot[] Baroness = {
+        new RngSpot(
+            BaronessMiniboss1, "Phase 1", "Miniboss 1", RngShape.Choice, true, false,
+            mode => BaronessMinibossOptions(mode),
+            "The fight picks its minibosses one after another from a pool, never repeating one within a fight; this pins the first pick."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            BaronessMiniboss2, "Phase 1", "Miniboss 2", RngShape.Choice, true, false,
+            mode => BaronessMinibossOptions(mode),
+            "Pins the second miniboss pick. Forcing the same miniboss the earlier picks already used is possible but not vanilla-accurate (a warning shows when it is selected)."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            BaronessMiniboss3, "Phase 1", "Miniboss 3", RngShape.Choice, true, false,
+            mode => BaronessMinibossOptions(mode),
+            "Pins the third miniboss pick. Forcing the same miniboss the earlier picks already used is possible but not vanilla-accurate (a warning shows when it is selected)."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            BaronessWafflePath, "Phase 1", "Waffle Path", RngShape.Choice, false, false,
+            mode => Fixed("Up", "Down"),
+            "Which path the waffle takes, rolled once when it is picked as a miniboss and spawns."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            BaronessWaffleSplitDelay, "Phase 1", "Waffle Split Delay", RngShape.Float, true,
+            mode => BaronessWaffleSplitDelayRange(mode),
+            "Delay between the waffle reassembling and splitting apart again, re-rolled per split."
+        ) { PerEvent = true, Available = mode => mode != Level.Mode.Easy },
+        new RngSpot(
+            BaronessWaffleSplitOrder, "Phase 1", "Waffle Split Order", RngShape.Choice, true, false,
+            mode => Fixed("Diagonal First", "Straight First"),
+            "Which half detaches first when the waffle splits apart."
+        ) { PerEvent = true, Available = mode => mode == Level.Mode.Hard },
+        new RngSpot(
+            BaronessShotgunPattern, "Phase 1", "Shotgun Pop-Up Delay", RngShape.Choice, true, false,
+            mode => BaronessShotgunPatternOptions(mode),
+            "One pop-up timing pattern is picked once per fight and then walked (each entry is the seconds until the baroness's next pop-up); the start below chooses where it begins."
+        ) { CompoundWith = BaronessShotgunStart, Badge = RngBadgeKind.Order,
+            CompoundStartOptions = (mode, patternIndex) => BaronessShotgunStartOptions(mode, patternIndex),
+            CompoundPrimaryLabel = "Pattern", CompoundSecondaryLabel = "Start at" },
+        new RngSpot(
+            BaronessShotgunStart, "Delay", "Shotgun Pop-Up Delay Start", RngShape.Choice, true, false,
+            mode => new RngOption[0],
+            null
+        ) { CompoundSecondary = true },
+        new RngSpot(
+            BaronessShotgunDelay, "Phase 1", "Shotgun Delay", RngShape.Float, true,
+            mode => BaronessShotgunDelayRange(mode),
+            "Delay between the baroness's shots while she is popped up, re-rolled per shot."
+        ) { PerEvent = true },
+        new RngSpot(
+            BaronessCornTurnPattern, "Phase 1", "Candy Corn Turn Pattern String", RngShape.Choice, true, false,
+            mode => BaronessCornTurnPatternOptions(mode),
+            "Re-rolled every time the corn passes the castle; each option is the full turn pattern (Y = turn up, N = keep walking). A plan plays one pattern per pass."
+        ) { PerEvent = true, Badge = RngBadgeKind.IndexedPattern, CompoundWith = BaronessCornTurnStart,
+            CompoundPrimaryLabel = "Candy Corn Turn Pattern String" },
+        new RngSpot(
+            BaronessCornTurnStart, "Phase 1", "Candy Corn Turn Pattern", RngShape.Choice, true, false,
+            mode => BaronessCornTurnStartOptions(mode),
+            "The starting position inside the turn pattern, rolled once per fight and then walked. Indexes beyond a shorter pattern's length break the corn's turning for the rest of the fight - exactly as they can in vanilla."
+        ) { PerEvent = true, Badge = RngBadgeKind.Start, OncePerFight = true, CompoundSecondary = true,
+            CompoundSecondaryLabel = "Candy Corn Turn Pattern Initial Index",
+            RadioEditor = mode => BaronessCornTurnPatternOptions(mode).Length < 2 },
+        new RngSpot(
+            BaronessCornTurnMiniDelay, "Phase 1", "Mini Corn Spawn Delay", RngShape.Float, true,
+            mode => BaronessCornTurnMiniDelayRange(mode),
+            "Delay between mini candy corn spawns while the big one turns, re-rolled per mini."
+        ) { PerEvent = true, Available = mode => {
+                LevelProperties.Baroness.CandyCorn corn = BaronessCornData(mode);
+                return corn != null && corn.spawnMinis;
+            } },
+        new RngSpot(
+            BaronessJellybeanPattern, "Phase 1", "Jellybean Spawn Pattern", RngShape.Choice, true, false,
+            mode => BaronessJellybeanPatternOptions(mode),
+            "Picked once per fight and then cycled - transitions skip entries without spawning them. Each option is the full bean sequence (P = parryable). NOTE: the way jellybeans spawns work is extremely janky and it will result in getting unexpected (but consistent) first spawns."
+        ),
+        new RngSpot(
+            BaronessJellybeanDelay, "Phase 1", "Jellybean Spawn Delay", RngShape.Float, true,
+            mode => BaronessJellybeanDelayRange(mode),
+            "Delay between jellybean spawns, re-rolled per spawned bean - the sequence only advances on real spawns, never on the skipped transition frames."
+        ) { PerEvent = true },
+        new RngSpot(
+            BaronessHeadTossStart, "Final Phase", "Head Toss Pattern", RngShape.StartPool, true, false,
+            mode => BaronessHeadTossOptions(mode),
+            "The final phase tosses its head and waits in a fixed repeating script; this picks where the script begins."
+        ),
+        new RngSpot(
+            BaronessHeadTossDelay, "Final Phase", "Head Toss Delay (subsequent)", RngShape.Float, true,
+            mode => BaronessHeadTossDelayRange(mode),
+            "Wait after each head toss, re-rolled per toss."
+        ) { PerEvent = true }
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -608,6 +737,7 @@ internal static class RngSpots {
         all.AddRange(FlyingBlimp);
         all.AddRange(ForestFollies);
         all.AddRange(Flower);
+        all.AddRange(Baroness);
         return all.ToArray();
     }
 
@@ -632,7 +762,8 @@ internal static class RngSpots {
         { "Veggies", "The Root Pack" },
         { "FlyingBlimp", "Hilda Berg" },
         { "ForestFollies", "Forest Follies" },
-        { "Flower", "Cagney Carnation" }
+        { "Flower", "Cagney Carnation" },
+        { "Baroness", "Baroness Von Bon Bon" }
     };
 
     public static string StageLabel(string stageId) {
@@ -1581,6 +1712,294 @@ internal static class RngSpots {
         } catch (Exception) {
         }
         return new RngOption[0];
+    }
+
+    // ------------------------------------------------------------------
+    // Baroness Von Bon Bon option enumeration. The miniboss roster comes
+    // from the difficulty's own miniBossString pool (Simple has no
+    // cupcake); the option values index into that roster.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Baroness.State[]> BaronessStatesCache = new Dictionary<Level.Mode, LevelProperties.Baroness.State[]>();
+
+    private static LevelProperties.Baroness.State[] BaronessStatesFor(Level.Mode mode) {
+        LevelProperties.Baroness.State[] states;
+        if (BaronessStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Baroness properties = LevelProperties.Baroness.GetMode(mode);
+            states = (LevelProperties.Baroness.State[])FindField(typeof(LevelProperties.Baroness), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Baroness.State[0];
+        }
+
+        BaronessStatesCache[mode] = states;
+        return states;
+    }
+
+    private static string BaronessMinibossLabel(string id) {
+        switch (id) {
+            case "1":
+                return "Gumball";
+            case "2":
+                return "Waffle";
+            case "3":
+                return "Candy Corn";
+            case "4":
+                return "Cupcake";
+            case "5":
+                return "Jawbreaker";
+            default:
+                return "Miniboss " + id;
+        }
+    }
+
+    /// <summary>The miniboss ids ("1".."5") this difficulty's pick pool can contain,
+    /// sorted ascending - the roster of the miniboss option lists.</summary>
+    public static string[] BaronessMinibossRoster(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            if (states == null || states.Length == 0) {
+                return new string[0];
+            }
+            List<int> ids = new List<int>();
+            foreach (string ordering in states[0].open.miniBossString) {
+                foreach (string part in ordering.Split(new[] { ',' })) {
+                    int id;
+                    if (int.TryParse(part.Trim(), out id) && !ids.Contains(id)) {
+                        ids.Add(id);
+                    }
+                }
+            }
+            ids.Sort();
+            string[] roster = new string[ids.Count];
+            for (int i = 0; i < ids.Count; i++) {
+                roster[i] = ids[i].ToString();
+            }
+            return roster;
+        } catch (Exception) {
+        }
+        return new string[0];
+    }
+
+    private static RngOption[] BaronessMinibossOptions(Level.Mode mode) {
+        string[] roster = BaronessMinibossRoster(mode);
+        string[] labels = new string[roster.Length];
+        for (int i = 0; i < roster.Length; i++) {
+            labels[i] = BaronessMinibossLabel(roster[i]);
+        }
+        return NamedOptions(labels);
+    }
+
+    /// <summary>The live castle data of the fight (pop-up timings, toss script); null when
+    /// unavailable.</summary>
+    private static LevelProperties.Baroness.BaronessVonBonbon BaronessMainData(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            return states != null && states.Length > 0 ? states[0].baronessVonBonbon : null;
+        } catch (Exception) {
+        }
+        return null;
+    }
+
+    /// <summary>The pop-up timing patterns of the live data.</summary>
+    public static string[] BaronessShotgunPatterns(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.BaronessVonBonbon data = BaronessMainData(mode);
+            return data != null && data.timeString != null ? data.timeString : new string[0];
+        } catch (Exception) {
+        }
+        return new string[0];
+    }
+
+    private static RngOption[] BaronessShotgunPatternOptions(Level.Mode mode) {
+        return SetOptions(BaronessShotgunPatterns(mode).Length);
+    }
+
+    /// <summary>The start options of one pop-up timing pattern: its delay entries
+    /// (seconds until each pop-up).</summary>
+    public static RngOption[] BaronessShotgunStartOptions(Level.Mode mode, int patternIndex) {
+        string[] patterns = BaronessShotgunPatterns(mode);
+        if (patternIndex < 0 || patternIndex >= patterns.Length) {
+            return new RngOption[0];
+        }
+        string[] entries = patterns[patternIndex].Split(new[] { ',' });
+        string[] labels = new string[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            labels[i] = entries[i].Trim();
+        }
+        return NamedOptions(labels);
+    }
+
+    /// <summary>Entry count of one pop-up timing pattern.</summary>
+    public static int BaronessShotgunStartCount(Level.Mode mode, int patternIndex) {
+        string[] patterns = BaronessShotgunPatterns(mode);
+        if (patternIndex < 0 || patternIndex >= patterns.Length) {
+            return 0;
+        }
+        return patterns[patternIndex].Split(new[] { ',' }).Length;
+    }
+
+    private static RngFloatRange BaronessShotgunDelayRange(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.BaronessVonBonbon data = BaronessMainData(mode);
+            if (data != null) {
+                MinMax range = data.attackDelay;
+                return new RngFloatRange(range.min, range.max, 0.05f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(4f, 6.5f, 0.05f, 5.25f);
+    }
+
+    /// <summary>The head-toss script entries ("H" or "D:x") of the live data.</summary>
+    public static string[] BaronessHeadTossEntries(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.BaronessVonBonbon data = BaronessMainData(mode);
+            return data != null && !string.IsNullOrEmpty(data.finalProjectileHeadToss)
+                ? data.finalProjectileHeadToss.Split(new[] { ',' })
+                : new string[0];
+        } catch (Exception) {
+        }
+        return new string[0];
+    }
+
+    private static RngOption[] BaronessHeadTossOptions(Level.Mode mode) {
+        string[] entries = BaronessHeadTossEntries(mode);
+        string[] labels = new string[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            string entry = entries[i].Trim();
+            labels[i] = entry == "H" ? "Head Toss" : entry.Length > 2 ? "Wait " + entry.Substring(2) : entry;
+        }
+        return NamedOptions(labels);
+    }
+
+    private static RngFloatRange BaronessHeadTossDelayRange(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.BaronessVonBonbon data = BaronessMainData(mode);
+            if (data != null) {
+                MinMax range = data.finalProjectileAttackDelayRange;
+                return new RngFloatRange(range.min, range.max, 0.05f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(7.5f, 8.1f, 0.05f, 7.8f);
+    }
+
+    /// <summary>The live candy corn data of the fight (turn patterns, mini corn timing).</summary>
+    private static LevelProperties.Baroness.CandyCorn BaronessCornData(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            return states != null && states.Length > 0 ? states[0].candyCorn : null;
+        } catch (Exception) {
+        }
+        return null;
+    }
+
+    /// <summary>The live turn patterns of the candy corn (Y = turn up, N = keep walking).</summary>
+    public static string[] BaronessCornTurnPatterns(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.CandyCorn corn = BaronessCornData(mode);
+            return corn != null && corn.changeLevelString != null ? corn.changeLevelString : new string[0];
+        } catch (Exception) {
+        }
+        return new string[0];
+    }
+
+    private static RngOption[] BaronessCornTurnPatternOptions(Level.Mode mode) {
+        return NamedOptions(BaronessCornTurnPatterns(mode));
+    }
+
+    /// <summary>The longest turn pattern of the difficulty - the start index range.</summary>
+    public static int BaronessCornTurnMaxIndex(Level.Mode mode) {
+        int max = 0;
+        foreach (string pattern in BaronessCornTurnPatterns(mode)) {
+            max = Math.Max(max, pattern.Split(new[] { ',' }).Length);
+        }
+        return max;
+    }
+
+    /// <summary>Numeric start labels on Simple/Expert (label N = the Nth entry; the
+    /// resolver writes the 0-based index). On Regular - where only one turn pattern
+    /// exists - each index is labeled by what the corn does there instead.</summary>
+    private static RngOption[] BaronessCornTurnStartOptions(Level.Mode mode) {
+        string[] patterns = BaronessCornTurnPatterns(mode);
+        if (patterns.Length < 2) {
+            if (patterns.Length == 1) {
+                string[] entries = patterns[0].Split(new[] { ',' });
+                string[] labels = new string[entries.Length];
+                for (int i = 0; i < entries.Length; i++) {
+                    labels[i] = entries[i].Trim() == "Y" ? "Turn" : "Straight";
+                }
+                return NamedOptions(labels);
+            }
+            return new RngOption[0];
+        }
+        return Numbered(1, BaronessCornTurnMaxIndex(mode));
+    }
+
+    private static RngFloatRange BaronessCornTurnMiniDelayRange(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.CandyCorn corn = BaronessCornData(mode);
+            if (corn != null) {
+                MinMax range = corn.miniCornSpawnDelay;
+                return new RngFloatRange(range.min, range.max, 0.05f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(1.5f, 2.3f, 0.05f, 1.9f);
+    }
+
+    /// <summary>The live jellybean spawn patterns of the fight (R = regular, P = parryable).</summary>
+    public static string[] BaronessJellybeanPatterns(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            if (states != null && states.Length > 0 && states[0].jellybeans != null && states[0].jellybeans.typeArray != null) {
+                return states[0].jellybeans.typeArray;
+            }
+        } catch (Exception) {
+        }
+        return new string[0];
+    }
+
+    private static RngOption[] BaronessJellybeanPatternOptions(Level.Mode mode) {
+        return NamedOptions(BaronessJellybeanPatterns(mode));
+    }
+
+    private static RngFloatRange BaronessJellybeanDelayRange(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            if (states != null && states.Length > 0 && states[0].jellybeans != null) {
+                MinMax range = states[0].jellybeans.spawnDelay;
+                return new RngFloatRange(range.min, range.max, 0.05f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(4.8f, 6.6f, 0.05f, 5.7f);
+    }
+
+    /// <summary>The live waffle data of the fight (split timing).</summary>
+    private static LevelProperties.Baroness.Waffle BaronessWaffleData(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.State[] states = BaronessStatesFor(mode);
+            return states != null && states.Length > 0 ? states[0].waffle : null;
+        } catch (Exception) {
+        }
+        return null;
+    }
+
+    private static RngFloatRange BaronessWaffleSplitDelayRange(Level.Mode mode) {
+        try {
+            LevelProperties.Baroness.Waffle waffle = BaronessWaffleData(mode);
+            if (waffle != null) {
+                MinMax range = waffle.attackDelayRange;
+                return new RngFloatRange(range.min, range.max, 0.05f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(2f, 5f, 0.05f, 3.5f);
     }
 
     private static RngOption[] Fixed(params string[] labels) {

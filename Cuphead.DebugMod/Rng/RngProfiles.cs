@@ -634,6 +634,20 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(flowerLungeStart.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
         }
 
+        // Ported from the old Baroness preset: Waffle, Candy Corn, Cupcake in that order.
+        RngSpot baronessMiniboss1 = RngSpots.Find(RngSpots.BaronessMiniboss1);
+        RngSpot baronessMiniboss2 = RngSpots.Find(RngSpots.BaronessMiniboss2);
+        RngSpot baronessMiniboss3 = RngSpots.Find(RngSpots.BaronessMiniboss3);
+        if (baronessMiniboss1 != null) {
+            perfect.GetOrCreateSpot(baronessMiniboss1.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+        if (baronessMiniboss2 != null) {
+            perfect.GetOrCreateSpot(baronessMiniboss2.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(2, 1f));
+        }
+        if (baronessMiniboss3 != null) {
+            perfect.GetOrCreateSpot(baronessMiniboss3.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(3, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 

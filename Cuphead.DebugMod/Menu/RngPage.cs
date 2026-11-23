@@ -170,7 +170,7 @@ internal sealed class RngPage {
         int pins = 0;
         Level.Mode[] modes = new Level.Mode[] { Level.Mode.Easy, Level.Mode.Normal, Level.Mode.Hard };
         foreach (RngSpot spot in RngSpots.All) {
-            if (!spot.PerEvent) {
+            if (!spot.PerEvent || spot.OncePerFight) {
                 continue;
             }
             foreach (Level.Mode mode in modes) {
@@ -229,7 +229,7 @@ internal sealed class RngPage {
             }
 
             RngOption[] options = spot.Options != null ? spot.Options(tab) : null;
-            if (options != null && options.Length < 2) {
+            if (options != null && options.Length < 2 && string.IsNullOrEmpty(spot.CompoundWith)) {
                 continue; // nothing meaningful to control on this difficulty
             }
 
@@ -243,15 +243,25 @@ internal sealed class RngPage {
                 continue;
             }
 
-            if (spot.CompoundSecondary) {
+            if (spot.CompoundSecondary && !(spot.RadioEditor != null && spot.RadioEditor(tab))) {
                 continue; // edited inside its primary's compound card
             }
 
             if (!string.IsNullOrEmpty(spot.CompoundWith)) {
-                if (spot.PerEvent) {
+                RngSpot compoundSecondary = RngSpots.Find(spot.CompoundWith);
+                if (compoundSecondary != null && compoundSecondary.RadioEditor != null && compoundSecondary.RadioEditor(tab)) {
+                    continue; // radio mode: this pick has a single option here; the paired index renders standalone below
+                }
+                if (compoundSecondary != null && compoundSecondary.RadioEditor != null) {
+                    // the indexed-pattern pair: a per-pass pattern pick plus a walked start index
+                    IndexedPatternCard card = new IndexedPatternCard(this, spot, compoundSecondary, tab, compoundSecondary.Label,
+                        options, compoundSecondary.Options(tab),
+                        new PatternCard.SpotBinding(spot, tab), new PatternCard.SpotBinding(compoundSecondary, tab),
+                        new SpotIntBackend(spot, tab), new SpotIntBackend(compoundSecondary, tab), spot.Id);
+                    y = card.Build(content, y);
+                } else if (spot.PerEvent) {
                     // per-round compounds (the UFO pattern) edit whole-round blocks
-                    RngSpot secondary = RngSpots.Find(spot.CompoundWith);
-                    CompoundSequenceCard card = new CompoundSequenceCard(this, spot, secondary, tab, new SpotIntBackend(spot, tab), new SpotIntBackend(secondary, tab), options, spot.CompoundStartOptions, spot.Id);
+                    CompoundSequenceCard card = new CompoundSequenceCard(this, spot, compoundSecondary, tab, new SpotIntBackend(spot, tab), new SpotIntBackend(compoundSecondary, tab), options, spot.CompoundStartOptions, spot.Id);
                     y = card.Build(content, y);
                 } else {
                     y = AddCompoundCard(y, spot);
@@ -261,6 +271,10 @@ internal sealed class RngPage {
             } else {
                 y = AddPoolCard(y, spot, options, spot.Shape == RngShape.StartPool);
             }
+
+            if (spot.Id == RngSpots.BaronessMiniboss3) {
+                y = AddMinibossDuplicateWarning(y);
+            }
         }
 
         y = AddNote(y, "Other bosses are still set up in the legacy settings window (F1). Hover the badge on each card for how its randomness works.");
@@ -269,8 +283,47 @@ internal sealed class RngPage {
         content.anchoredPosition = new Vector2(0f, Mathf.Clamp(scrollY, 0f, Mathf.Max(0f, content.sizeDelta.y)));
     }
 
-    private float AddStage(float y, string stageId, string stageLabel) {
-        GameObject titleRow = Ui.Row(content, "Section_" + stageId, MenuTheme.SectionBg, y, MenuTheme.SectionHeight);
+    /// <summary>Warning row under the miniboss cards: forcing the same miniboss into
+    /// several slots (or configuring pick pools that overlap on one miniboss) is possible
+    /// but not something vanilla's without-replacement pick can produce.</summary>
+    private float AddMinibossDuplicateWarning(float y) {
+        List<int>[] pools = new List<int>[3];
+        for (int i = 0; i < 3; i++) {
+            pools[i] = new List<int>();
+            RngSpot spot = RngSpots.Find(i == 0 ? RngSpots.BaronessMiniboss1 : i == 1 ? RngSpots.BaronessMiniboss2 : RngSpots.BaronessMiniboss3);
+            RngProfile profile = RngProfiles.Active;
+            RngSpotConfig config = profile != null ? profile.GetSpot(spot.Key(tab)) : null;
+            if (config != null) {
+                foreach (RngPoolEntry entry in config.Pool) {
+                    pools[i].Add(entry.IntValue);
+                }
+            }
+        }
+
+        bool duplicate = false;
+        for (int i = 0; i < 3 && !duplicate; i++) {
+            for (int j = i + 1; j < 3; j++) {
+                foreach (int value in pools[i]) {
+                    if (pools[j].Contains(value)) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+                if (duplicate) {
+                    break;
+                }
+            }
+        }
+        if (!duplicate) {
+            return y;
+        }
+
+        GameObject warningRow = Ui.Row(content, "Baroness_DuplicateWarning", MenuTheme.CardBg, y, 40f);
+        Ui.RowLabel(warningRow, "(!) The same miniboss is forced into more than one slot - vanilla never repeats a miniboss within a fight.", MenuTheme.FontSizeSmall, MenuTheme.Warning, 40f, 0f);
+        return y + 40f + 2f;
+    }
+
+    private float AddStage(float y, string stageId, string stageLabel) {        GameObject titleRow = Ui.Row(content, "Section_" + stageId, MenuTheme.SectionBg, y, MenuTheme.SectionHeight);
         Ui.RowLabel(titleRow, stageLabel, MenuTheme.FontSizeLabel, MenuTheme.WindowBg, MenuTheme.Padding, 0f);
         y += MenuTheme.SectionHeight + Gap;
 
@@ -335,7 +388,7 @@ internal sealed class RngPage {
     /// own profile config (simple mode).
     /// </summary>
     private float AddPoolCard(float y, RngSpot spot, RngOption[] options, bool showPreview) {
-        IntSequenceBackend sequenceBackend = SupportsSequences(spot) ? new SpotIntBackend(spot, tab) : null;
+        IntSequenceBackend sequenceBackend = SupportsSequences(spot, tab) ? new SpotIntBackend(spot, tab) : null;
         PatternCard card = new PatternCard(this, spot, options, tab, showPreview, new PatternCard.SpotBinding(spot, tab), sequenceBackend, spot.Id);
         return card.Build(content, y);
     }
@@ -358,7 +411,10 @@ internal sealed class RngPage {
         return card.Build(content, y);
     }
 
-    private static bool SupportsSequences(RngSpot spot) {
+    private static bool SupportsSequences(RngSpot spot, Level.Mode mode) {
+        if (spot.RadioEditor != null && spot.RadioEditor(mode)) {
+            return false;
+        }
         return spot.PerEvent && spot.Shape == RngShape.Choice;
     }
 
@@ -448,6 +504,11 @@ internal sealed class RngPage {
                 hint = "Only some entries can be the starting one - the game's roll can never land on the grayed-out ones.";
                 background = MenuTheme.BadgeRestricted;
                 icon = UiIcons.LockClosed;
+                break;
+            case RngBadgeKind.IndexedPattern:
+                hint = "Every pass re-rolls which pattern governs the turns, while the position inside it is picked once and then walked.";
+                background = MenuTheme.BadgeIndexedPattern;
+                icon = UiIcons.IndexedPattern;
                 break;
             case RngBadgeKind.PerAttack:
                 hint = "Rolled independently every time this attack fires. A plan of steps can be forced before natural randomness resumes.";
@@ -613,9 +674,14 @@ internal sealed class RngPage {
 
         /// <summary>Per-event choice spots use the per-attack editor (cycler + Random
         /// checkbox + plan steps); the backend decides where everything is stored (spot
-        /// config in simple mode, the form itself in forms).</summary>
+        /// config in simple mode, the form itself in forms). Once-per-fight picks use the
+        /// same cycler but get no plan steps - their single roll never reaches them.</summary>
         private bool SupportsSequence {
-                    get { return SupportsSequences(spot) && sequenceBackend != null; }
+                    get { return SupportsSequences(spot, mode) && sequenceBackend != null; }
+        }
+
+        private bool SupportsPlan {
+                    get { return SupportsSequence && !spot.OncePerFight; }
         }
 
         public float Build(RectTransform content, float y) {
@@ -632,7 +698,7 @@ internal sealed class RngPage {
                     }
                     page.Refresh();
                 },
-                SupportsSequence ? (Action)(() => SequenceUi.AppendChoiceStep(sequenceBackend, options, page.Refresh)) : null);
+                SupportsPlan ? (Action)(() => SequenceUi.AppendChoiceStep(sequenceBackend, options, page.Refresh)) : null);
 
             y += MenuTheme.RowHeight;
             if (!isExpanded) {
@@ -651,8 +717,10 @@ internal sealed class RngPage {
                 } else {
                     // the per-attack editor: the standing value, the plan steps after it, and
                     // the option pips - no radio list, this spot is rolled independently
-                    y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
-                    y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                    y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y, !spot.OncePerFight);
+                    if (SupportsPlan) {
+                        y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                    }
                 }
             } else {
                 y = BuildRadioBody(content, isConfigured, y);
@@ -823,7 +891,7 @@ internal sealed class RngPage {
     /// button that appends a sequence step. Used by the pattern cards and the float cards
     /// alike so both card kinds stay visually identical.
     /// </summary>
-    private static GameObject BuildCardHeader(RectTransform content, string key, float y, RngSpot spot, bool isExpanded, bool isConfigured, Action toggleExpand, Action addStep) {
+    private static GameObject BuildCardHeader(RectTransform content, string key, float y, RngSpot spot, bool isExpanded, bool isConfigured, Action toggleExpand, Action addStep, string titleOverride = null) {
         GameObject header = Ui.Row(content, "Card_" + key, MenuTheme.CardBg, y, MenuTheme.RowHeight);
 
         GameObject expand = Ui.TextButton(header.transform, "Expand", isExpanded ? "-" : "+", MenuTheme.ControlSize, MenuTheme.ControlSize, toggleExpand, MenuTheme.FontSizeButton);
@@ -849,7 +917,7 @@ internal sealed class RngPage {
         headerLabelRect.pivot = new Vector2(0f, 0.5f);
         headerLabelRect.offsetMin = new Vector2(40f, 0f);
         headerLabelRect.offsetMax = new Vector2(-labelRight, 0f);
-        Ui.Label(headerLabelGo, spot.Label + RandomSuffix(isConfigured), MenuTheme.FontSizeLabel, isConfigured ? MenuTheme.Text : MenuTheme.TextDim, TextAnchor.MiddleLeft);
+        Ui.Label(headerLabelGo, (titleOverride ?? spot.Label) + RandomSuffix(isConfigured), MenuTheme.FontSizeLabel, isConfigured ? MenuTheme.Text : MenuTheme.TextDim, TextAnchor.MiddleLeft);
 
         return header;
     }
@@ -1210,6 +1278,85 @@ internal sealed class RngPage {
                 }
             }
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Compound editor for a per-pass pattern pick paired with a once-per-fight walked
+    /// index (the candy corn's turn driver): group 1 edits the pattern (cycler + plan
+    /// steps), group 2 the initial index (cycler). The groups are independent - the index
+    /// is deliberately not validated, so the vanilla fight-breaking state stays forceable.
+    /// </summary>
+    private sealed class IndexedPatternCard {
+        private readonly RngPage page;
+        private readonly Level.Mode mode;
+        private readonly RngSpot primary;
+        private readonly RngSpot secondary;
+        private readonly string title;
+        private readonly PatternCard.Binding primaryBinding;
+        private readonly PatternCard.Binding secondaryBinding;
+        private readonly IntSequenceBackend primaryBackend;
+        private readonly IntSequenceBackend secondaryBackend;
+        private readonly RngOption[] primaryOptions;
+        private readonly RngOption[] secondaryOptions;
+        private readonly string expansionKey;
+
+        public IndexedPatternCard(RngPage page, RngSpot primary, RngSpot secondary, Level.Mode mode, string title,
+            RngOption[] primaryOptions, RngOption[] secondaryOptions,
+            PatternCard.Binding primaryBinding, PatternCard.Binding secondaryBinding,
+            IntSequenceBackend primaryBackend, IntSequenceBackend secondaryBackend, string expansionKey) {
+            this.page = page;
+            this.primary = primary;
+            this.secondary = secondary;
+            this.mode = mode;
+            this.title = title;
+            this.primaryOptions = primaryOptions;
+            this.secondaryOptions = secondaryOptions;
+            this.primaryBinding = primaryBinding;
+            this.secondaryBinding = secondaryBinding;
+            this.primaryBackend = primaryBackend;
+            this.secondaryBackend = secondaryBackend;
+            this.expansionKey = expansionKey;
+        }
+
+        public float Build(RectTransform content, float y) {
+            bool isConfigured = (primaryBackend != null && primaryBackend.IsConfigured())
+                || (secondaryBackend != null && secondaryBackend.IsConfigured());
+            bool isExpanded = page.expanded.Contains(expansionKey);
+
+            GameObject header = BuildCardHeader(
+                content, expansionKey, y, primary, isExpanded, isConfigured,
+                () => {
+                    if (isExpanded) {
+                        page.expanded.Remove(expansionKey);
+                    } else {
+                        page.expanded.Add(expansionKey);
+                    }
+                    page.Refresh();
+                },
+                primaryBackend != null ? (Action)(() => SequenceUi.AppendChoiceStep(primaryBackend, primaryOptions, page.Refresh)) : null,
+                title);
+
+            y += MenuTheme.RowHeight;
+            if (!isExpanded) {
+                return y + Gap;
+            }
+
+            if (!string.IsNullOrEmpty(primary.Hint)) {
+                y = AddHintRow(content, expansionKey, primary.Hint, y);
+            }
+            if (!string.IsNullOrEmpty(secondary.Hint)) {
+                y = AddHintRow(content, expansionKey + "_Index", secondary.Hint, y);
+            }
+
+            y = AddGroupLabel(content, expansionKey + "_PatternLabel", primary.CompoundPrimaryLabel ?? "Pattern String", y);
+            y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey + "_Pattern", 0, primaryBackend, primaryOptions, page.Refresh, y, true);
+            y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey + "_Pattern", 0, primaryBackend, primaryOptions, page.Refresh, y);
+
+            y = AddGroupLabel(content, expansionKey + "_IndexLabel", secondary.CompoundSecondaryLabel ?? "Initial Index", y);
+            y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey + "_Index", 1, secondaryBackend, secondaryOptions, page.Refresh, y, false);
+
+            return y + Gap;
         }
     }
 
@@ -1860,14 +2007,26 @@ internal sealed class RngPage {
                     lastPhase = spot.Group;
                 }
 
-                if (spot.CompoundSecondary) {
+                if (spot.CompoundSecondary && !(spot.RadioEditor != null && spot.RadioEditor(mode))) {
                     continue; // edited inside its primary's compound card
                 }
 
                 if (!string.IsNullOrEmpty(spot.CompoundWith)) {
                     // one card for the compound spot and its secondary, both bound to this form
                     RngSpot secondary = RngSpots.Find(spot.CompoundWith);
-                    if (spot.PerEvent) {
+                    if (secondary != null && secondary.RadioEditor != null && secondary.RadioEditor(mode)) {
+                        continue; // radio mode: this pick is trivial here; the paired index renders standalone below
+                    }
+                    if (secondary != null && secondary.RadioEditor != null) {
+                        IndexedPatternCard card = new IndexedPatternCard(page, spot, secondary, mode, secondary.Label,
+                            options, secondary.Options(mode),
+                            new PatternCard.FormBinding(stageId, mode, formIndex, spot),
+                            new PatternCard.FormBinding(stageId, mode, formIndex, secondary),
+                            new FormIntBackend(stageId, mode, formIndex, spot),
+                            new FormIntBackend(stageId, mode, formIndex, secondary),
+                            "form:" + setKey + ":" + formIndex + ":" + spot.Id);
+                        y = card.Build(content, y);
+                    } else if (spot.PerEvent) {
                         CompoundSequenceCard card = new CompoundSequenceCard(page, spot, secondary, mode, new FormIntBackend(stageId, mode, formIndex, spot), new FormIntBackend(stageId, mode, formIndex, secondary), options, spot.CompoundStartOptions, "form:" + setKey + ":" + formIndex + ":" + spot.Id);
                         y = card.Build(content, y);
                     } else {
@@ -1889,7 +2048,7 @@ internal sealed class RngPage {
                     y = card.Build(content, y);
                 } else {
                     // the exact same pattern card the simple mode renders, bound to this form
-                    IntSequenceBackend sequenceBackend = SupportsSequences(spot) ? new FormIntBackend(stageId, mode, formIndex, spot) : null;
+                    IntSequenceBackend sequenceBackend = SupportsSequences(spot, mode) ? new FormIntBackend(stageId, mode, formIndex, spot) : null;
                     PatternCard card = new PatternCard(
                         page, spot, options, mode, spot.Shape == RngShape.StartPool,
                         new PatternCard.FormBinding(stageId, mode, formIndex, spot),

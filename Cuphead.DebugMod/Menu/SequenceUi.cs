@@ -422,8 +422,9 @@ internal static class SequenceUi {
     /// <summary>The standing row of a per-event choice spot: the cycler that forces one
     /// option, a separate Random checkbox, the loop checkbox while no plan exists, and the
     /// option pips underneath. This row is what distinguishes an independently rolled spot
-    /// from a list with a random start position.</summary>
-    public static float BuildChoiceStanding(RectTransform content, string key, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y) {
+    /// from a list with a random start position. Once-per-fight spots hide the loop
+    /// checkbox - their single roll never repeats.</summary>
+    public static float BuildChoiceStanding(RectTransform content, string key, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y, bool showRepeat = true) {
         Color background = paritySeed % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt;
         bool hasPin = backend.HasPin();
         int pin = backend.GetPin();
@@ -452,8 +453,9 @@ internal static class SequenceUi {
         PlaceLeft(cycle.Root, 124f);
 
         // with no plan steps, the standing value is the last configuration in play, so its
-        // loop checkbox lives right here
-        if (hasPin && steps.Count == 0) {
+        // loop checkbox lives right here (hidden for once-per-fight spots - their single
+        // roll never reaches a repeat)
+        if (showRepeat && hasPin && steps.Count == 0) {
             UiCheck loopCheck = UiCheck.Create(row.transform, "Loop", MenuTheme.CheckSize, backend.GetLoop(), on => {
                 backend.Write(backend.GetPin(), backend.GetSteps(), on);
                 refresh();

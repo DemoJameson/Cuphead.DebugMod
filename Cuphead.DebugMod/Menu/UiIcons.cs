@@ -20,6 +20,7 @@ internal static class UiIcons {
     private static Sprite orderList;
     private static Sprite cycleRefresh;
     private static Sprite shuffle;
+    private static Sprite indexedPattern;
 
     public static Sprite TriangleUp {
         get { return triangleUp != null ? triangleUp : triangleUp = Build(12, 12, IsTriangleUp); }
@@ -70,6 +71,10 @@ internal static class UiIcons {
 
     public static Sprite Shuffle {
         get { return shuffle != null ? shuffle : shuffle = Build(12, 12, IsShuffle); }
+    }
+
+    public static Sprite IndexedPattern {
+        get { return indexedPattern != null ? indexedPattern : indexedPattern = Build(12, 12, IsIndexedPattern); }
     }
 
     private static Sprite Build(int width, int height, Func<int, int, bool> inside) {
@@ -169,5 +174,13 @@ internal static class UiIcons {
         bool headTop = x >= 7 && x <= 10 && y >= 1 && y <= 4 && (x + y) >= 10;
         bool headBottom = x >= 7 && x <= 10 && y >= 7 && y <= 10 && (x - y) >= -3;
         return lineA || lineB || headTop || headBottom;
+    }
+
+    private static bool IsIndexedPattern(int x, int y) {
+        // a die riding on a list: the per-pass pattern pick over a walked index
+        bool dieBorder = x >= 3 && x <= 10 && y >= 0 && y <= 5 && (x == 3 || x == 10 || y == 0 || y == 5);
+        bool diePip = x >= 6 && x <= 7 && y >= 2 && y <= 3;
+        bool bars = y >= 7 && y <= 11 && (y == 7 || y == 9 || y == 11) && x <= 9;
+        return dieBorder || diePip || bars;
     }
 }

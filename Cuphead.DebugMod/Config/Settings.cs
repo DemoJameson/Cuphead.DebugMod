@@ -79,16 +79,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> RngMenu;
     public static ConfigEntry<bool> EnablePatternForms;
 
-    public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss1Easy;
-    public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss2Easy;
-    public static ConfigEntry<BaronessMinibossesEasy> BaronessMiniboss3Easy;
-    public static ConfigEntry<BaronessMinibossesNormal> BaronessMiniboss1Normal;
-    public static ConfigEntry<BaronessMinibossesNormal> BaronessMiniboss2Normal;
-    public static ConfigEntry<BaronessMinibossesNormal> BaronessMiniboss3Normal;
-    public static ConfigEntry<BaronessMinibossesHard> BaronessMiniboss1Hard;
-    public static ConfigEntry<BaronessMinibossesHard> BaronessMiniboss2Hard;
-    public static ConfigEntry<BaronessMinibossesHard> BaronessMiniboss3Hard;
-    public static ConfigEntry<BaronessWaffleDirections> BaronessWaffleDirection;
     public static ConfigEntry<CircusCannonballOrderDirections> CircusCannonballOrderDirection;
     public static ConfigEntry<CircusCannonballPinkStarts> CircusCannonballPinkStart;
     public static ConfigEntry<CircusCannonballMuzzleStarts> CircusCannonballMuzzleStart;
@@ -314,16 +304,6 @@ public class Settings : PluginComponent {
         ShowSimpleExpertRNG.SettingChanged += ShowSimpleExpertRNGOnSettingChanged;
         ShowUnusedLevels = config.Bind("Misc", "Show Unused Levels / Items", false, --order);
 
-        BaronessMiniboss1Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 1 Simple", BaronessMinibossesEasy.Random, --order);
-        BaronessMiniboss2Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Simple", BaronessMinibossesEasy.Random, --order);
-        BaronessMiniboss3Easy = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Simple", BaronessMinibossesEasy.Random, --order);
-        BaronessMiniboss1Normal = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 1 Regular", BaronessMinibossesNormal.Random, --order);
-        BaronessMiniboss2Normal = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Regular", BaronessMinibossesNormal.Random, --order);
-        BaronessMiniboss3Normal = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Regular", BaronessMinibossesNormal.Random, --order);
-        BaronessMiniboss1Hard = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 1 Expert", BaronessMinibossesHard.Random, --order);
-        BaronessMiniboss2Hard = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 2 Expert", BaronessMinibossesHard.Random, --order);
-        BaronessMiniboss3Hard = config.Bind("RNG Baroness Von Bon Bon", "Miniboss 3 Expert", BaronessMinibossesHard.Random, --order);
-        BaronessWaffleDirection = config.Bind("RNG Baroness Von Bon Bon", "Waffle Direction", BaronessWaffleDirections.Random, --order);
         CircusCannonballOrderDirection = config.Bind("RNG Funfair Fever", "Cannonball Order Direction", CircusCannonballOrderDirections.Random, --order);
         CircusCannonballPinkStart = config.Bind("RNG Funfair Fever", "Cannonball Types", CircusCannonballPinkStarts.Random, --order);
         CircusCannonballMuzzleStart = config.Bind("RNG Funfair Fever", "Cannonball Starting Position", CircusCannonballMuzzleStarts.Random, --order);

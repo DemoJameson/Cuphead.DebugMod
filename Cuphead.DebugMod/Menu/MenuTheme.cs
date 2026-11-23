@@ -24,6 +24,7 @@ internal static class MenuTheme {
     public static readonly Color Accent = new Color(1.00f, 0.81f, 0.06f);   // Cuphead gold
     public static readonly Color Text = new Color(0.95f, 0.95f, 0.96f);
     public static readonly Color TextDim = new Color(0.70f, 0.70f, 0.75f);
+    public static readonly Color Warning = new Color(0.90f, 0.38f, 0.10f);   // non-vanilla configuration warnings
     public static readonly Color ButtonBg = new Color(0.24f, 0.24f, 0.30f);
 
     // Type badges on spot cards: "start" = the random start of a fixed cycle, "per attack"
@@ -38,6 +39,7 @@ internal static class MenuTheme {
     public static readonly Color BadgeCycle = new Color(0.65f, 0.18f, 0.18f);
     public static readonly Color BadgeSequence = new Color(0.72f, 0.28f, 0.55f);
     public static readonly Color BadgeRestricted = new Color(0.45f, 0.45f, 0.50f);
+    public static readonly Color BadgeIndexedPattern = new Color(0.15f, 0.55f, 0.62f);
 
     // Layout. Canvas units are "1080p pixels" of the game's actively painted scene: the
     // canvas scale is the painted height (Camera.main.pixelRect) divided by

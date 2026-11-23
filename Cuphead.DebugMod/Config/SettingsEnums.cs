@@ -34,38 +34,6 @@ namespace BepInEx.CupheadDebugMod.Config {
         }
 #endif
 
-        public enum BaronessMinibossesEasy {
-            Random,
-            Gumball,
-            Waffle,
-            CandyCorn,
-            Jawbreaker
-        }
-
-        public enum BaronessMinibossesNormal {
-            Random,
-            Gumball,
-            Waffle,
-            CandyCorn,
-            Cupcake,
-            Jawbreaker
-        }
-
-        public enum BaronessMinibossesHard {
-            Random,
-            Gumball,
-            Waffle,
-            CandyCorn,
-            Cupcake,
-            Jawbreaker
-        }
-
-        public enum BaronessWaffleDirections {
-            Random,
-            Up,
-            Down
-        }
-
         public enum FlyingBirdPhaseOneDirections {
             Random,
             Up,
