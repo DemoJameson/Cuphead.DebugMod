@@ -261,6 +261,10 @@ internal static class RngSpots {
     public const string FlyingBlimpMoonUfoPattern = "FlyingBlimp/Moon/UfoPattern";
     public const string FlyingBlimpMoonUfoStart = "FlyingBlimp/Moon/UfoStart";
 
+    // Forest Follies (run 'n gun; platforming stages always run on Normal)
+    public const string ForestFolliesAcornSide = "ForestFollies/Acorn/SideStart";
+    public const string ForestFolliesAcornHeight = "ForestFollies/Acorn/HeightStart";
+
     public static readonly RngSpot[] Devil = {
         new RngSpot(
             DevilPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
@@ -511,6 +515,19 @@ internal static class RngSpots {
         ) { PerEvent = true, CompoundSecondary = true, Available = mode => mode != Level.Mode.Easy }
     };
 
+    public static readonly RngSpot[] ForestFollies = {
+        new RngSpot(
+            ForestFolliesAcornSide, "Acorn Spawner", "Acorn Side Start", RngShape.StartPool, false, true,
+            mode => ForestAcornSideOptions(),
+            "The spawner walks a fixed left/right cycle; this picks which side the first acorn flies in from."
+        ),
+        new RngSpot(
+            ForestFolliesAcornHeight, "Acorn Spawner", "Acorn Height Start", RngShape.StartPool, false, true,
+            mode => ForestAcornHeightOptions(),
+            "The spawner walks a fixed height cycle (offset below the top of the screen); this picks the first acorn's height."
+        )
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -521,6 +538,7 @@ internal static class RngSpots {
         all.AddRange(Slime);
         all.AddRange(Veggies);
         all.AddRange(FlyingBlimp);
+        all.AddRange(ForestFollies);
         return all.ToArray();
     }
 
@@ -543,7 +561,8 @@ internal static class RngSpots {
         { "Frogs", "Ribby & Croaks" },
         { "Slime", "Goopy Le Grande" },
         { "Veggies", "The Root Pack" },
-        { "FlyingBlimp", "Hilda Berg" }
+        { "FlyingBlimp", "Hilda Berg" },
+        { "ForestFollies", "Forest Follies" }
     };
 
     public static string StageLabel(string stageId) {
@@ -1302,6 +1321,50 @@ internal static class RngSpots {
     /// <summary>Number of pink cadence options on this difficulty.</summary>
     public static int VeggiesPinkOptionCount(Level.Mode mode) {
         return VeggiesPinkOptions(mode).Length;
+    }
+
+    // ------------------------------------------------------------------
+    // Forest Follies option enumeration. The acorn spawner's cycle strings
+    // are serialized in the scene, so they are read from a live spawner
+    // when one exists; the fallback matches every shipped game version.
+    // ------------------------------------------------------------------
+
+    private const string ForestAcornSideFallback = "LRLLRLRR";
+    private const string ForestAcornHeightFallback = "150,50,120";
+
+    /// <summary>One option per entry of the spawner's left/right cycle.</summary>
+    private static RngOption[] ForestAcornSideOptions() {
+        string s = ForestAcornLiveSpawnerString(sp => sp.leftRightString, ForestAcornSideFallback);
+        RngOption[] options = new RngOption[s.Length];
+        for (int i = 0; i < s.Length; i++) {
+            options[i] = new RngOption(s[i] == 'L' ? "Right" : "Left", i);
+        }
+        return options;
+    }
+
+    /// <summary>One option per entry of the spawner's height cycle.</summary>
+    private static RngOption[] ForestAcornHeightOptions() {
+        string s = ForestAcornLiveSpawnerString(sp => sp.yString, ForestAcornHeightFallback);
+        string[] entries = s.Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            options[i] = new RngOption(entries[i].Trim(), i);
+        }
+        return options;
+    }
+
+    private static string ForestAcornLiveSpawnerString(Func<ForestPlatformingLevelAcornSpawner, string> field, string fallback) {
+        try {
+            ForestPlatformingLevelAcornSpawner spawner = UnityEngine.Object.FindObjectOfType<ForestPlatformingLevelAcornSpawner>();
+            if (spawner != null) {
+                string value = field(spawner);
+                if (!string.IsNullOrEmpty(value)) {
+                    return value;
+                }
+            }
+        } catch (Exception) {
+        }
+        return fallback;
     }
 
     private static RngOption[] Fixed(params string[] labels) {

@@ -607,6 +607,18 @@ internal static class RngProfiles {
         if (bouncerAngle != null) {
             perfect.GetOrCreateSpot(bouncerAngle.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(5, 1f));
         }
+
+        // Ported from the old Forest Follies preset (Left1 + B_50): the first acorn flies
+        // in from the left at height 50. Both spots consume their pinned entry first.
+        RngSpot forestSide = RngSpots.Find(RngSpots.ForestFolliesAcornSide);
+        RngSpot forestHeight = RngSpots.Find(RngSpots.ForestFolliesAcornHeight);
+        if (forestSide != null) {
+            perfect.GetOrCreateSpot(forestSide.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (forestHeight != null) {
+            perfect.GetOrCreateSpot(forestHeight.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 

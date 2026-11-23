@@ -34,37 +34,6 @@ namespace BepInEx.CupheadDebugMod.Config {
         }
 #endif
 
-        public enum ForestPlatformingAcornSpawnerDirections {
-            Random,
-            [Description("Left")]
-            Left1,
-            [Description("Right")]
-            Right1,
-            [Description("Left")]
-            Left2,
-            [Description("Left")]
-            Left3,
-            [Description("Right")]
-            Right2,
-            [Description("Left")]
-            Left4,
-            [Description("Right")]
-            Right3,
-            [Description("Right")]
-            Right4
-        }
-
-        public enum ForestPlatformingAcornSpawnerYIndexes {
-            Random,
-            [Description("150")]
-            A_150,
-            [Description("50")]
-            B_50,
-            [Description("120")]
-            C_120
-
-        }
-
         public enum FlowerPhaseGeneric1PatternsNormal {
             Random,
             HeadLunge,

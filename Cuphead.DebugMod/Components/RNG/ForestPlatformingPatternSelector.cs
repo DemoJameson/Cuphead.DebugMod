@@ -1,23 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using BepInEx.CupheadDebugMod.Rng;
 using HarmonyLib;
-using static BepInEx.CupheadDebugMod.Config.Settings;
-using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
+// All values come from RngState, which passes vanilla results through untouched and only
+// resolves configured spots (see Rng/RngSpots.cs for the catalog).
 [HarmonyPatch]
 internal class ForestPlatformingPatternSelector : PluginComponent {
-    [HarmonyPatch(typeof(ForestPlatformingLevelAcornSpawner), nameof(ForestPlatformingLevelAcornSpawner.Awake))]
+
+    // Platforming stages always run on Normal (the game forces that mode for them), so
+    // there is nothing per-difficulty here.
+    //
+    // The spawner rolls both cycle start positions in Awake, and Spawn() advances an
+    // index before using it - the same pre-increment style as the Devil's pitchfork
+    // angles, so the pinned entry is the first one the spawner consumes.
+    [HarmonyPatch(typeof(ForestPlatformingLevelAcornSpawner), "Awake")]
     [HarmonyPostfix]
     public static void AcornSpawnerManipulator(ref ForestPlatformingLevelAcornSpawner __instance) {
-        if (ForestPlatformingAcornSpawnerDirection.Value != ForestPlatformingAcornSpawnerDirections.Random) {
-            __instance.leftRightIndex = Utility.GetUserPattern<ForestPlatformingAcornSpawnerDirections>((int) ForestPlatformingAcornSpawnerDirection.Value);
-        }
-        if (ForestPlatformingAcornSpawnerYIndex.Value != ForestPlatformingAcornSpawnerYIndexes.Random) {
-            __instance.yIndex = Utility.GetUserPattern<ForestPlatformingAcornSpawnerYIndexes>((int) ForestPlatformingAcornSpawnerYIndex.Value);
-        }
+        __instance.leftRightIndex = RngState.Index(
+            RngSpots.ForestFolliesAcornSide, Level.Mode.Normal,
+            __instance.leftRightIndex, __instance.leftRightString.Length, true);
+        string[] yPattern = __instance.yString.Split(new[] { ',' });
+        __instance.yIndex = RngState.Index(
+            RngSpots.ForestFolliesAcornHeight, Level.Mode.Normal,
+            __instance.yIndex, yPattern.Length, true);
     }
 }

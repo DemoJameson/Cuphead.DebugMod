@@ -79,8 +79,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> RngMenu;
     public static ConfigEntry<bool> EnablePatternForms;
 
-    public static ConfigEntry<ForestPlatformingAcornSpawnerDirections> ForestPlatformingAcornSpawnerDirection;
-    public static ConfigEntry<ForestPlatformingAcornSpawnerYIndexes> ForestPlatformingAcornSpawnerYIndex;
     public static ConfigEntry<FlowerPhaseGeneric1PatternsNormal> FlowerPhaseGeneric1PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric2PatternsNormal> FlowerPhaseGeneric2PatternNormal;
     public static ConfigEntry<FlowerPhaseGeneric3PatternsNormal> FlowerPhaseGeneric3PatternNormal;
@@ -327,8 +325,6 @@ public class Settings : PluginComponent {
         ShowSimpleExpertRNG.SettingChanged += ShowSimpleExpertRNGOnSettingChanged;
         ShowUnusedLevels = config.Bind("Misc", "Show Unused Levels / Items", false, --order);
 
-        ForestPlatformingAcornSpawnerDirection = config.Bind("RNG Forest Follies", "Acorn Spawner Facing Direction", ForestPlatformingAcornSpawnerDirections.Random, --order);
-        ForestPlatformingAcornSpawnerYIndex = config.Bind("RNG Forest Follies", "Acorn Spawner Y Coordinate", ForestPlatformingAcornSpawnerYIndexes.Random, --order);
         FlowerPhaseGeneric1PatternNormal = config.Bind("RNG Cagney Carnation", "First Generic Phase Regular", FlowerPhaseGeneric1PatternsNormal.Random, --order);
         FlowerPhaseGeneric2PatternNormal = config.Bind("RNG Cagney Carnation", "Second Generic Phase Regular", FlowerPhaseGeneric2PatternsNormal.Random, --order);
         FlowerPhaseGeneric3PatternNormal = config.Bind("RNG Cagney Carnation", "Third Generic Phase Regular", FlowerPhaseGeneric3PatternsNormal.Random, --order);

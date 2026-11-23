@@ -10,8 +10,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
-        { "ForestPlatformingAcornSpawnerDirection", ForestPlatformingAcornSpawnerDirections.Left1 },
-        { "ForestPlatformingAcornSpawnerYIndex", ForestPlatformingAcornSpawnerYIndexes.B_50 },
         { "FlowerPhaseGeneric1PatternNormal", FlowerPhaseGeneric1PatternsNormal.HeadLunge },
         { "FlowerPhaseGeneric2PatternNormal", FlowerPhaseGeneric2PatternsNormal.HeadLunge },
         { "FlowerPhaseGenericHeadLungePatternNormal", FlowerPhaseGenericHeadLungePatternsNormal.Bottom1 },
@@ -138,7 +136,6 @@ public class RngOverrideComponent : PluginComponent {
         }
 
         return fieldName.StartsWith("Flower", StringComparison.Ordinal)
-            || fieldName.StartsWith("ForestPlatforming", StringComparison.Ordinal)
             || fieldName.StartsWith("Baroness", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingBird", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingGenie", StringComparison.Ordinal)
@@ -152,8 +149,8 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("FlyingMermaid", StringComparison.Ordinal)
             || fieldName.StartsWith("Train", StringComparison.Ordinal)
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
-            // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's and Hilda
-            // Berg's spots live in the new RNG profile system (Rng/RngProfiles).
+            // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's
+            // and Forest Follies' spots live in the new RNG profile system (Rng/RngProfiles).
             ;
     }
 
