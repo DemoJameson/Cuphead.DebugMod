@@ -333,6 +333,34 @@ internal static class RngSpots {
     public const string BaronessJellybeanPattern = "Baroness/Jellybeans/Pattern";
     public const string BaronessJellybeanDelay = "Baroness/Jellybeans/Delay";
 
+    // Funfair Fever (run 'n gun; always runs on Normal; one cannon and one hotdog, each
+    // rolling its start positions once at Start)
+    public const string FunfairCannonOrderDirection = "FunfairFever/Cannon/OrderDirection";
+    public const string FunfairCannonColorStart = "FunfairFever/Cannon/ColorStart";
+    public const string FunfairCannonMuzzleStart = "FunfairFever/Cannon/MuzzleStart";
+    public const string FunfairHotdogSpawnStart = "FunfairFever/Hotdog/SpawnStart";
+    public const string FunfairHotdogCondimentStart = "FunfairFever/Hotdog/CondimentStart";
+    public const string FunfairHotdogSideStart = "FunfairFever/Hotdog/SideStart";
+    public const string FunfairHotdogDelayStart = "FunfairFever/Hotdog/DelayStart";
+
+    // Wally Warbles (plane fight; the state lists differ per difficulty, so the pattern
+    // spots are per-difficulty)
+    public const string FlyingBirdMainPatternStart = "FlyingBird/Main/PatternStart";
+    public const string FlyingBirdGenericPatternStart = "FlyingBird/Generic/PatternStart";
+    public const string FlyingBirdRevivalPatternStart = "FlyingBird/Revival/PatternStart";
+    public const string FlyingBirdFloatDirection = "FlyingBird/Main/FloatDirection";
+    public const string FlyingBirdBirdDirection = "FlyingBird/Whistle/BirdDirection";
+    public const string FlyingBirdStretcherDirection = "FlyingBird/Revival/StretcherDirection";
+
+    // Djimmi The Great (the chest attack is rolled once per fight; the parry cycles are
+    // rolled once per fight and walked; the obelisk start is a flat row-major combo into
+    // the 3x9 obeliskGeniePos grid)
+    public const string FlyingGenieTreasureAttack = "FlyingGenie/Main/TreasureAttack";
+    public const string FlyingGenieSwordPinkStart = "FlyingGenie/Main/SwordPinkStart";
+    public const string FlyingGenieGemPinkStart = "FlyingGenie/Main/GemPinkStart";
+    public const string FlyingGenieSphinxPinkStart = "FlyingGenie/Main/SphinxPinkStart";
+    public const string FlyingGenieObeliskPatternStart = "FlyingGenie/Obelisk/PatternStart";
+
     public static readonly RngSpot[] Devil = {
         new RngSpot(
             DevilPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
@@ -725,6 +753,105 @@ internal static class RngSpots {
         ) { PerEvent = true }
     };
 
+    public static readonly RngSpot[] FunfairFever = {
+        new RngSpot(
+            FunfairCannonOrderDirection, "Cannon", "Cannonball Order Direction", RngShape.Choice, false, false,
+            mode => Fixed("Up", "Down"),
+            "The direction the cannon walks its three muzzles in: Up fires them bottom-to-top, Down top-to-bottom."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            FunfairCannonColorStart, "Cannon", "Cannonball Color Start", RngShape.StartPool, false, false,
+            mode => FunfairCannonColorOptions(),
+            "The starting position inside the cannonball color cycle; this picks which color the first cannonball is (pink ones are parryable)."
+        ),
+        new RngSpot(
+            FunfairCannonMuzzleStart, "Cannon", "Cannonball Muzzle Start", RngShape.StartPool, false, false,
+            mode => FunfairCannonMuzzleOptions(),
+            "The muzzle the first cannonball falls from; the cannon then walks the muzzles in its order direction."
+        ),
+        new RngSpot(
+            FunfairHotdogSpawnStart, "Hotdog", "Hotdog Condiment Height", RngShape.StartPool, false, false,
+            mode => FunfairHotdogSpawnOptions(),
+            "The height the hotdog's first condiment spawns at (each entry is a spawn point, mirrored to the right side for right-side shots)."
+        ),
+        new RngSpot(
+            FunfairHotdogCondimentStart, "Hotdog", "Hotdog Condiment Type", RngShape.StartPool, false, false,
+            mode => FunfairHotdogCondimentOptions(),
+            "The type of the hotdog's first condiment."
+        ),
+        new RngSpot(
+            FunfairHotdogSideStart, "Hotdog", "Hotdog Condiment Side", RngShape.StartPool, false, false,
+            mode => FunfairHotdogSideOptions(),
+            "The side the hotdog's first condiment fires from."
+        ),
+        new RngSpot(
+            FunfairHotdogDelayStart, "Hotdog", "Hotdog Condiment Delay", RngShape.StartPool, false, false,
+            mode => FunfairHotdogDelayOptions(),
+            "The starting entry of the hotdog's condiment delay cycle (beats between condiments)."
+        )
+    };
+
+    public static readonly RngSpot[] FlyingBird = {
+        new RngSpot(
+            FlyingBirdMainPatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => FlyingBirdPatternOptions(mode, LevelProperties.FlyingBird.States.Main),
+            "Which attack the bird's fixed cycle begins with; the cycle then plays in order for the rest of the phase."
+        ),
+        new RngSpot(
+            FlyingBirdFloatDirection, "Phase 1", "Float Direction", RngShape.Choice, false, false,
+            mode => Fixed("Up", "Down"),
+            "The direction the bird drifts in first, rolled once when the fight starts; it then alternates up and down for the whole fight."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            FlyingBirdGenericPatternStart, "Phase 2", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => FlyingBirdPatternOptions(mode, LevelProperties.FlyingBird.States.Generic),
+            "Which attack this phase's fixed cycle begins with (from 90% boss health on Regular, 85% on Simple)."
+        ) { Available = mode => mode != Level.Mode.Hard },
+        new RngSpot(
+            FlyingBirdBirdDirection, "Small Bird", "Small Bird Direction", RngShape.Choice, false, false,
+            mode => Fixed("Up", "Down"),
+            "The direction the Small Bird starts flying in at the start of phase 3."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            FlyingBirdRevivalPatternStart, "Final Phase", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => FlyingBirdPatternOptions(mode, LevelProperties.FlyingBird.States.BirdRevival),
+            "Whether the final phase opens with the garbage volley or the heart attack; whichever it opens with, the two then alternate."
+        ) { Available = mode => mode != Level.Mode.Easy },
+        new RngSpot(
+            FlyingBirdStretcherDirection, "Final Phase", "Stretcher Direction", RngShape.Choice, false, false,
+            mode => Fixed("Right", "Left"),
+            "The direction Wally's stretcher first sweeps in; it then alternates left and right."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true, Available = mode => mode != Level.Mode.Easy }
+    };
+
+    public static readonly RngSpot[] FlyingGenie = {
+        new RngSpot(
+            FlyingGenieTreasureAttack, "Phase 1", "Treasure Chest Attack", RngShape.Choice, true, false,
+            mode => Fixed("Swords", "Gems", "Sphinx"),
+            "The attack the treasure chest uses. Rolled once when the chest opens, then the attack loops for the whole chest phase."
+        ) { PerEvent = true, Badge = RngBadgeKind.Once, OncePerFight = true },
+        new RngSpot(
+            FlyingGenieSwordPinkStart, "Phase 1", "Sword Parry Pattern", RngShape.StartPool, true, false,
+            mode => FlyingGeniePinkOptions(mode, genie => genie.swords.swordPinkString),
+            "The starting position inside the sword parry cycle; this picks whether the first sword is parryable, and the cycle then walks from there."
+        ),
+        new RngSpot(
+            FlyingGenieGemPinkStart, "Phase 1", "Gem Parry Pattern", RngShape.StartPool, true, false,
+            mode => FlyingGeniePinkOptions(mode, genie => genie.gems.gemPinkString),
+            "The starting position inside the gem parry cycle; this picks whether the first gem is parryable, and the cycle then walks from there."
+        ),
+        new RngSpot(
+            FlyingGenieSphinxPinkStart, "Phase 1", "Sphinx Parry Pattern", RngShape.StartPool, true, false,
+            mode => FlyingGeniePinkOptions(mode, genie => genie.sphinx.scarabPinkString),
+            "The starting position inside the scarab parry cycle; this picks whether the first scarab is parryable, and the cycle then walks from there."
+        ),
+        new RngSpot(
+            FlyingGenieObeliskPatternStart, "Phase 2", "Obelisk Pattern", RngShape.StartPool, true, false,
+            mode => FlyingGenieObeliskOptions(mode),
+            "Where the obelisk cycle begins. Each option shows which genie heads rise on the first pillar (a dash means both rise together); the cycle then walks the entries in order, wrapping into the next row when one runs out."
+        )
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -738,6 +865,9 @@ internal static class RngSpots {
         all.AddRange(ForestFollies);
         all.AddRange(Flower);
         all.AddRange(Baroness);
+        all.AddRange(FunfairFever);
+        all.AddRange(FlyingBird);
+        all.AddRange(FlyingGenie);
         return all.ToArray();
     }
 
@@ -763,7 +893,10 @@ internal static class RngSpots {
         { "FlyingBlimp", "Hilda Berg" },
         { "ForestFollies", "Forest Follies" },
         { "Flower", "Cagney Carnation" },
-        { "Baroness", "Baroness Von Bon Bon" }
+        { "Baroness", "Baroness Von Bon Bon" },
+        { "FunfairFever", "Funfair Fever" },
+        { "FlyingBird", "Wally Warbles" },
+        { "FlyingGenie", "Djimmi The Great" }
     };
 
     public static string StageLabel(string stageId) {
@@ -1545,6 +1678,253 @@ internal static class RngSpots {
         } catch (Exception) {
         }
         return fallback;
+    }
+
+    // ------------------------------------------------------------------
+    // Funfair Fever option enumeration. The cannon and hotdog pattern
+    // strings are serialized in the scene, so they are read from the live
+    // instances when the menu is opened in-level; the fallbacks are the
+    // shipped values.
+    // ------------------------------------------------------------------
+
+    private const string FunfairCannonPinkFallback = "O,G,P,O,P,G,P,P";
+    private const string FunfairHotdogSpawnFallback = "0,1,3,6,7,5,0,4,2,6,1,5,3,0,7,2,4,0,5,2,6,0,3,7,1,6";
+    private const string FunfairHotdogCondimentFallback = "R,M,K,M,K,R,M";
+    private const string FunfairHotdogSideFallback = "L,R,L,L,R,L,R,R";
+    private const string FunfairHotdogDelayFallback = "3,4,5,3,4,6,3,5,3,3,4,5,3,6,4";
+
+    /// <summary>One option per entry of the cannon's color cycle.</summary>
+    private static RngOption[] FunfairCannonColorOptions() {
+        string[] entries = FunfairCannonPinkString().Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            string color = entries[i].Trim();
+            options[i] = new RngOption(color == "P" ? "Pink" : color == "G" ? "Green" : "Orange", i);
+        }
+        return options;
+    }
+
+    /// <summary>One option per muzzle of the cannon. The muzzle heights are scene data (the game
+    /// code only walks the shootRoots array); the legacy mod's scene notes have index 0 at the
+    /// top and the last index at the bottom.</summary>
+    private static RngOption[] FunfairCannonMuzzleOptions() {
+        int count = 3;
+        try {
+            CircusPlatformingLevelCannon cannon = UnityEngine.Object.FindObjectOfType<CircusPlatformingLevelCannon>();
+            if (cannon != null && cannon.shootRoots != null && cannon.shootRoots.Length > 0) {
+                count = cannon.shootRoots.Length;
+            }
+        } catch (Exception) {
+        }
+        string[] labels = { "Top", "Middle", "Bottom" };
+        if (count <= labels.Length) {
+            RngOption[] options = new RngOption[count];
+            for (int i = 0; i < count; i++) {
+                options[i] = new RngOption(labels[i], i);
+            }
+            return options;
+        }
+        return Numbered(1, count);
+    }
+
+    /// <summary>One option per entry of the hotdog's spawn-point cycle.</summary>
+    private static RngOption[] FunfairHotdogSpawnOptions() {
+        string[] entries = FunfairHotdogLiveString(h => h.spawnPatternString, FunfairHotdogSpawnFallback).Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            options[i] = new RngOption(entries[i].Trim(), i);
+        }
+        return options;
+    }
+
+    /// <summary>One option per entry of the hotdog's condiment cycle.</summary>
+    private static RngOption[] FunfairHotdogCondimentOptions() {
+        string[] entries = FunfairHotdogLiveString(h => h.condimentPatternString, FunfairHotdogCondimentFallback).Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            string c = entries[i].Trim();
+            options[i] = new RngOption(c == "R" ? "Relish" : c == "M" ? "Mustard" : "Ketchup", i);
+        }
+        return options;
+    }
+
+    /// <summary>One option per entry of the hotdog's left/right cycle.</summary>
+    private static RngOption[] FunfairHotdogSideOptions() {
+        string[] entries = FunfairHotdogLiveString(h => h.sidePatternString, FunfairHotdogSideFallback).Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            options[i] = new RngOption(entries[i].Trim() == "L" ? "Left" : "Right", i);
+        }
+        return options;
+    }
+
+    /// <summary>One option per entry of the hotdog's shot-delay cycle.</summary>
+    private static RngOption[] FunfairHotdogDelayOptions() {
+        string[] entries = FunfairHotdogLiveString(h => h.shotDelayPatternString, FunfairHotdogDelayFallback).Split(new[] { ',' });
+        RngOption[] options = new RngOption[entries.Length];
+        for (int i = 0; i < entries.Length; i++) {
+            options[i] = new RngOption(entries[i].Trim(), i);
+        }
+        return options;
+    }
+
+    private static string FunfairCannonPinkString() {
+        try {
+            CircusPlatformingLevelCannon cannon = UnityEngine.Object.FindObjectOfType<CircusPlatformingLevelCannon>();
+            if (cannon != null && !string.IsNullOrEmpty(cannon.pinkString)) {
+                return cannon.pinkString;
+            }
+        } catch (Exception) {
+        }
+        return FunfairCannonPinkFallback;
+    }
+
+    private static string FunfairHotdogLiveString(Func<CircusPlatformingLevelHotdog, string> field, string fallback) {
+        try {
+            CircusPlatformingLevelHotdog hotdog = UnityEngine.Object.FindObjectOfType<CircusPlatformingLevelHotdog>();
+            if (hotdog != null) {
+                string value = field(hotdog);
+                if (!string.IsNullOrEmpty(value)) {
+                    return value;
+                }
+            }
+        } catch (Exception) {
+        }
+        return fallback;
+    }
+
+    // ------------------------------------------------------------------
+    // Wally Warbles option enumeration. The per-difficulty state data comes
+    // from LevelProperties.FlyingBird.GetMode(mode); states are matched by
+    // name because the state lists differ per difficulty (Expert has no
+    // Generic phase, Simple has no BirdRevival).
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.FlyingBird.State[]> FlyingBirdStatesCache = new Dictionary<Level.Mode, LevelProperties.FlyingBird.State[]>();
+
+    private static LevelProperties.FlyingBird.State[] FlyingBirdStatesFor(Level.Mode mode) {
+        LevelProperties.FlyingBird.State[] states;
+        if (FlyingBirdStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.FlyingBird properties = LevelProperties.FlyingBird.GetMode(mode);
+            states = (LevelProperties.FlyingBird.State[])FindField(typeof(LevelProperties.FlyingBird), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.FlyingBird.State[0];
+        }
+
+        FlyingBirdStatesCache[mode] = states;
+        return states;
+    }
+
+    private static LevelProperties.FlyingBird.State FlyingBirdStateFor(Level.Mode mode, LevelProperties.FlyingBird.States stateName) {
+        foreach (LevelProperties.FlyingBird.State state in FlyingBirdStatesFor(mode)) {
+            if (state.stateName == stateName) {
+                return state;
+            }
+        }
+        return null;
+    }
+
+    /// <summary>One option per entry of the state's fixed attack cycle.</summary>
+    private static RngOption[] FlyingBirdPatternOptions(Level.Mode mode, LevelProperties.FlyingBird.States stateName) {
+        try {
+            LevelProperties.FlyingBird.State state = FlyingBirdStateFor(mode, stateName);
+            if (state == null) {
+                return new RngOption[0];
+            }
+            RngOption[] options = new RngOption[state.patterns.Length];
+            for (int i = 0; i < state.patterns.Length; i++) {
+                options[i] = new RngOption(FlyingBirdPatternLabel(state.patterns[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string FlyingBirdPatternLabel(LevelProperties.FlyingBird.Pattern pattern) {
+        switch (pattern) {
+            case LevelProperties.FlyingBird.Pattern.Eggs:
+                return "Eggs";
+            case LevelProperties.FlyingBird.Pattern.Lasers:
+                return "Lasers";
+            case LevelProperties.FlyingBird.Pattern.Garbage:
+                return "Garbage";
+            case LevelProperties.FlyingBird.Pattern.Heart:
+                return "Heart";
+            case LevelProperties.FlyingBird.Pattern.Feathers:
+                return "Feathers";
+            default:
+                return pattern.ToString();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Djimmi The Great option enumeration. The per-difficulty state data
+    // comes from LevelProperties.FlyingGenie.GetMode(mode); the pink strings
+    // are read from the Main state, whose copy the genie keeps for the whole
+    // fight.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.FlyingGenie.State[]> FlyingGenieStatesCache = new Dictionary<Level.Mode, LevelProperties.FlyingGenie.State[]>();
+
+    private static LevelProperties.FlyingGenie.State[] FlyingGenieStatesFor(Level.Mode mode) {
+        LevelProperties.FlyingGenie.State[] states;
+        if (FlyingGenieStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.FlyingGenie properties = LevelProperties.FlyingGenie.GetMode(mode);
+            states = (LevelProperties.FlyingGenie.State[])FindField(typeof(LevelProperties.FlyingGenie), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.FlyingGenie.State[0];
+        }
+
+        FlyingGenieStatesCache[mode] = states;
+        return states;
+    }
+
+    /// <summary>One option per entry of a parry cycle ("Parry" / "Regular").</summary>
+    private static RngOption[] FlyingGeniePinkOptions(Level.Mode mode, Func<LevelProperties.FlyingGenie.State, string> pinkString) {
+        try {
+            LevelProperties.FlyingGenie.State[] states = FlyingGenieStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = pinkString(states[0]).Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim() == "P" ? "Parry" : "Regular", i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the obelisk head-order rows, in the game's own
+    /// row-major walk order (3 rows of 9 in all versions - verified).</summary>
+    private static RngOption[] FlyingGenieObeliskOptions(Level.Mode mode) {
+        try {
+            LevelProperties.FlyingGenie.State[] states = FlyingGenieStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] rows = states[0].obelisk.obeliskGeniePos;
+            List<RngOption> options = new List<RngOption>();
+            foreach (string row in rows) {
+                foreach (string entry in row.Split(new[] { ',' })) {
+                    options.Add(new RngOption(entry.Trim(), options.Count));
+                }
+            }
+            return options.ToArray();
+        } catch (Exception) {
+        }
+        return new RngOption[0];
     }
 
     // ------------------------------------------------------------------

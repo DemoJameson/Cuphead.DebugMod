@@ -648,6 +648,46 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(baronessMiniboss3.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(3, 1f));
         }
 
+        // Ported from the old Wally Warbles preset: phase 1 and phase 2 open with Eggs,
+        // the final phase opens with the garbage volley, the bird drifts down first and
+        // the stretcher sweeps right first.
+        RngSpot birdMainPattern = RngSpots.Find(RngSpots.FlyingBirdMainPatternStart);
+        RngSpot birdGenericPattern = RngSpots.Find(RngSpots.FlyingBirdGenericPatternStart);
+        RngSpot birdRevivalPattern = RngSpots.Find(RngSpots.FlyingBirdRevivalPatternStart);
+        RngSpot birdFloatDirection = RngSpots.Find(RngSpots.FlyingBirdFloatDirection);
+        RngSpot birdStretcherDirection = RngSpots.Find(RngSpots.FlyingBirdStretcherDirection);
+        if (birdMainPattern != null) {
+            perfect.GetOrCreateSpot(birdMainPattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (birdGenericPattern != null) {
+            perfect.GetOrCreateSpot(birdGenericPattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (birdRevivalPattern != null) {
+            perfect.GetOrCreateSpot(birdRevivalPattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (birdFloatDirection != null) {
+            perfect.GetOrCreateSpot(birdFloatDirection.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+        if (birdStretcherDirection != null) {
+            perfect.GetOrCreateSpot(birdStretcherDirection.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+
+        // Ported from the old Djimmi The Great preset: the chest opens with Gems, the
+        // first gem is parryable, and the obelisk cycle starts at its ninth entry (the
+        // "2-5" heads).
+        RngSpot genieTreasure = RngSpots.Find(RngSpots.FlyingGenieTreasureAttack);
+        RngSpot genieGemPink = RngSpots.Find(RngSpots.FlyingGenieGemPinkStart);
+        RngSpot genieObelisk = RngSpots.Find(RngSpots.FlyingGenieObeliskPatternStart);
+        if (genieTreasure != null) {
+            perfect.GetOrCreateSpot(genieTreasure.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+        if (genieGemPink != null) {
+            perfect.GetOrCreateSpot(genieGemPink.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (genieObelisk != null) {
+            perfect.GetOrCreateSpot(genieObelisk.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(8, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 

@@ -10,14 +10,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
-        { "FlyingBirdPhaseOneDirection", FlyingBirdPhaseOneDirections.Down },
-        { "FlyingBirdPhaseOnePatternNormal", FlyingBirdPhaseOnePatternsNormal.Eggs },
-        { "FlyingBirdPhaseTwoPatternNormal", FlyingBirdPhaseTwoPatternsNormal.Eggs01 },
-        { "FlyingBirdPhaseFinalPattern", FlyingBirdPhaseFinalPatterns.Garbage },
-        { "FlyingBirdPhaseFinalDirection", FlyingBirdPhaseFinalDirections.Right },
-        { "FlyingGeniePhaseOneTreasurePattern", FlyingGeniePhaseOneTreasurePatterns.Gems },
-        { "FlyingGeniePhaseOneGemsTypeNormalHard", FlyingGeniePhaseOneGemsTypesNormalHard.P_01 },
-        { "FlyingGeniePhaseTwoObeliskPattern", FlyingGeniePhaseTwoObeliskPatterns.AI_2_5 },
         { "ClownDashDelayNormal", ClownDashDelaysNormal.J_2 },
         { "DragonPhaseThreePatternNormal", DragonPhaseThreePatternsNormal.Peashot },
         { "DragonPhaseOneLaserPatternNormal", DragonPhaseOneLaserPatternsNormal.Three },
@@ -129,9 +121,7 @@ public class RngOverrideComponent : PluginComponent {
             return false;
         }
 
-        return fieldName.StartsWith("FlyingBird", StringComparison.Ordinal)
-            || fieldName.StartsWith("FlyingGenie", StringComparison.Ordinal)
-            || fieldName.StartsWith("Clown", StringComparison.Ordinal)
+        return fieldName.StartsWith("Clown", StringComparison.Ordinal)
             || fieldName.StartsWith("Dragon", StringComparison.Ordinal)
             || fieldName.StartsWith("Bee", StringComparison.Ordinal)
             || fieldName.StartsWith("Robot", StringComparison.Ordinal)
@@ -142,8 +132,9 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("Train", StringComparison.Ordinal)
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
             // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's,
-            // Forest Follies', Cagney Carnation's and Baroness Von Bon Bon's spots live in
-            // the new RNG profile system (Rng/RngProfiles).
+            // Forest Follies', Cagney Carnation's, Baroness Von Bon Bon's, Funfair Fever's,
+            // Wally Warbles' and Djimmi The Great's spots live in the new RNG profile
+            // system (Rng/RngProfiles).
             ;
     }
 

@@ -1,45 +1,51 @@
-using System;
+using BepInEx.CupheadDebugMod.Rng;
 using HarmonyLib;
-using static BepInEx.CupheadDebugMod.Config.Settings;
-using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
+// All values come from RngState, which passes vanilla results through untouched and only
+// resolves configured spots (see Rng/RngSpots.cs for the catalog). Funfair Fever is a
+// run 'n gun, so it always runs on Normal, and there is exactly one cannon and one
+// hotdog in the stage - each rolls all of its start positions once at Start.
 [HarmonyPatch]
 internal class CircusPlatformingPatternSelector : PluginComponent {
+
+    // The cannon rolls its order direction, muzzle start and color start directly in
+    // Start (no pre-increment). The muzzles are stacked top to bottom in the scene, so
+    // "Up" means goingBackwards = true (the muzzle index walks upward).
     [HarmonyPatch(typeof(CircusPlatformingLevelCannon), nameof(CircusPlatformingLevelCannon.Start))]
     [HarmonyPostfix]
     public static void CannonStartManipulator(ref CircusPlatformingLevelCannon __instance) {
-        // the muzzles are stacked top to bottom in the scene, so forward order (goingBackwards = false) fires downward
-        if (CircusCannonballOrderDirection.Value == CircusCannonballOrderDirections.Up) {
-            __instance.goingBackwards = true;
-        } else if (CircusCannonballOrderDirection.Value == CircusCannonballOrderDirections.Down) {
-            __instance.goingBackwards = false;
-        }
-        if (CircusCannonballPinkStart.Value != CircusCannonballPinkStarts.Random) {
-            __instance.pinkIndex = (int) CircusCannonballPinkStart.Value - 1;
-        }
-        if (CircusCannonballMuzzleStart.Value != CircusCannonballMuzzleStarts.Random) {
-            __instance.shootIndex = (int) CircusCannonballMuzzleStart.Value - 1;
-        }
+        int order = RngState.Index(
+            RngSpots.FunfairCannonOrderDirection, Level.Mode.Normal,
+            __instance.goingBackwards ? 0 : 1, 2, false);
+        __instance.goingBackwards = order == 0;
+        __instance.shootIndex = RngState.Index(
+            RngSpots.FunfairCannonMuzzleStart, Level.Mode.Normal,
+            __instance.shootIndex, __instance.shootRoots.Length, false);
+        __instance.pinkIndex = RngState.Index(
+            RngSpots.FunfairCannonColorStart, Level.Mode.Normal,
+            __instance.pinkIndex, __instance.pinkSplits.Length, false);
     }
 
+    // The hotdog rolls spawn, condiment, side and shot-delay starts directly in Start
+    // (no pre-increment). The first projectile's delay is derived from the rolled index
+    // inside Start, so it has to be recomputed after pinning.
     [HarmonyPatch(typeof(CircusPlatformingLevelHotdog), nameof(CircusPlatformingLevelHotdog.Start))]
     [HarmonyPostfix]
     public static void HotdogStartManipulator(ref CircusPlatformingLevelHotdog __instance) {
-        if (CircusHotdogSpawnStart.Value != CircusHotdogSpawnStarts.Random) {
-            __instance.spawnIndex = (int) CircusHotdogSpawnStart.Value - 1;
-        }
-        if (CircusHotdogCondimentStart.Value != CircusHotdogCondimentStarts.Random) {
-            __instance.condimentIndex = (int) CircusHotdogCondimentStart.Value - 1;
-        }
-        if (CircusHotdogSideStart.Value != CircusHotdogSideStarts.Random) {
-            __instance.sideIndex = (int) CircusHotdogSideStart.Value - 1;
-        }
-        if (CircusHotdogShotDelayStart.Value != CircusHotdogShotDelayStarts.Random) {
-            __instance.shotDelayIndex = (int) CircusHotdogShotDelayStart.Value - 1;
-            // the game derives the first projectile's delay from the rolled index in Start, so it has to be recomputed here
-            __instance.currentDelay = int.Parse(__instance.shotDelayPattern[__instance.shotDelayIndex]);
-        }
+        __instance.spawnIndex = RngState.Index(
+            RngSpots.FunfairHotdogSpawnStart, Level.Mode.Normal,
+            __instance.spawnIndex, __instance.spawnPattern.Length, false);
+        __instance.condimentIndex = RngState.Index(
+            RngSpots.FunfairHotdogCondimentStart, Level.Mode.Normal,
+            __instance.condimentIndex, __instance.condimentPattern.Length, false);
+        __instance.sideIndex = RngState.Index(
+            RngSpots.FunfairHotdogSideStart, Level.Mode.Normal,
+            __instance.sideIndex, __instance.sidePattern.Length, false);
+        __instance.shotDelayIndex = RngState.Index(
+            RngSpots.FunfairHotdogDelayStart, Level.Mode.Normal,
+            __instance.shotDelayIndex, __instance.shotDelayPattern.Length, false);
+        __instance.currentDelay = int.Parse(__instance.shotDelayPattern[__instance.shotDelayIndex]);
     }
 }
