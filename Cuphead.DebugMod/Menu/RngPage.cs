@@ -174,6 +174,9 @@ internal sealed class RngPage {
                 continue;
             }
             foreach (Level.Mode mode in modes) {
+                if (!spot.IsAvailable(mode)) {
+                    continue; // per-difficulty variants only count for their own difficulty
+                }
                 RngSpotConfig config;
                 if (profile.Spots.TryGetValue(spot.Key(mode), out config) && config != null && config.IsConstantRepeat) {
                     pins++;
@@ -243,23 +246,23 @@ internal sealed class RngPage {
                 continue;
             }
 
-            if (spot.CompoundSecondary && !(spot.RadioEditor != null && spot.RadioEditor(tab))) {
+            if (spot.CompoundSecondary && spot.UiFor(tab) != RngUi.Radio) {
                 continue; // edited inside its primary's compound card
             }
 
             if (!string.IsNullOrEmpty(spot.CompoundWith)) {
-                RngSpot compoundSecondary = RngSpots.Find(spot.CompoundWith);
-                if (compoundSecondary != null && compoundSecondary.RadioEditor != null && compoundSecondary.RadioEditor(tab)) {
+                RngSpot compoundSecondary = RngSpots.FindForMode(spot.CompoundWith, tab);
+                if (compoundSecondary != null && compoundSecondary.UiFor(tab) == RngUi.Radio) {
                     continue; // radio mode: this pick has a single option here; the paired index renders standalone below
                 }
-                if (compoundSecondary != null && spot.PerEvent && compoundSecondary.RadioEditor != null) {
+                if (spot.UiFor(tab) == RngUi.IndexedPattern) {
                     // the indexed-pattern pair: a per-pass pattern pick plus a walked start index
                     IndexedPatternCard card = new IndexedPatternCard(this, spot, compoundSecondary, tab, compoundSecondary.Label,
                         options, compoundSecondary.Options(tab),
                         new PatternCard.SpotBinding(spot, tab), new PatternCard.SpotBinding(compoundSecondary, tab),
                         new SpotIntBackend(spot, tab), new SpotIntBackend(compoundSecondary, tab), spot.Id);
                     y = card.Build(content, y);
-                } else if (spot.PerEvent) {
+                } else if (spot.UiFor(tab) == RngUi.SequenceCompound || (spot.UiFor(tab) == RngUi.Derived && spot.PerEvent)) {
                     // per-round compounds (the UFO pattern) edit whole-round blocks
                     CompoundSequenceCard card = new CompoundSequenceCard(this, spot, compoundSecondary, tab, new SpotIntBackend(spot, tab), new SpotIntBackend(compoundSecondary, tab), options, spot.CompoundStartOptions, spot.Id);
                     y = card.Build(content, y);
@@ -290,7 +293,7 @@ internal sealed class RngPage {
         List<int>[] pools = new List<int>[3];
         for (int i = 0; i < 3; i++) {
             pools[i] = new List<int>();
-            RngSpot spot = RngSpots.Find(i == 0 ? RngSpots.BaronessMiniboss1 : i == 1 ? RngSpots.BaronessMiniboss2 : RngSpots.BaronessMiniboss3);
+            RngSpot spot = RngSpots.FindForMode(i == 0 ? RngSpots.BaronessMiniboss1 : i == 1 ? RngSpots.BaronessMiniboss2 : RngSpots.BaronessMiniboss3, tab);
             RngProfile profile = RngProfiles.Active;
             RngSpotConfig config = profile != null ? profile.GetSpot(spot.Key(tab)) : null;
             if (config != null) {
@@ -399,7 +402,7 @@ internal sealed class RngPage {
     /// its spots. The group labels and the start-option builder come from the spot.
     /// </summary>
     private float AddCompoundCard(float y, RngSpot spot) {
-        RngSpot secondary = RngSpots.Find(spot.CompoundWith);
+        RngSpot secondary = RngSpots.FindForMode(spot.CompoundWith, tab);
         CompoundCard card = new CompoundCard(
             this, spot, tab, spot.Options(tab),
             new PatternCard.SpotBinding(spot, tab),
@@ -412,7 +415,7 @@ internal sealed class RngPage {
     }
 
     private static bool SupportsSequences(RngSpot spot, Level.Mode mode) {
-        if (spot.RadioEditor != null && spot.RadioEditor(mode)) {
+        if (spot.UiFor(mode) == RngUi.Radio) {
             return false;
         }
         return spot.PerEvent && spot.Shape == RngShape.Choice;
@@ -2007,17 +2010,17 @@ internal sealed class RngPage {
                     lastPhase = spot.Group;
                 }
 
-                if (spot.CompoundSecondary && !(spot.RadioEditor != null && spot.RadioEditor(mode))) {
+                if (spot.CompoundSecondary && spot.UiFor(mode) != RngUi.Radio) {
                     continue; // edited inside its primary's compound card
                 }
 
                 if (!string.IsNullOrEmpty(spot.CompoundWith)) {
                     // one card for the compound spot and its secondary, both bound to this form
-                    RngSpot secondary = RngSpots.Find(spot.CompoundWith);
-                    if (secondary != null && secondary.RadioEditor != null && secondary.RadioEditor(mode)) {
+                    RngSpot secondary = RngSpots.FindForMode(spot.CompoundWith, mode);
+                    if (secondary != null && secondary.UiFor(mode) == RngUi.Radio) {
                         continue; // radio mode: this pick is trivial here; the paired index renders standalone below
                     }
-                    if (secondary != null && spot.PerEvent && secondary.RadioEditor != null) {
+                    if (spot.UiFor(mode) == RngUi.IndexedPattern) {
                         IndexedPatternCard card = new IndexedPatternCard(page, spot, secondary, mode, secondary.Label,
                             options, secondary.Options(mode),
                             new PatternCard.FormBinding(stageId, mode, formIndex, spot),
@@ -2026,7 +2029,7 @@ internal sealed class RngPage {
                             new FormIntBackend(stageId, mode, formIndex, secondary),
                             "form:" + setKey + ":" + formIndex + ":" + spot.Id);
                         y = card.Build(content, y);
-                    } else if (spot.PerEvent) {
+                    } else if (spot.UiFor(mode) == RngUi.SequenceCompound || (spot.UiFor(mode) == RngUi.Derived && spot.PerEvent)) {
                         CompoundSequenceCard card = new CompoundSequenceCard(page, spot, secondary, mode, new FormIntBackend(stageId, mode, formIndex, spot), new FormIntBackend(stageId, mode, formIndex, secondary), options, spot.CompoundStartOptions, "form:" + setKey + ":" + formIndex + ":" + spot.Id);
                         y = card.Build(content, y);
                     } else {

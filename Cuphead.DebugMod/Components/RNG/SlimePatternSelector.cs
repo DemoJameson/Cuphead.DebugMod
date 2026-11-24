@@ -47,7 +47,7 @@ internal class SlimePatternSelector : PluginComponent {
     }
 
     private static int SlimeJumpOptionCount(Level.Mode mode) {
-        RngSpot spot = RngSpots.Find(RngSpots.SlimeJumpPatternStart);
+        RngSpot spot = RngSpots.FindForMode(RngSpots.SlimeJumpPatternStart, mode);
         return spot != null && spot.Options != null ? spot.Options(mode).Length : 0;
     }
 }

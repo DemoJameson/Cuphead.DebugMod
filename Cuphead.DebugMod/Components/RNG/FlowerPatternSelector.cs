@@ -71,7 +71,7 @@ internal class FlowerPatternSelector : PluginComponent {
     }
 
     private static int OptionCount(string spotId) {
-        RngSpot spot = RngSpots.Find(spotId);
+        RngSpot spot = RngSpots.FindForMode(spotId, Mode);
         return spot != null && spot.Options != null ? spot.Options(Mode).Length : 0;
     }
 }

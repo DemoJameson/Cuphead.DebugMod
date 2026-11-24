@@ -123,7 +123,7 @@ internal static class RngState {
     /// which is what PositionStart-style spots and GetUserPattern callers expect.
     /// </summary>
     public static int Index(string spotId, Level.Mode mode, int vanillaIndex, int count, bool preIncrement) {
-        RngSpot spot = RngSpots.Find(spotId);
+        RngSpot spot = RngSpots.FindForMode(spotId, mode);
         if (spot == null || count <= 0) {
             return vanillaIndex;
         }
@@ -233,7 +233,7 @@ internal static class RngState {
 
     /// <summary>Resolves a float: the drawn form's value, the configured value, a weighted pick from a float pool, or vanilla.</summary>
     public static float Float(string spotId, Level.Mode mode, float vanillaValue) {
-        RngSpot spot = RngSpots.Find(spotId);
+        RngSpot spot = RngSpots.FindForMode(spotId, mode);
         if (spot == null) {
             return vanillaValue;
         }

@@ -100,7 +100,7 @@ internal class ClownPatternSelector : PluginComponent {
     }
 
     private static int ClownOptionCount(string spotId, Level.Mode mode) {
-        RngSpot spot = RngSpots.Find(spotId);
+        RngSpot spot = RngSpots.FindForMode(spotId, mode);
         return spot != null && spot.Options != null ? spot.Options(mode).Length : 0;
     }
 }

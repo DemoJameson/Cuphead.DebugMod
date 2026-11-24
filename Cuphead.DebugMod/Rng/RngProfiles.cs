@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -587,11 +587,11 @@ internal static class RngProfiles {
 
         // Ported from the old RngOverrideComponent dictionary.
         RngProfile perfect = new RngProfile(PerfectName, true, true);
-        RngSpot patternStart = RngSpots.Find(RngSpots.DevilPhase1PatternStart);
-        RngSpot headFirst = RngSpots.Find(RngSpots.DevilPhase1HeadFirst);
-        RngSpot pitchforkType = RngSpots.Find(RngSpots.DevilPhase1PitchforkType);
-        RngSpot bouncerParry = RngSpots.Find(RngSpots.DevilPhase1BouncerParryIndex);
-        RngSpot bouncerAngle = RngSpots.Find(RngSpots.DevilPhase1BouncerAngleStart);
+        RngSpot patternStart = RngSpots.FindForMode(RngSpots.DevilPhase1PatternStart, Level.Mode.Normal);
+        RngSpot headFirst = RngSpots.FindForMode(RngSpots.DevilPhase1HeadFirst, Level.Mode.Normal);
+        RngSpot pitchforkType = RngSpots.FindForMode(RngSpots.DevilPhase1PitchforkType, Level.Mode.Normal);
+        RngSpot bouncerParry = RngSpots.FindForMode(RngSpots.DevilPhase1BouncerParryIndex, Level.Mode.Normal);
+        RngSpot bouncerAngle = RngSpots.FindForMode(RngSpots.DevilPhase1BouncerAngleStart, Level.Mode.Normal);
         if (patternStart != null) {
             perfect.GetOrCreateSpot(patternStart.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(6, 1f));
         }
@@ -610,8 +610,8 @@ internal static class RngProfiles {
 
         // Ported from the old Forest Follies preset (Left1 + B_50): the first acorn flies
         // in from the left at height 50. Both spots consume their pinned entry first.
-        RngSpot forestSide = RngSpots.Find(RngSpots.ForestFolliesAcornSide);
-        RngSpot forestHeight = RngSpots.Find(RngSpots.ForestFolliesAcornHeight);
+        RngSpot forestSide = RngSpots.FindForMode(RngSpots.ForestFolliesAcornSide, Level.Mode.Normal);
+        RngSpot forestHeight = RngSpots.FindForMode(RngSpots.ForestFolliesAcornHeight, Level.Mode.Normal);
         if (forestSide != null) {
             perfect.GetOrCreateSpot(forestSide.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
         }
@@ -621,9 +621,9 @@ internal static class RngProfiles {
 
         // Ported from the old Cagney Carnation preset: the Phase 1 and Phase 2 cycles
         // start with the head lunge, and the first head lunge goes bottom.
-        RngSpot flowerPhase1 = RngSpots.Find(RngSpots.FlowerMainPatternStart);
-        RngSpot flowerPhase2 = RngSpots.Find(RngSpots.FlowerGeneric1PatternStart);
-        RngSpot flowerLungeStart = RngSpots.Find(RngSpots.FlowerHeadLungeStart);
+        RngSpot flowerPhase1 = RngSpots.FindForMode(RngSpots.FlowerMainPatternStart, Level.Mode.Normal);
+        RngSpot flowerPhase2 = RngSpots.FindForMode(RngSpots.FlowerGeneric1PatternStart, Level.Mode.Normal);
+        RngSpot flowerLungeStart = RngSpots.FindForMode(RngSpots.FlowerHeadLungeStart, Level.Mode.Normal);
         if (flowerPhase1 != null) {
             perfect.GetOrCreateSpot(flowerPhase1.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
         }
@@ -635,9 +635,9 @@ internal static class RngProfiles {
         }
 
         // Ported from the old Baroness preset: Waffle, Candy Corn, Cupcake in that order.
-        RngSpot baronessMiniboss1 = RngSpots.Find(RngSpots.BaronessMiniboss1);
-        RngSpot baronessMiniboss2 = RngSpots.Find(RngSpots.BaronessMiniboss2);
-        RngSpot baronessMiniboss3 = RngSpots.Find(RngSpots.BaronessMiniboss3);
+        RngSpot baronessMiniboss1 = RngSpots.FindForMode(RngSpots.BaronessMiniboss1, Level.Mode.Normal);
+        RngSpot baronessMiniboss2 = RngSpots.FindForMode(RngSpots.BaronessMiniboss2, Level.Mode.Normal);
+        RngSpot baronessMiniboss3 = RngSpots.FindForMode(RngSpots.BaronessMiniboss3, Level.Mode.Normal);
         if (baronessMiniboss1 != null) {
             perfect.GetOrCreateSpot(baronessMiniboss1.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
         }
@@ -651,11 +651,11 @@ internal static class RngProfiles {
         // Ported from the old Wally Warbles preset: phase 1 and phase 2 open with Eggs,
         // the final phase opens with the garbage volley, the bird drifts down first and
         // the stretcher sweeps right first.
-        RngSpot birdMainPattern = RngSpots.Find(RngSpots.FlyingBirdMainPatternStart);
-        RngSpot birdGenericPattern = RngSpots.Find(RngSpots.FlyingBirdGenericPatternStart);
-        RngSpot birdRevivalPattern = RngSpots.Find(RngSpots.FlyingBirdRevivalPatternStart);
-        RngSpot birdFloatDirection = RngSpots.Find(RngSpots.FlyingBirdFloatDirection);
-        RngSpot birdStretcherDirection = RngSpots.Find(RngSpots.FlyingBirdStretcherDirection);
+        RngSpot birdMainPattern = RngSpots.FindForMode(RngSpots.FlyingBirdMainPatternStart, Level.Mode.Normal);
+        RngSpot birdGenericPattern = RngSpots.FindForMode(RngSpots.FlyingBirdGenericPatternStart, Level.Mode.Normal);
+        RngSpot birdRevivalPattern = RngSpots.FindForMode(RngSpots.FlyingBirdRevivalPatternStart, Level.Mode.Normal);
+        RngSpot birdFloatDirection = RngSpots.FindForMode(RngSpots.FlyingBirdFloatDirection, Level.Mode.Normal);
+        RngSpot birdStretcherDirection = RngSpots.FindForMode(RngSpots.FlyingBirdStretcherDirection, Level.Mode.Normal);
         if (birdMainPattern != null) {
             perfect.GetOrCreateSpot(birdMainPattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
         }
@@ -675,9 +675,9 @@ internal static class RngProfiles {
         // Ported from the old Djimmi The Great preset: the chest opens with Gems, the
         // first gem is parryable, and the obelisk cycle starts at its ninth entry (the
         // "2-5" heads).
-        RngSpot genieTreasure = RngSpots.Find(RngSpots.FlyingGenieTreasureAttack);
-        RngSpot genieGemPink = RngSpots.Find(RngSpots.FlyingGenieGemPinkStart);
-        RngSpot genieObelisk = RngSpots.Find(RngSpots.FlyingGenieObeliskPatternStart);
+        RngSpot genieTreasure = RngSpots.FindForMode(RngSpots.FlyingGenieTreasureAttack, Level.Mode.Normal);
+        RngSpot genieGemPink = RngSpots.FindForMode(RngSpots.FlyingGenieGemPinkStart, Level.Mode.Normal);
+        RngSpot genieObelisk = RngSpots.FindForMode(RngSpots.FlyingGenieObeliskPatternStart, Level.Mode.Normal);
         if (genieTreasure != null) {
             perfect.GetOrCreateSpot(genieTreasure.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
         }
@@ -690,7 +690,7 @@ internal static class RngProfiles {
 
         // Ported from the old Beppi The Clown preset: the bumper car's dash delay cycle
         // starts at its ninth entry (the "3B" delay before the first dash).
-        RngSpot clownBumperDelay = RngSpots.Find(RngSpots.ClownBumperDelay);
+        RngSpot clownBumperDelay = RngSpots.FindForMode(RngSpots.ClownBumperDelay, Level.Mode.Normal);
         if (clownBumperDelay != null) {
             perfect.GetOrCreateSpot(clownBumperDelay.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(8, 1f));
         }
@@ -826,7 +826,7 @@ internal static class RngProfiles {
     }
 
     private static RngProfile ParseSectionHeader(string line) {
-        // [profile Name] â€” name may be quoted
+        // [profile Name] — name may be quoted
         string inner = line.Substring(1, line.Length - 2).Trim();
         if (!inner.StartsWith("profile", StringComparison.Ordinal)) {
             return null;

@@ -19,6 +19,26 @@ internal enum RngShape {
     Float
 }
 
+/// <summary>Which editor the menu uses for a spot. Derived keeps the flag-based default;
+/// the explicit kinds exist so a setting can use a different UI per difficulty (each
+/// difficulty's definition names its own).</summary>
+internal enum RngUi {
+    /// <summary>Derive the editor from the spot's shape and flags.</summary>
+    Derived,
+
+    /// <summary>The plain radio list, never inside a compound card.</summary>
+    Radio,
+
+    /// <summary>The shotgun-style card: one pattern pick plus a "Start at" radio.</summary>
+    CompoundStart,
+
+    /// <summary>The candy-corn card: a per-event pattern pick plus a walked start index.</summary>
+    IndexedPattern,
+
+    /// <summary>Per-round compound blocks (the UFO pattern style).</summary>
+    SequenceCompound
+}
+
 /// <summary>The type badge shown on a spot card; derived from the shape unless a spot overrides it.</summary>
 internal enum RngBadgeKind {
     /// <summary>The random start of a fixed cycle.</summary>
@@ -137,11 +157,41 @@ internal sealed class RngSpot {
         get; set;
     }
 
-    /// <summary>Optional per-difficulty editor override: when it returns true, the spot
-    /// renders as the plain radio list instead of the per-attack cycler (used where the
-    /// cycler only makes sense when a sibling pattern pick has multiple options).</summary>
-    public Func<Level.Mode, bool> RadioEditor {
+    /// <summary>Restricts this definition to one difficulty. Per-difficulty settings whose
+    /// UI or options differ per difficulty are defined as separate per-difficulty spots;
+    /// PerDifficulty definitions are expanded into one OnlyFor variant per difficulty
+    /// automatically.</summary>
+    public Level.Mode? OnlyFor {
         get; set;
+    }
+
+    /// <summary>Explicit editor for this definition's Simple variant; Derived keeps the
+    /// flag-based default.</summary>
+    public RngUi? UiEasy {
+        get; set;
+    }
+
+    /// <summary>Explicit editor for this definition's Regular variant.</summary>
+    public RngUi? UiNormal {
+        get; set;
+    }
+
+    /// <summary>Explicit editor for this definition's Expert variant.</summary>
+    public RngUi? UiHard {
+        get; set;
+    }
+
+    /// <summary>The editor this spot uses on a difficulty: the definition's per-difficulty
+    /// choice, or the flag-based default.</summary>
+    public RngUi UiFor(Level.Mode mode) {
+        switch (mode) {
+            case Level.Mode.Easy:
+                return UiEasy ?? RngUi.Derived;
+            case Level.Mode.Hard:
+                return UiHard ?? RngUi.Derived;
+            default:
+                return UiNormal ?? RngUi.Derived;
+        }
     }
 
     /// <summary>When set, this spot is edited together with the referenced secondary spot
@@ -214,7 +264,38 @@ internal sealed class RngSpot {
     }
 
     public bool IsAvailable(Level.Mode mode) {
+        if (OnlyFor.HasValue && OnlyFor.Value != mode) {
+            return false;
+        }
         return Available == null || Available(mode);
+    }
+
+    /// <summary>A per-difficulty variant of a PerDifficulty definition: same setting and
+    /// config key, its own UI kind.</summary>
+    public RngSpot(RngSpot source, Level.Mode onlyFor) {
+        Id = source.Id;
+        Group = source.Group;
+        Label = source.Label;
+        Shape = source.Shape;
+        PerDifficulty = source.PerDifficulty;
+        PreIncrement = source.PreIncrement;
+        Options = source.Options;
+        FloatRange = source.FloatRange;
+        Hint = source.Hint;
+        Available = source.Available;
+        PerEvent = source.PerEvent;
+        OncePerFight = source.OncePerFight;
+        Badge = source.Badge;
+        UiEasy = source.UiEasy;
+        UiNormal = source.UiNormal;
+        UiHard = source.UiHard;
+        CompoundWith = source.CompoundWith;
+        CompoundSecondary = source.CompoundSecondary;
+        CompoundStartOptions = source.CompoundStartOptions;
+        CompoundPrimaryLabel = source.CompoundPrimaryLabel;
+        CompoundSecondaryLabel = source.CompoundSecondaryLabel;
+        RadioPlan = source.RadioPlan;
+        OnlyFor = onlyFor;
     }
 
     /// <summary>The fight (first id segment) a spot belongs to ("Devil/Phase1/PatternStart" becomes "Devil").</summary>
@@ -577,7 +658,7 @@ internal static class RngSpots {
             FlyingBlimpConstellation, "Constellation", "Constellation", RngShape.Choice, false, false,
             mode => Fixed("Sagittarius", "Gemini"),
             null
-        ) { Available = mode => mode == Level.Mode.Normal },
+            ) { OnlyFor = Level.Mode.Normal },
         new RngSpot(
             FlyingBlimpMoonStarPositions, "Moon", "Star Positions", RngShape.Choice, true, false,
             mode => FlyingBlimpStarPatternOptions(mode, true),
@@ -639,17 +720,17 @@ internal static class RngSpots {
             FlowerMainPatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, false, true,
             mode => FlowerPatternOptions(mode, 0),
             "Which attack the fight's fixed cycle begins with."
-        ) { Available = mode => mode == Level.Mode.Normal },
+        ) { OnlyFor = Level.Mode.Normal },
         new RngSpot(
             FlowerGeneric1PatternStart, "Phase 2", "Overall Pattern", RngShape.StartPool, false, true,
             mode => FlowerPatternOptions(mode, 1),
             "Which attack this phase's fixed cycle begins with (from 89% boss health)."
-        ) { Available = mode => mode == Level.Mode.Normal },
+        ) { OnlyFor = Level.Mode.Normal },
         new RngSpot(
             FlowerGeneric2PatternStart, "Phase 3", "Overall Pattern", RngShape.StartPool, false, true,
             mode => FlowerPatternOptions(mode, 2),
             "Which attack this phase's fixed cycle begins with (from 68% boss health)."
-        ) { Available = mode => mode == Level.Mode.Normal },
+        ) { OnlyFor = Level.Mode.Normal },
         new RngSpot(
             FlowerHeadLungeStart, "Head Lunge", "Head Lunge Start", RngShape.StartPool, true, false,
             mode => FlowerLaserOptions(mode),
@@ -702,7 +783,7 @@ internal static class RngSpots {
             BaronessWaffleSplitOrder, "Phase 1", "Waffle Split Order", RngShape.Choice, true, false,
             mode => Fixed("Diagonal First", "Straight First"),
             "Which half detaches first when the waffle splits apart."
-        ) { PerEvent = true, Available = mode => mode == Level.Mode.Hard },
+        ) { PerEvent = true, OnlyFor = Level.Mode.Hard },
         new RngSpot(
             BaronessShotgunPattern, "Phase 1", "Shotgun Pop-Up Delay", RngShape.Choice, true, false,
             mode => BaronessShotgunPatternOptions(mode),
@@ -725,14 +806,15 @@ internal static class RngSpots {
             mode => BaronessCornTurnPatternOptions(mode),
             "Re-rolled every time the corn passes the castle; each option is the full turn pattern (Y = turn up, N = keep walking). A plan plays one pattern per pass."
         ) { PerEvent = true, Badge = RngBadgeKind.IndexedPattern, CompoundWith = BaronessCornTurnStart,
-            CompoundPrimaryLabel = "Candy Corn Turn Pattern String" },
+            CompoundPrimaryLabel = "Candy Corn Turn Pattern String",
+            UiEasy = RngUi.IndexedPattern, UiNormal = RngUi.Radio, UiHard = RngUi.IndexedPattern },
         new RngSpot(
             BaronessCornTurnStart, "Phase 1", "Candy Corn Turn Pattern", RngShape.Choice, true, false,
             mode => BaronessCornTurnStartOptions(mode),
             "The starting position inside the turn pattern, rolled once per fight and then walked. Indexes beyond a shorter pattern's length break the corn's turning for the rest of the fight - exactly as they can in vanilla."
         ) { PerEvent = true, Badge = RngBadgeKind.Start, OncePerFight = true, CompoundSecondary = true,
             CompoundSecondaryLabel = "Candy Corn Turn Pattern Initial Index",
-            RadioEditor = mode => BaronessCornTurnPatternOptions(mode).Length < 2 },
+            UiEasy = RngUi.IndexedPattern, UiNormal = RngUi.Radio, UiHard = RngUi.IndexedPattern },
         new RngSpot(
             BaronessCornTurnMiniDelay, "Phase 1", "Mini Corn Spawn Delay", RngShape.Float, true,
             mode => BaronessCornTurnMiniDelayRange(mode),
@@ -879,12 +961,13 @@ internal static class RngSpots {
             "The duck type sequence the bumper car phase spawns (R = regular, B = bomb, P = pink parryable); the game picks one of these rows per fight, and the start below chooses where it begins."
         ) { CompoundWith = ClownDuckTypePattern, Badge = RngBadgeKind.Order,
             CompoundStartOptions = (mode, patternIndex) => ClownDuckStartOptions(mode, patternIndex),
-            CompoundPrimaryLabel = "Pattern", CompoundSecondaryLabel = "Start at" },
+            CompoundPrimaryLabel = "Pattern", CompoundSecondaryLabel = "Start at",
+            UiEasy = RngUi.Radio },
         new RngSpot(
             ClownDuckTypePattern, "Phase 1", "Duck Type", RngShape.Choice, true, false,
             mode => ClownDuckTypeOptions(mode),
             null
-        ) { CompoundSecondary = true, RadioEditor = mode => ClownDuckPatternOptions(mode).Length < 2 },
+        ) { CompoundSecondary = true, UiEasy = RngUi.Radio },
         new RngSpot(
             ClownHorseType, "Phase 3", "Horse Type", RngShape.StartPool, true, false,
             mode => ClownHorseTypeOptions(mode),
@@ -914,14 +997,36 @@ internal static class RngSpots {
         all.AddRange(FlyingBird);
         all.AddRange(FlyingGenie);
         all.AddRange(Clown);
-        return all.ToArray();
+
+        // per-difficulty settings become one spot per difficulty, each with its own UI
+        List<RngSpot> expanded = new List<RngSpot>();
+        foreach (RngSpot spot in all) {
+            if (spot.PerDifficulty) {
+                expanded.Add(new RngSpot(spot, Level.Mode.Easy));
+                expanded.Add(new RngSpot(spot, Level.Mode.Normal));
+                expanded.Add(new RngSpot(spot, Level.Mode.Hard));
+            } else {
+                expanded.Add(spot);
+            }
+        }
+        return expanded.ToArray();
     }
 
-    private static readonly Dictionary<string, RngSpot> SpotIndex = BuildIndex();
+    private static readonly Dictionary<string, List<RngSpot>> SpotIndex = BuildIndex();
 
-    public static RngSpot Find(string id) {
-        RngSpot spot;
-        return SpotIndex.TryGetValue(id, out spot) ? spot : null;
+    /// <summary>The spot definition for a difficulty: per-difficulty settings resolve to
+    /// their own variant, shared settings to their single definition.</summary>
+    public static RngSpot FindForMode(string id, Level.Mode mode) {
+        List<RngSpot> variants;
+        if (!SpotIndex.TryGetValue(id, out variants)) {
+            return null;
+        }
+        foreach (RngSpot spot in variants) {
+            if (!spot.OnlyFor.HasValue || spot.OnlyFor.Value == mode) {
+                return spot;
+            }
+        }
+        return null;
     }
 
     /// <summary>The stage (fight) a spot belongs to: the id's first segment ("Devil/Phase1/PatternStart" becomes "Devil").</summary>
@@ -954,13 +1059,26 @@ internal static class RngSpots {
     /// <summary>Looks a spot up by a stored config/form key, which may carry a "@difficulty" suffix.</summary>
     public static RngSpot FindByStoredKey(string key) {
         int at = key.LastIndexOf('@');
-        return Find(at >= 0 ? key.Substring(0, at) : key);
+        if (at < 0) {
+            return FindForMode(key, Level.Mode.Normal);
+        }
+        string id = key.Substring(0, at);
+        string modeKey = key.Substring(at + 1);
+        Level.Mode mode = modeKey == "easy" ? Level.Mode.Easy
+            : modeKey == "hard" ? Level.Mode.Hard
+            : Level.Mode.Normal;
+        return FindForMode(id, mode);
     }
 
-    private static Dictionary<string, RngSpot> BuildIndex() {
-        Dictionary<string, RngSpot> index = new Dictionary<string, RngSpot>(StringComparer.Ordinal);
+    private static Dictionary<string, List<RngSpot>> BuildIndex() {
+        Dictionary<string, List<RngSpot>> index = new Dictionary<string, List<RngSpot>>(StringComparer.Ordinal);
         foreach (RngSpot spot in All) {
-            index[spot.Id] = spot;
+            List<RngSpot> variants;
+            if (!index.TryGetValue(spot.Id, out variants)) {
+                variants = new List<RngSpot>();
+                index[spot.Id] = variants;
+            }
+            variants.Add(spot);
         }
         return index;
     }
