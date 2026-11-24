@@ -252,7 +252,7 @@ internal sealed class RngPage {
                 if (compoundSecondary != null && compoundSecondary.RadioEditor != null && compoundSecondary.RadioEditor(tab)) {
                     continue; // radio mode: this pick has a single option here; the paired index renders standalone below
                 }
-                if (compoundSecondary != null && compoundSecondary.RadioEditor != null) {
+                if (compoundSecondary != null && spot.PerEvent && compoundSecondary.RadioEditor != null) {
                     // the indexed-pattern pair: a per-pass pattern pick plus a walked start index
                     IndexedPatternCard card = new IndexedPatternCard(this, spot, compoundSecondary, tab, compoundSecondary.Label,
                         options, compoundSecondary.Options(tab),
@@ -2017,7 +2017,7 @@ internal sealed class RngPage {
                     if (secondary != null && secondary.RadioEditor != null && secondary.RadioEditor(mode)) {
                         continue; // radio mode: this pick is trivial here; the paired index renders standalone below
                     }
-                    if (secondary != null && secondary.RadioEditor != null) {
+                    if (secondary != null && spot.PerEvent && secondary.RadioEditor != null) {
                         IndexedPatternCard card = new IndexedPatternCard(page, spot, secondary, mode, secondary.Label,
                             options, secondary.Options(mode),
                             new PatternCard.FormBinding(stageId, mode, formIndex, spot),

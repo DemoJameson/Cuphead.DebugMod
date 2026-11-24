@@ -79,15 +79,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> RngMenu;
     public static ConfigEntry<bool> EnablePatternForms;
 
-    public static ConfigEntry<ClownDashDelaysEasy> ClownDashDelayEasy;
-    public static ConfigEntry<ClownDashDelaysNormal> ClownDashDelayNormal;
-    public static ConfigEntry<ClownDashDelaysHard> ClownDashDelayHard;
-    public static ConfigEntry<ClownDuckPatternsEasy> ClownDuckPatternEasy;
-    public static ConfigEntry<ClownDuckPatternsNormal> ClownDuckPatternNormal;
-    public static ConfigEntry<ClownDuckPatternsHard> ClownDuckPatternHard;
-    public static ConfigEntry<ClownDuckStartIndexes> ClownDuckStartIndex;
-    public static ConfigEntry<ClownHorseTypes> ClownHorseType;
-    public static ConfigEntry<ClownHorseDirections> ClownHorseDirection;
     public static ConfigEntry<DragonPhaseOnePatternsEasy> DragonPhaseOnePatternEasy;
     public static ConfigEntry<DragonPhaseTwoPatternsEasy> DragonPhaseTwoPatternEasy;
     public static ConfigEntry<DragonPhaseThreePatternsNormal> DragonPhaseThreePatternNormal;
@@ -281,15 +272,6 @@ public class Settings : PluginComponent {
         ShowSimpleExpertRNG.SettingChanged += ShowSimpleExpertRNGOnSettingChanged;
         ShowUnusedLevels = config.Bind("Misc", "Show Unused Levels / Items", false, --order);
 
-        ClownDashDelayEasy = config.Bind("RNG Beppi The Clown", "Phase 1 Bumper Delays Simple", ClownDashDelaysEasy.Random, --order);
-        ClownDashDelayNormal = config.Bind("RNG Beppi The Clown", "Phase 1 Bumper Delays Regular", ClownDashDelaysNormal.Random, --order);
-        ClownDashDelayHard = config.Bind("RNG Beppi The Clown", "Phase 1 Bumper Delays Expert", ClownDashDelaysHard.Random, --order);
-        ClownDuckPatternEasy = config.Bind("RNG Beppi The Clown", "Phase 1 Duck Pattern Simple", ClownDuckPatternsEasy.Random, --order);
-        ClownDuckPatternNormal = config.Bind("RNG Beppi The Clown", "Phase 1 Duck Pattern Regular", ClownDuckPatternsNormal.Random, --order);
-        ClownDuckPatternHard = config.Bind("RNG Beppi The Clown", "Phase 1 Duck Pattern Expert", ClownDuckPatternsHard.Random, --order);
-        ClownDuckStartIndex = config.Bind("RNG Beppi The Clown", "Phase 1 Duck Start Index", ClownDuckStartIndexes.Random, --order);
-        ClownHorseType = config.Bind("RNG Beppi The Clown", "Phase 3 Horse Type", ClownHorseTypes.Random, --order);
-        ClownHorseDirection = config.Bind("RNG Beppi The Clown", "Phase 3 Horse Direction", ClownHorseDirections.Random, --order);
         DragonPhaseOnePatternEasy = config.Bind("RNG Grim Matchstick", "Phase 1 Pattern Simple", DragonPhaseOnePatternsEasy.Random, --order);
         DragonPhaseTwoPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 2 Pattern Simple", DragonPhaseTwoPatternsEasy.Random, --order);
         DragonPhaseThreePatternNormal = config.Bind("RNG Grim Matchstick", "Phase 3 Pattern Regular", DragonPhaseThreePatternsNormal.Random, --order);

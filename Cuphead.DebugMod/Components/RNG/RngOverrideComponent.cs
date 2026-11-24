@@ -10,7 +10,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
-        { "ClownDashDelayNormal", ClownDashDelaysNormal.J_2 },
         { "DragonPhaseThreePatternNormal", DragonPhaseThreePatternsNormal.Peashot },
         { "DragonPhaseOneLaserPatternNormal", DragonPhaseOneLaserPatternsNormal.Three },
         { "DragonPhaseThreeLaserPatternNormal", DragonPhaseThreeLaserPatternsNormal.Two },
@@ -121,8 +120,7 @@ public class RngOverrideComponent : PluginComponent {
             return false;
         }
 
-        return fieldName.StartsWith("Clown", StringComparison.Ordinal)
-            || fieldName.StartsWith("Dragon", StringComparison.Ordinal)
+        return fieldName.StartsWith("Dragon", StringComparison.Ordinal)
             || fieldName.StartsWith("Bee", StringComparison.Ordinal)
             || fieldName.StartsWith("Robot", StringComparison.Ordinal)
             || fieldName.StartsWith("SallyStageplay", StringComparison.Ordinal)
@@ -133,8 +131,8 @@ public class RngOverrideComponent : PluginComponent {
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
             // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's,
             // Forest Follies', Cagney Carnation's, Baroness Von Bon Bon's, Funfair Fever's,
-            // Wally Warbles' and Djimmi The Great's spots live in the new RNG profile
-            // system (Rng/RngProfiles).
+            // Wally Warbles', Djimmi The Great's and Beppi The Clown's spots live in the
+            // new RNG profile system (Rng/RngProfiles).
             ;
     }
 

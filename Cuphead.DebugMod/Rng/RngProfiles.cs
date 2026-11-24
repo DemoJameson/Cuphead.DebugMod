@@ -688,6 +688,13 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(genieObelisk.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(8, 1f));
         }
 
+        // Ported from the old Beppi The Clown preset: the bumper car's dash delay cycle
+        // starts at its ninth entry (the "3B" delay before the first dash).
+        RngSpot clownBumperDelay = RngSpots.Find(RngSpots.ClownBumperDelay);
+        if (clownBumperDelay != null) {
+            perfect.GetOrCreateSpot(clownBumperDelay.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(8, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 

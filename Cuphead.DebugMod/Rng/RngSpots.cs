@@ -361,6 +361,16 @@ internal static class RngSpots {
     public const string FlyingGenieSphinxPinkStart = "FlyingGenie/Main/SphinxPinkStart";
     public const string FlyingGenieObeliskPatternStart = "FlyingGenie/Obelisk/PatternStart";
 
+    // Beppi The Clown (the bumper car rolls its delay and drift starts once per fight;
+    // the duck cycles are rolled once per fight and walked; the horse re-rolls its side
+    // on every attack while its attack type cycle is rolled once)
+    public const string ClownBumperDelay = "Clown/BumperCar/Delay";
+    public const string ClownBumperCarDriftDirection = "Clown/BumperCar/DriftDirection";
+    public const string ClownDuckTypePatternString = "Clown/Ducks/TypePatternString";
+    public const string ClownDuckTypePattern = "Clown/Ducks/TypePattern";
+    public const string ClownHorseType = "Clown/Horse/Type";
+    public const string ClownHorseSide = "Clown/Horse/Side";
+
     public static readonly RngSpot[] Devil = {
         new RngSpot(
             DevilPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
@@ -852,6 +862,41 @@ internal static class RngSpots {
         )
     };
 
+    public static readonly RngSpot[] Clown = {
+        new RngSpot(
+            ClownBumperDelay, "Phase 1", "Bumper Dash Delay", RngShape.StartPool, true, false,
+            mode => ClownBumperDelayOptions(mode),
+            "The delay before the bumper car's next dash, tagged in beats; the car rolls where this delay cycle begins once per fight and then walks it dash by dash."
+        ),
+        new RngSpot(
+            ClownBumperCarDriftDirection, "Phase 1", "Bumper Car Drift Direction", RngShape.StartPool, true, false,
+            mode => ClownDriftOptions(mode),
+            "The way the car drifts between dashes. Rolled once per fight and then walked; the drift direction inverts every time the car dashes, because it ends up facing the other way."
+        ),
+        new RngSpot(
+            ClownDuckTypePatternString, "Phase 1", "Duck Type Pattern", RngShape.Choice, true, false,
+            mode => ClownDuckPatternOptions(mode),
+            "The duck type sequence the bumper car phase spawns (R = regular, B = bomb, P = pink parryable); the game picks one of these rows per fight, and the start below chooses where it begins."
+        ) { CompoundWith = ClownDuckTypePattern, Badge = RngBadgeKind.Order,
+            CompoundStartOptions = (mode, patternIndex) => ClownDuckStartOptions(mode, patternIndex),
+            CompoundPrimaryLabel = "Pattern", CompoundSecondaryLabel = "Start at" },
+        new RngSpot(
+            ClownDuckTypePattern, "Phase 1", "Duck Type", RngShape.Choice, true, false,
+            mode => ClownDuckTypeOptions(mode),
+            null
+        ) { CompoundSecondary = true, RadioEditor = mode => ClownDuckPatternOptions(mode).Length < 2 },
+        new RngSpot(
+            ClownHorseType, "Phase 3", "Horse Type", RngShape.StartPool, true, false,
+            mode => ClownHorseTypeOptions(mode),
+            "The carousel horse's attack cycle (green horses throw horseshoes in waves, yellow ones drop them from above). The cycle start is rolled once when the horse appears and then walked attack by attack."
+        ),
+        new RngSpot(
+            ClownHorseSide, "Phase 3", "Horse Side", RngShape.Choice, true, false,
+            mode => Fixed("Left", "Right"),
+            "The side the carousel horse enters from, re-rolled on every attack."
+        ) { PerEvent = true }
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -868,6 +913,7 @@ internal static class RngSpots {
         all.AddRange(FunfairFever);
         all.AddRange(FlyingBird);
         all.AddRange(FlyingGenie);
+        all.AddRange(Clown);
         return all.ToArray();
     }
 
@@ -896,7 +942,8 @@ internal static class RngSpots {
         { "Baroness", "Baroness Von Bon Bon" },
         { "FunfairFever", "Funfair Fever" },
         { "FlyingBird", "Wally Warbles" },
-        { "FlyingGenie", "Djimmi The Great" }
+        { "FlyingGenie", "Djimmi The Great" },
+        { "Clown", "Beppi The Clown" }
     };
 
     public static string StageLabel(string stageId) {
@@ -1922,6 +1969,157 @@ internal static class RngSpots {
                 }
             }
             return options.ToArray();
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    // ------------------------------------------------------------------
+    // Beppi The Clown option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Clown.GetMode(mode); the bumper delay tags
+    // are the legacy beat annotations, kept positionally.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Clown.State[]> ClownStatesCache = new Dictionary<Level.Mode, LevelProperties.Clown.State[]>();
+
+    private static LevelProperties.Clown.State[] ClownStatesFor(Level.Mode mode) {
+        LevelProperties.Clown.State[] states;
+        if (ClownStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Clown properties = LevelProperties.Clown.GetMode(mode);
+            states = (LevelProperties.Clown.State[])FindField(typeof(LevelProperties.Clown), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Clown.State[0];
+        }
+
+        ClownStatesCache[mode] = states;
+        return states;
+    }
+
+    private const string ClownDriftFallback = "F,F,B,B,F,B,F,B,B,F,B,F,F,B,F,B";
+
+    private static readonly Dictionary<Level.Mode, string[]> ClownBumperDelayTags = new Dictionary<Level.Mode, string[]> {
+        { Level.Mode.Easy, new[] { "5B", "3B", "5B", "4B+", "2B", "4B", "4B+", "3B", "2B" } },
+        { Level.Mode.Normal, new[] { "5B", "3B++", "5B", "4B+", "2B+", "5B", "4B+", "5B+", "3B", "2B+" } },
+        { Level.Mode.Hard, new[] { "5B", "5B", "3B", "5B", "4B+", "2B", "5B", "3B", "5B+", "3B", "2B" } }
+    };
+
+    /// <summary>One option per entry of the car's dash delay cycle, tagged in beats.</summary>
+    private static RngOption[] ClownBumperDelayOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].bumperCar.attackDelayString[0].Split(new[] { ',' });
+            string[] tags;
+            ClownBumperDelayTags.TryGetValue(mode, out tags);
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(tags != null && i < tags.Length ? tags[i] : entries[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the car's drift cycle ("Forward" / "Backward").</summary>
+    private static RngOption[] ClownDriftOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            string row = states.Length >= 1 ? states[0].bumperCar.movementStrings[0] : ClownDriftFallback;
+            string[] entries = row.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim() == "F" ? "Forward" : "Backward", i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per duck type row of the bumper car phase.</summary>
+    private static RngOption[] ClownDuckPatternOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] rows = states[0].duck.duckTypeString;
+            RngOption[] options = new RngOption[rows.Length];
+            for (int i = 0; i < rows.Length; i++) {
+                options[i] = new RngOption("Set " + (i + 1), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the duck type cycle, labelled by duck type.</summary>
+    private static RngOption[] ClownDuckTypeOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].duck.duckTypeString[0].Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(ClownDuckTypeLabel(entries[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the CHOSEN duck type row, for the compound card's
+    /// start list; empty until a set is picked.</summary>
+    private static RngOption[] ClownDuckStartOptions(Level.Mode mode, int patternIndex) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            if (states.Length < 1 || patternIndex < 0) {
+                return new RngOption[0];
+            }
+            string[] rows = states[0].duck.duckTypeString;
+            if (patternIndex >= rows.Length) {
+                return new RngOption[0];
+            }
+            string[] entries = rows[patternIndex].Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(ClownDuckTypeLabel(entries[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string ClownDuckTypeLabel(string entry) {
+        string c = entry.Trim();
+        return c == "P" ? "Parry" : c == "B" ? "Bomb" : "Regular";
+    }
+
+    /// <summary>One option per entry of the horse's wave/drop attack cycle.</summary>
+    private static RngOption[] ClownHorseTypeOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Clown.State[] states = ClownStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].horse.HorseString[0].Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim() == "W" ? "Green" : "Yellow", i);
+            }
+            return options;
         } catch (Exception) {
         }
         return new RngOption[0];
