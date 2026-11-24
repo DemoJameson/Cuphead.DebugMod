@@ -214,6 +214,19 @@ internal sealed class RngSpot {
     /// lists over an ordered cycle (the jump-pattern style) instead of cyclers.</summary>
     public bool RadioPlan;
 
+    /// <summary>True when the spot's card offers the paste box + Fill button (the
+    /// Honeybottoms platform rows). The stored steps are the rows in encounter order
+    /// (bottom-up); the runtime hook maps them onto the game's generation order.</summary>
+    public bool PasteSteps {
+        get; set;
+    }
+
+    /// <summary>Optional per-step maximum option index (inclusive) for plan steps, e.g. the
+    /// Honeybottoms platform rows alternating between 3 and 4 platforms. The index is the
+    /// row's encounter position (0 = the first row seen). null = every step accepts all
+    /// options.</summary>
+    public Func<int, int> StepMaxIndex;
+
     public RngSpot(
         string id,
         string group,
@@ -295,6 +308,8 @@ internal sealed class RngSpot {
         CompoundPrimaryLabel = source.CompoundPrimaryLabel;
         CompoundSecondaryLabel = source.CompoundSecondaryLabel;
         RadioPlan = source.RadioPlan;
+        PasteSteps = source.PasteSteps;
+        StepMaxIndex = source.StepMaxIndex;
         OnlyFor = onlyFor;
     }
 
@@ -464,6 +479,36 @@ internal static class RngSpots {
     public const string DragonGeneric1Meteor = "Dragon/Generic1/Meteor";
     public const string DragonGeneric2Peashot = "Dragon/Generic2/Peashot";
     public const string DragonGeneric2Meteor = "Dragon/Generic2/Meteor";
+
+    // Rumor Honeybottoms (the queen's phase 2 attack cycle is rolled once and walked;
+    // her side re-rolls per attack; one platform row goes missing per platform row
+    // generated, in the game's top-down generation order)
+    public const string BeeGenericPattern = "Bee/Generic/Pattern";
+    public const string BeeOrbsDirection = "Bee/Generic/OrbsDirection";
+    public const string BeeTrianglesDirection = "Bee/Generic/TrianglesDirection";
+    public const string BeePlatform = "Bee/Platforms/MissingPlatform";
+
+    // Dr. Kahl's Robot (the head phase and everything after it only exists on Regular and
+    // Expert; both cycles are rolled once per fight and walked)
+    public const string RobotHeadHeight = "Robot/HeliHead/Height";
+    public const string RobotGemColor = "Robot/Inventor/GemColor";
+
+    // Sally Stage Play (act 1's attack cycle and Sally's jump/teleport cycles are rolled
+    // once per fight and walked)
+    public const string SallyMainPattern = "SallyStagePlay/Main/Pattern";
+    public const string SallyJumpType = "SallyStagePlay/Main/JumpType";
+    public const string SallyJumpCount = "SallyStagePlay/Main/JumpCount";
+    public const string SallyTeleportOffset = "SallyStagePlay/Main/TeleportOffset";
+
+    // Werner Werman (act 1's attack cycle is rolled once and walked - but the level
+    // skips leading Dash entries, so a Dash can never be the initial attack; the cherry
+    // bomb and catapult patterns re-roll per attack; the cans re-roll their move range
+    // per pass)
+    public const string MouseMainPattern = "Mouse/Main/Pattern";
+    public const string MouseCherryBomb = "Mouse/Main/CherryBomb";
+    public const string MouseCatapult = "Mouse/Main/Catapult";
+    public const string MouseMoveMaxX = "Mouse/Main/MoveMaxX";
+    public const string MouseBrokenMoveMaxX = "Mouse/BrokenCan/MoveMaxX";
 
     public static readonly RngSpot[] Devil = {
         new RngSpot(
@@ -1041,6 +1086,95 @@ internal static class RngSpots {
         ) { PerEvent = true, OnlyFor = Level.Mode.Normal }
     };
 
+    public static readonly RngSpot[] Bee = {
+        new RngSpot(
+            BeeGenericPattern, "Phase 2", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => BeeCycleOptions(mode),
+            "Which attack the queen's fixed cycle begins with; it then repeats the cycle in order."
+        ),
+        new RngSpot(
+            BeeOrbsDirection, "Phase 2", "Orbs Direction", RngShape.Choice, true, false,
+            mode => Fixed("Left", "Right"),
+            "The side the orb-spitting bee enters from, re-rolled on every orb attack."
+        ) { PerEvent = true },
+        new RngSpot(
+            BeeTrianglesDirection, "Phase 2", "Triangles Direction", RngShape.Choice, true, false,
+            mode => Fixed("Left", "Right"),
+            "The side the triangle spell enters from, re-rolled on every triangle attack."
+        ) { PerEvent = true },
+        new RngSpot(
+            BeePlatform, "Platforms", "Missing Platform", RngShape.Choice, true, false,
+            mode => Fixed("0", "1", "2", "3"),
+            "Which platform (0 = leftmost) goes missing, one row at a time, starting with the first row you see at the bottom of the climb. Rows alternate between 3 and 4 platforms, so the valid range alternates between 0-2 and 0-3, and the game's own rules can leave a row intact when the same edge would go missing twice in a row. Paste your rows below (one number per line, bottom-up) and press Fill to replace the whole sequence with them."
+        ) { PerEvent = true, Available = mode => mode != Level.Mode.Easy, PasteSteps = true,
+            // platform rows alternate between 3 and 4 platforms, starting with 3
+            StepMaxIndex = e => e % 2 == 0 ? 2 : 3 }
+    };
+
+    public static readonly RngSpot[] Robot = {
+        new RngSpot(
+            RobotHeadHeight, "Phase 2", "Head Height", RngShape.StartPool, true, false,
+            mode => RobotHeightOptions(mode),
+            "The height the flying head re-enters the screen at, starting with its first pass; it then walks the heights in order on every further pass."
+        ) { Available = mode => mode != Level.Mode.Easy },
+        new RngSpot(
+            RobotGemColor, "Final Phase", "Gem Color", RngShape.StartPool, true, false,
+            mode => RobotGemOptions(mode),
+            "The color of the first gem attack; the gems then alternate according to the game's cycle."
+        ) { Available = mode => mode != Level.Mode.Easy }
+    };
+
+    public static readonly RngSpot[] SallyStagePlay = {
+        new RngSpot(
+            SallyMainPattern, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => SallyCycleOptions(mode),
+            "Which attack Sally's fixed cycle begins with; it then repeats the cycle in order."
+        ),
+        new RngSpot(
+            SallyJumpType, "Phase 1", "Jump Type", RngShape.StartPool, true, true,
+            mode => SallyJumpTypeOptions(mode),
+            "The jump type of Sally's first jump (dive kick or double jump); she then walks the type cycle with every further jump."
+        ),
+        new RngSpot(
+            SallyJumpCount, "Phase 1", "Jump Count", RngShape.StartPool, true, true,
+            mode => SallyJumpCountOptions(mode),
+            "How many jumps Sally's first volley lasts; she then walks the count cycle with every further volley."
+        ),
+        new RngSpot(
+            SallyTeleportOffset, "Phase 1", "Teleport Offset", RngShape.StartPool, true, false,
+            mode => SallyTeleportOptions(mode),
+            "How far Sally's first teleport lands from center screen; she then walks the offset cycle with every further teleport."
+        )
+    };
+
+    public static readonly RngSpot[] Mouse = {
+        new RngSpot(
+            MouseMainPattern, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => MouseCycleOptions(mode),
+            "The position in the can's attack cycle to open on, labelled by the attack that position plays; the attacks then follow the cycle in order. The game skips Dash entries until the first real attack has run, so the Dash rows can never be the opening attack."
+        ) { Badge = RngBadgeKind.Restricted },
+        new RngSpot(
+            MouseCherryBomb, "Phase 1", "Cherry Bomb Pattern", RngShape.Choice, true, false,
+            mode => MouseCherryBombOptions(mode),
+            "The cherry bomb volley for one cherry bomb attack, re-rolled per attack (the numbers are how many cherries drop per drop)."
+        ) { PerEvent = true },
+        new RngSpot(
+            MouseCatapult, "Phase 1", "Catapult Pattern", RngShape.Choice, true, false,
+            mode => MouseCatapultOptions(mode),
+            "What the catapult flings, one item per shot, re-rolled per volley."
+        ) { PerEvent = true },
+        new RngSpot(
+            MouseMoveMaxX, "Phase 1", "Move Max X", RngShape.Float, true,
+            mode => MouseMoveRange(mode),
+            "How far left of center the can can wander on a pass, re-rolled per pass."
+        ) { PerEvent = true },
+        new RngSpot(
+            MouseBrokenMoveMaxX, "Phase 2", "Move Max X", RngShape.Float, true,
+            mode => MouseBrokenMoveRange(mode),
+            "How far the broken can wanders on a pass, re-rolled per pass."
+        ) { PerEvent = true }
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -1059,6 +1193,10 @@ internal static class RngSpots {
         all.AddRange(FlyingGenie);
         all.AddRange(Clown);
         all.AddRange(Dragon);
+        all.AddRange(Bee);
+        all.AddRange(Robot);
+        all.AddRange(SallyStagePlay);
+        all.AddRange(Mouse);
 
         // per-difficulty settings become one spot per difficulty, each with its own UI
         List<RngSpot> expanded = new List<RngSpot>();
@@ -1111,7 +1249,11 @@ internal static class RngSpots {
         { "FlyingBird", "Wally Warbles" },
         { "FlyingGenie", "Djimmi The Great" },
         { "Clown", "Beppi The Clown" },
-        { "Dragon", "Grim Matchstick" }
+        { "Dragon", "Grim Matchstick" },
+        { "Bee", "Rumor Honeybottoms" },
+        { "Robot", "Dr. Kahl's Robot" },
+        { "SallyStagePlay", "Sally Stage Play" },
+        { "Mouse", "Werner Werman" }
     };
 
     public static string StageLabel(string stageId) {
@@ -2400,6 +2542,376 @@ internal static class RngSpots {
         } catch (Exception) {
         }
         return false;
+    }
+
+    // ------------------------------------------------------------------
+    // Rumor Honeybottoms option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Bee.GetMode(mode); the queen's phase 2
+    // cycles Follower/Triangle/Chain attacks.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Bee.State[]> BeeStatesCache = new Dictionary<Level.Mode, LevelProperties.Bee.State[]>();
+
+    private static LevelProperties.Bee.State[] BeeStatesFor(Level.Mode mode) {
+        LevelProperties.Bee.State[] states;
+        if (BeeStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Bee properties = LevelProperties.Bee.GetMode(mode);
+            states = (LevelProperties.Bee.State[])FindField(typeof(LevelProperties.Bee), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Bee.State[0];
+        }
+
+        BeeStatesCache[mode] = states;
+        return states;
+    }
+
+    /// <summary>One option per entry of the queen's phase 2 attack cycle.</summary>
+    private static RngOption[] BeeCycleOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Bee.State[] states = BeeStatesFor(mode);
+            LevelProperties.Bee.State generic = null;
+            foreach (LevelProperties.Bee.State state in states) {
+                if (state.stateName == LevelProperties.Bee.States.Generic) {
+                    generic = state;
+                    break; // the first Generic state; the later one is the Chain-only finale
+                }
+            }
+            if (generic == null) {
+                return new RngOption[0];
+            }
+            RngOption[] options = new RngOption[generic.patterns.Length];
+            for (int i = 0; i < generic.patterns.Length; i++) {
+                options[i] = new RngOption(BeePatternLabel(generic.patterns[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string BeePatternLabel(LevelProperties.Bee.Pattern pattern) {
+        switch (pattern) {
+            case LevelProperties.Bee.Pattern.Follower:
+                return "Orbs";
+            case LevelProperties.Bee.Pattern.Triangle:
+                return "Triangles";
+            case LevelProperties.Bee.Pattern.Chain:
+                return "Chain";
+            case LevelProperties.Bee.Pattern.SecurityGuard:
+                return "Security Guard";
+            case LevelProperties.Bee.Pattern.Wing:
+                return "Wing";
+            case LevelProperties.Bee.Pattern.Turbine:
+                return "Turbine";
+            default:
+                return pattern.ToString();
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Dr. Kahl's Robot option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Robot.GetMode(mode); the Main state holds
+    // the HeliHead and Inventor data the head phase uses.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Robot.State[]> RobotStatesCache = new Dictionary<Level.Mode, LevelProperties.Robot.State[]>();
+
+    private static LevelProperties.Robot.State[] RobotStatesFor(Level.Mode mode) {
+        LevelProperties.Robot.State[] states;
+        if (RobotStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Robot properties = LevelProperties.Robot.GetMode(mode);
+            states = (LevelProperties.Robot.State[])FindField(typeof(LevelProperties.Robot), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Robot.State[0];
+        }
+
+        RobotStatesCache[mode] = states;
+        return states;
+    }
+
+    /// <summary>One option per height the flying head re-enters the screen at.</summary>
+    private static RngOption[] RobotHeightOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Robot.State[] states = RobotStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].heliHead.onScreenHeight.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of the gem color cycle ("Red" / "Blue").</summary>
+    private static RngOption[] RobotGemOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Robot.State[] states = RobotStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].inventor.gemColourString.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim() == "B" ? "Blue" : "Red", i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    // ------------------------------------------------------------------
+    // Sally Stage Play option enumeration. The per-difficulty state data
+    // comes from LevelProperties.SallyStagePlay.GetMode(mode); the Main
+    // state holds act 1's data.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.SallyStagePlay.State[]> SallyStatesCache = new Dictionary<Level.Mode, LevelProperties.SallyStagePlay.State[]>();
+
+    private static LevelProperties.SallyStagePlay.State[] SallyStatesFor(Level.Mode mode) {
+        LevelProperties.SallyStagePlay.State[] states;
+        if (SallyStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.SallyStagePlay properties = LevelProperties.SallyStagePlay.GetMode(mode);
+            states = (LevelProperties.SallyStagePlay.State[])FindField(typeof(LevelProperties.SallyStagePlay), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.SallyStagePlay.State[0];
+        }
+
+        SallyStatesCache[mode] = states;
+        return states;
+    }
+
+    /// <summary>One option per entry of act 1's attack cycle.</summary>
+    private static RngOption[] SallyCycleOptions(Level.Mode mode) {
+        try {
+            LevelProperties.SallyStagePlay.State[] states = SallyStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            RngOption[] options = new RngOption[states[0].patterns.Length];
+            for (int i = 0; i < states[0].patterns.Length; i++) {
+                options[i] = new RngOption(SallyPatternLabel(states[0].patterns[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string SallyPatternLabel(LevelProperties.SallyStagePlay.Pattern pattern) {
+        switch (pattern) {
+            case LevelProperties.SallyStagePlay.Pattern.Jump:
+                return "Jump";
+            case LevelProperties.SallyStagePlay.Pattern.Kiss:
+                return "Kiss";
+            case LevelProperties.SallyStagePlay.Pattern.Teleport:
+                return "Teleport";
+            default:
+                return pattern.ToString();
+        }
+    }
+
+    /// <summary>One option per entry of Sally's jump type cycle.</summary>
+    private static RngOption[] SallyJumpTypeOptions(Level.Mode mode) {
+        try {
+            LevelProperties.SallyStagePlay.State[] states = SallyStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].jump.JumpAttackString.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim() == "2" ? "Double Jump" : "Dive Kick", i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of Sally's jump count cycle.</summary>
+    private static RngOption[] SallyJumpCountOptions(Level.Mode mode) {
+        try {
+            LevelProperties.SallyStagePlay.State[] states = SallyStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].jump.JumpAttackCountString.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per entry of Sally's teleport offset cycle.</summary>
+    private static RngOption[] SallyTeleportOptions(Level.Mode mode) {
+        try {
+            LevelProperties.SallyStagePlay.State[] states = SallyStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] entries = states[0].teleport.appearOffsetString.Split(new[] { ',' });
+            RngOption[] options = new RngOption[entries.Length];
+            for (int i = 0; i < entries.Length; i++) {
+                options[i] = new RngOption(entries[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    // ------------------------------------------------------------------
+    // Werner Werman option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Mouse.GetMode(mode); the Main state holds
+    // the can's data.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Mouse.State[]> MouseStatesCache = new Dictionary<Level.Mode, LevelProperties.Mouse.State[]>();
+
+    private static LevelProperties.Mouse.State[] MouseStatesFor(Level.Mode mode) {
+        LevelProperties.Mouse.State[] states;
+        if (MouseStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Mouse properties = LevelProperties.Mouse.GetMode(mode);
+            states = (LevelProperties.Mouse.State[])FindField(typeof(LevelProperties.Mouse), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Mouse.State[0];
+        }
+
+        MouseStatesCache[mode] = states;
+        return states;
+    }
+
+    /// <summary>One option per position of act 1's attack cycle, labelled by the attack
+    /// that position plays. A Dash can never be the opening attack (the level skips
+    /// leading Dash entries), so Dash rows are display-only.</summary>
+    private static RngOption[] MouseCycleOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Mouse.State[] states = MouseStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            LevelProperties.Mouse.Pattern[] cycle = states[0].patterns;
+            RngOption[] options = new RngOption[cycle.Length];
+            for (int i = 0; i < cycle.Length; i++) {
+                options[i] = new RngOption(MousePatternLabel(cycle[i]), i, cycle[i] != LevelProperties.Mouse.Pattern.Dash);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string MousePatternLabel(LevelProperties.Mouse.Pattern pattern) {
+        switch (pattern) {
+            case LevelProperties.Mouse.Pattern.Dash:
+                return "Dash";
+            case LevelProperties.Mouse.Pattern.Catapult:
+                return "Catapult";
+            case LevelProperties.Mouse.Pattern.CherryBomb:
+                return "Cherry Bomb";
+            default:
+                return pattern.ToString();
+        }
+    }
+
+    /// <summary>One option per cherry bomb volley pattern, labelled by how many cherries
+    /// drop per drop.</summary>
+    private static RngOption[] MouseCherryBombOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Mouse.State[] states = MouseStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] rows = states[0].canCherryBomb.patterns;
+            RngOption[] options = new RngOption[rows.Length];
+            for (int i = 0; i < rows.Length; i++) {
+                options[i] = new RngOption(MouseCherryBombLabel(rows[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string MouseCherryBombLabel(string row) {
+        List<string> counts = new List<string>();
+        foreach (string part in row.Split(new[] { ',' })) {
+            string trimmed = part.Trim();
+            int p = trimmed.IndexOf('P');
+            if (p < 0) {
+                continue;
+            }
+            counts.Add(trimmed.Substring(p + 1).TrimStart(':').Trim());
+        }
+        return string.Join("-", counts.ToArray());
+    }
+
+    /// <summary>One option per catapult volley pattern.</summary>
+    private static RngOption[] MouseCatapultOptions(Level.Mode mode) {
+        try {
+            LevelProperties.Mouse.State[] states = MouseStatesFor(mode);
+            if (states.Length < 1) {
+                return new RngOption[0];
+            }
+            string[] rows = states[0].canCatapult.patterns;
+            RngOption[] options = new RngOption[rows.Length];
+            for (int i = 0; i < rows.Length; i++) {
+                options[i] = new RngOption(rows[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static RngFloatRange MouseMoveRange(Level.Mode mode) {
+        try {
+            LevelProperties.Mouse.State[] states = MouseStatesFor(mode);
+            if (states.Length >= 1) {
+                MinMax range = states[0].canMove.maxXPositionRange;
+                return new RngFloatRange(range.min, range.max, 1f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(250f, 450f, 1f, 350f);
+    }
+
+    private static RngFloatRange MouseBrokenMoveRange(Level.Mode mode) {
+        try {
+            LevelProperties.Mouse.State[] states = MouseStatesFor(mode);
+            if (states.Length >= 1) {
+                MinMax range = states[0].brokenCanMove.maxXPositionRange;
+                return new RngFloatRange(range.min, range.max, 1f, (range.min + range.max) / 2f);
+            }
+        } catch (Exception) {
+        }
+        return new RngFloatRange(20f, 50f, 1f, 35f);
     }
 
     /// <summary>One option per zinger volley pattern of the state.</summary>

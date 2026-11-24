@@ -27,6 +27,13 @@ public class DebugMenuRoot : PluginComponent {
     private CursorLockMode prevCursorLock;
     private RewiredStandaloneInputModule rewiredModule;
     private readonly List<BossTab> bossTabs = new List<BossTab>();
+    private RectTransform sidebarViewportRect;
+    private RectTransform sidebarListRect;
+    private RectTransform sidebarTrackRect;
+    private RectTransform sidebarThumbRect;
+    private float sidebarScrollY;
+    private bool sidebarThumbDrag;
+    private float sidebarThumbGrabOffset;
 
     /// <summary>One selectable boss row in the sidebar; the selected one is highlighted.</summary>
     private sealed class BossTab {
@@ -82,6 +89,7 @@ public class DebugMenuRoot : PluginComponent {
     private void Close() {
         open = false;
         UiTextEdit.Cancel();
+        UiPasteBox.Cancel();
         UiTooltip.Hide();
         if (root != null) {
             root.SetActive(false);
@@ -96,7 +104,9 @@ public class DebugMenuRoot : PluginComponent {
             return;
         }
         UiTextEdit.Tick();
+        UiPasteBox.Tick();
         UiSliderField.Tick();
+        TickSidebarScroll();
         UpdateCanvasScale();
     }
 
@@ -309,9 +319,27 @@ public class DebugMenuRoot : PluginComponent {
         RectTransform sectionLabelRect = Ui.Rect(sectionLabel);
         sectionLabelRect.offsetMin = new Vector2(MenuTheme.Padding, 0f);
 
+        // the stage list scrolls inside a masked viewport: with 15+ stages it no longer
+        // fits the sidebar's height, so the wheel and a draggable thumb move the list
+        GameObject viewport = Ui.Create("SidebarViewport", sidebar.transform);
+        sidebarViewportRect = Ui.Rect(viewport);
+        sidebarViewportRect.anchorMin = new Vector2(0f, 0f);
+        sidebarViewportRect.anchorMax = new Vector2(1f, 1f);
+        sidebarViewportRect.offsetMin = new Vector2(0f, 0f);
+        sidebarViewportRect.offsetMax = new Vector2(-12f, -38f);
+        viewport.AddComponent<RectMask2D>();
+
+        GameObject list = Ui.Create("SidebarList", viewport.transform);
+        sidebarListRect = Ui.Rect(list);
+        sidebarListRect.anchorMin = new Vector2(0f, 1f);
+        sidebarListRect.anchorMax = new Vector2(1f, 1f);
+        sidebarListRect.pivot = new Vector2(0f, 1f);
+        sidebarListRect.offsetMin = new Vector2(0f, 0f);
+        sidebarListRect.offsetMax = new Vector2(0f, 0f);
+
         // one selectable row per migrated stage, straight below the RNG header
         bossTabs.Clear();
-        float y = 42f;
+        float y = 4f;
         string lastStageId = null;
         foreach (RngSpot spot in RngSpots.All) {
             string stageId = RngSpots.StageOf(spot.Id);
@@ -319,11 +347,11 @@ public class DebugMenuRoot : PluginComponent {
                 continue;
             }
             lastStageId = stageId;
-            BuildBossTab(sidebar, stageId, RngSpots.StageLabel(stageId), y);
+            BuildBossTab(list, stageId, RngSpots.StageLabel(stageId), y);
             y += 50f;
         }
 
-        GameObject globalTitle = Ui.Create("GlobalTitle", sidebar.transform);
+        GameObject globalTitle = Ui.Create("GlobalTitle", list.transform);
         Ui.Band(globalTitle, y + 4f, 38f);
         Ui.Panel(globalTitle, MenuTheme.SectionBg);
         GameObject globalTitleLabel = Ui.Create("Label", globalTitle.transform);
@@ -332,7 +360,7 @@ public class DebugMenuRoot : PluginComponent {
         RectTransform globalTitleRect = Ui.Rect(globalTitleLabel);
         globalTitleRect.offsetMin = new Vector2(MenuTheme.Padding, 0f);
 
-        GameObject formsRow = Ui.Create("PatternFormsRow", sidebar.transform);
+        GameObject formsRow = Ui.Create("PatternFormsRow", list.transform);
         RectTransform formsRowRect = Ui.Rect(formsRow);
         formsRowRect.anchorMin = new Vector2(0f, 1f);
         formsRowRect.anchorMax = new Vector2(1f, 1f);
@@ -365,14 +393,100 @@ public class DebugMenuRoot : PluginComponent {
         formsLabelRect.offsetMax = new Vector2(-MenuTheme.Padding, 0f);
         Ui.Label(formsLabel, "Pattern forms", MenuTheme.FontSizeSmall, MenuTheme.Text, TextAnchor.MiddleLeft);
 
-        GameObject note = Ui.Create("Note", sidebar.transform);
-        RectTransform noteRect = Ui.Rect(note);
-        noteRect.anchorMin = new Vector2(0f, 0f);
-        noteRect.anchorMax = new Vector2(1f, 0f);
-        noteRect.pivot = new Vector2(0f, 0f);
-        noteRect.anchoredPosition = new Vector2(0f, MenuTheme.Padding);
-        noteRect.sizeDelta = new Vector2(0f, 60f);
-        Ui.Label(note, "More bosses join this menu as they migrate over.", MenuTheme.FontSizeSmall, MenuTheme.TextDim, TextAnchor.UpperLeft);
+        // the content ends right below the forms row, with a little padding
+        float contentHeight = y + 46f + 46f + 8f;
+        sidebarListRect.sizeDelta = new Vector2(0f, contentHeight);
+
+        // the scrollbar track hugs the sidebar's right edge, over the viewport
+        GameObject track = Ui.Create("SidebarScrollTrack", sidebar.transform);
+        sidebarTrackRect = Ui.Rect(track);
+        sidebarTrackRect.anchorMin = new Vector2(1f, 0f);
+        sidebarTrackRect.anchorMax = new Vector2(1f, 1f);
+        sidebarTrackRect.pivot = new Vector2(1f, 0.5f);
+        sidebarTrackRect.anchoredPosition = new Vector2(0f, -19f);
+        sidebarTrackRect.sizeDelta = new Vector2(10f, 0f);
+        Ui.Panel(track, MenuTheme.WindowBg);
+
+        GameObject thumb = Ui.Create("Thumb", track.transform);
+        sidebarThumbRect = Ui.Rect(thumb);
+        sidebarThumbRect.anchorMin = new Vector2(0.5f, 1f);
+        sidebarThumbRect.anchorMax = new Vector2(0.5f, 1f);
+        sidebarThumbRect.pivot = new Vector2(0.5f, 1f);
+        sidebarThumbRect.anchoredPosition = new Vector2(0f, 0f);
+        sidebarThumbRect.sizeDelta = new Vector2(8f, 60f);
+        Ui.Panel(thumb, MenuTheme.ButtonBg);
+        ApplySidebarScroll();
+    }
+
+    /// <summary>Scroll state for the sidebar stage list: the wheel moves it when the
+    /// pointer is over the list, and the thumb can be grabbed and dragged.</summary>
+    private void TickSidebarScroll() {
+        if (sidebarListRect == null || sidebarViewportRect == null || sidebarThumbRect == null || sidebarTrackRect == null) {
+            return;
+        }
+
+        float viewportHeight = sidebarViewportRect.rect.height;
+        float contentHeight = sidebarListRect.rect.height;
+        float maxScroll = Mathf.Max(0f, contentHeight - viewportHeight);
+        float trackHeight = sidebarTrackRect.rect.height;
+
+        if (maxScroll > 0f && !sidebarThumbDrag && ContainsPoint(sidebarViewportRect, Input.mousePosition)) {
+            sidebarScrollY = Mathf.Clamp(sidebarScrollY - Input.mouseScrollDelta.y * 48f, 0f, maxScroll);
+            ApplySidebarScroll();
+        }
+
+        if (sidebarThumbDrag) {
+            if (!Input.GetMouseButton(0)) {
+                sidebarThumbDrag = false;
+            } else {
+                Vector2 local;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(sidebarTrackRect, Input.mousePosition, null, out local);
+                float thumbHeight = ThumbHeight(viewportHeight, contentHeight, trackHeight);
+                float fromTop = Mathf.Clamp(local.y + trackHeight / 2f - sidebarThumbGrabOffset, 0f, trackHeight - thumbHeight);
+                sidebarScrollY = maxScroll > 0f ? fromTop / Mathf.Max(1f, trackHeight - thumbHeight) * maxScroll : 0f;
+                ApplySidebarScroll();
+            }
+        } else if (maxScroll > 0f && Input.GetMouseButtonDown(0) && ContainsPoint(sidebarThumbRect, Input.mousePosition)) {
+            Vector2 local;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(sidebarTrackRect, Input.mousePosition, null, out local);
+            float thumbHeight = ThumbHeight(viewportHeight, contentHeight, trackHeight);
+            float thumbTop = sidebarScrollY / Mathf.Max(1f, maxScroll) * (trackHeight - thumbHeight);
+            sidebarThumbGrabOffset = local.y + trackHeight / 2f - thumbTop;
+            sidebarThumbDrag = true;
+        }
+    }
+
+    private static float ThumbHeight(float viewportHeight, float contentHeight, float trackHeight) {
+        if (contentHeight <= 0f) {
+            return trackHeight;
+        }
+        return Mathf.Max(30f, trackHeight * Mathf.Clamp01(viewportHeight / contentHeight));
+    }
+
+    private void ApplySidebarScroll() {
+        if (sidebarListRect == null || sidebarViewportRect == null || sidebarThumbRect == null || sidebarTrackRect == null) {
+            return;
+        }
+        float viewportHeight = sidebarViewportRect.rect.height;
+        float contentHeight = sidebarListRect.rect.height;
+        float maxScroll = Mathf.Max(0f, contentHeight - viewportHeight);
+        float trackHeight = sidebarTrackRect.rect.height;
+        float thumbHeight = ThumbHeight(viewportHeight, contentHeight, trackHeight);
+
+        sidebarListRect.anchoredPosition = new Vector2(0f, sidebarScrollY);
+        float thumbTop = maxScroll > 0f ? sidebarScrollY / maxScroll * (trackHeight - thumbHeight) : 0f;
+        sidebarThumbRect.sizeDelta = new Vector2(8f, thumbHeight);
+        sidebarThumbRect.anchoredPosition = new Vector2(0f, -thumbTop);
+    }
+
+    private static bool ContainsPoint(RectTransform rect, Vector2 screenPoint) {
+        if (rect == null) {
+            return false;
+        }
+        Vector2 local;
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(rect, screenPoint, null, out local);
+        Rect area = rect.rect;
+        return area.Contains(local);
     }
 
     private void BuildBossTab(GameObject sidebar, string stageId, string label, float y) {

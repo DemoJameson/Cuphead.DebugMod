@@ -720,9 +720,13 @@ internal sealed class RngPage {
                 } else {
                     // the per-attack editor: the standing value, the plan steps after it, and
                     // the option pips - no radio list, this spot is rolled independently
-                    y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y, !spot.OncePerFight);
+                    y = SequenceUi.BuildChoiceStanding(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y, !spot.OncePerFight, spot.StepMaxIndex);
                     if (SupportsPlan) {
-                        y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y);
+                        y = SequenceUi.BuildChoiceSteps(content, "Card_" + expansionKey, 0, sequenceBackend, options, page.Refresh, y, spot.StepMaxIndex);
+                    }
+                    if (spot.PasteSteps && SupportsPlan) {
+                        y = SequenceUi.BuildPasteRow(content, "Card_" + expansionKey, spot, sequenceBackend, options, page.Refresh, y);
+                        y = AddRepeatFallbackWarning(content, y);
                     }
                 }
             } else {
@@ -730,6 +734,27 @@ internal sealed class RngPage {
             }
 
             return y + Gap;
+        }
+
+        /// <summary>Warning row under the platform rows: a repeating 3 reaches rows with
+        /// only 3 platforms, where the mod falls back to the 3rd platform instead.</summary>
+        private float AddRepeatFallbackWarning(RectTransform content, float y) {
+            if (!sequenceBackend.GetLoop()) {
+                return y;
+            }
+            int repeatValue = -1;
+            List<int> steps = sequenceBackend.GetSteps();
+            if (steps.Count > 0) {
+                repeatValue = steps[steps.Count - 1];
+            } else if (sequenceBackend.HasPin()) {
+                repeatValue = sequenceBackend.GetPin();
+            }
+            if (repeatValue != 3) {
+                return y;
+            }
+            GameObject warningRow = Ui.Row(content, "Card_" + expansionKey + "_RepeatWarning", MenuTheme.CardBg, y, 40f);
+            Ui.RowLabel(warningRow, "(!) The repeating value 3 reaches rows with only 3 platforms - there the mod will alternate and use the 3rd platform (2) instead.", MenuTheme.FontSizeSmall, MenuTheme.Warning, 40f, 0f);
+            return y + 40f + 2f;
         }
 
         /// <summary>The radio-plan editor for per-event spots whose rounds pick a start

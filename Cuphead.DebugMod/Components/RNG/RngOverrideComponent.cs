@@ -10,15 +10,6 @@ namespace BepInEx.CupheadDebugMod.Components.RNG;
 public class RngOverrideComponent : PluginComponent {
     private readonly Dictionary<string, object> originalValues = new(StringComparer.Ordinal);
     private readonly Dictionary<string, object> explicitOverrides = new Dictionary<string, object>(StringComparer.Ordinal) {
-        { "BeePhaseTwoPatternNormal", BeePhaseTwoPatternsNormal.Chain },
-        { "BeePerfectPlatforms", true },
-        { "RobotPhaseFinalGemColor", RobotPhaseFinalGemColors.Red },
-        { "SallyStageplayPatternNormalHard", SallyStageplayPatternsNormalHard.Kiss1 },
-        { "SallyStageplayJumpTypeNormalHard", SallyStageplayJumpTypesNormalHard.DiveKick1 },
-        { "SallyStageplayTeleportOffsetNormalHard", SallyStageplayTeleportOffsetsNormalHard.A_0 },
-        { "MousePhaseOnePatternNormal", MousePhaseOnePatternsNormal.Catapult1 },
-        { "MouseCanMoveMaxXPosition", 340f },
-        { "MouseBrokenCanMoveMaxXPosition", 28f },
         { "PiratePhaseOneGunPatternNormal", PiratePhaseOneGunPatternsNormal.Three_One },
         { "PiratePhaseTwoGunPatternNormal", PiratePhaseTwoGunPatternsNormal.Two_One_One },
         { "PiratePhaseThreeGunPatternNormal", PiratePhaseThreeGunPatternsNormal.One_Two },
@@ -117,18 +108,15 @@ public class RngOverrideComponent : PluginComponent {
             return false;
         }
 
-        return fieldName.StartsWith("Bee", StringComparison.Ordinal)
-            || fieldName.StartsWith("Robot", StringComparison.Ordinal)
-            || fieldName.StartsWith("SallyStageplay", StringComparison.Ordinal)
-            || fieldName.StartsWith("Mouse", StringComparison.Ordinal)
-            || fieldName.StartsWith("Pirate", StringComparison.Ordinal)
+        return fieldName.StartsWith("Pirate", StringComparison.Ordinal)
             || fieldName.StartsWith("FlyingMermaid", StringComparison.Ordinal)
             || fieldName.StartsWith("Train", StringComparison.Ordinal)
             || fieldName.StartsWith("DicePalace", StringComparison.Ordinal)
             // The Devil's, Ribby & Croaks', Goopy Le Grande's, The Root Pack's, Hilda Berg's,
             // Forest Follies', Cagney Carnation's, Baroness Von Bon Bon's, Funfair Fever's,
-            // Wally Warbles', Djimmi The Great's, Beppi The Clown's and Grim Matchstick's
-            // spots live in the new RNG profile system (Rng/RngProfiles).
+            // Wally Warbles', Djimmi The Great's, Beppi The Clown's, Grim Matchstick's,
+            // Rumor Honeybottoms', Dr. Kahl's Robot's, Sally Stage Play's and Werner
+            // Werman's spots live in the new RNG profile system (Rng/RngProfiles).
             ;
     }
 

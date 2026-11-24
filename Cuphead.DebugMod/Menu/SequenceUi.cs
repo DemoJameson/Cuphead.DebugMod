@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using BepInEx.CupheadDebugMod.Components;
 using BepInEx.CupheadDebugMod.Rng;
 
 namespace BepInEx.CupheadDebugMod.Menu;
@@ -87,8 +88,7 @@ internal sealed class SpotIntBackend : IntSequenceBackend {
     }
 }
 
-internal sealed class FormIntBackend : IntSequenceBackend {
-    private readonly string stageId;
+internal sealed class FormIntBackend : IntSequenceBackend {    private readonly string stageId;
     private readonly Level.Mode mode;
     private readonly int formIndex;
     private readonly RngSpot spot;
@@ -395,16 +395,12 @@ internal static class SequenceUi {
         return add;
     }
 
-    /// <summary>Appends one plan step to a per-event choice spot, seeded from the last
-    /// configured value. Always usable - a plan can be built while the standing value stays
-    /// random.</summary>
+    /// <summary>Appends one plan step to a per-event choice spot. New steps default to
+    /// Random - the user then sets the value they want - so an added step can never show
+    /// a stale out-of-range value from the previous one.</summary>
     public static void AppendChoiceStep(IntSequenceBackend backend, RngOption[] options, Action refresh) {
         List<int> steps = backend.GetSteps();
-        int seed = steps.Count > 0 ? steps[steps.Count - 1] : backend.GetPin();
-        if (seed < 0 || seed >= options.Length) {
-            seed = 0;
-        }
-        steps.Add(seed);
+        steps.Add(-1);
         backend.Write(backend.HasPin() ? backend.GetPin() : (int?)null, steps, backend.GetLoop());
         refresh();
     }
@@ -424,11 +420,12 @@ internal static class SequenceUi {
     /// option pips underneath. This row is what distinguishes an independently rolled spot
     /// from a list with a random start position. Once-per-fight spots hide the loop
     /// checkbox - their single roll never repeats.</summary>
-    public static float BuildChoiceStanding(RectTransform content, string key, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y, bool showRepeat = true) {
+    public static float BuildChoiceStanding(RectTransform content, string key, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y, bool showRepeat = true, Func<int, int> stepMaxIndex = null) {
         Color background = paritySeed % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt;
         bool hasPin = backend.HasPin();
         int pin = backend.GetPin();
         List<int> steps = backend.GetSteps();
+        RngOption[] standingOptions = StepOptions(options, stepMaxIndex, 0);
 
         GameObject row = Ui.Row(content, key + "_Standing", background, y, 40f);
 
@@ -446,10 +443,10 @@ internal static class SequenceUi {
 
         // the standing cycler: the forced option while the checkbox is off, "random" while
         // it is on; clicking an arrow selects (and thereby unchecks the random box)
-        string label = hasPin && pin >= 0 && pin < options.Length ? options[pin].Label : "Random";
+        string label = hasPin && pin >= 0 && pin < standingOptions.Length ? standingOptions[pin].Label : "Random";
         UiCycle cycle = UiCycle.Create(row.transform, "Standing", 280f, MenuTheme.ControlSize, label,
-            () => CycleChoiceStanding(backend, options, -1, refresh),
-            () => CycleChoiceStanding(backend, options, +1, refresh));
+            () => CycleChoiceStanding(backend, standingOptions, -1, refresh),
+            () => CycleChoiceStanding(backend, standingOptions, +1, refresh));
         PlaceLeft(cycle.Root, 124f);
 
         // with no plan steps, the standing value is the last configuration in play, so its
@@ -467,7 +464,7 @@ internal static class SequenceUi {
         y += 40f;
 
         // option pips: one dot per option under the cycler; the forced one is lit
-        y = BuildChoicePips(content, key + "_Pips", background, options, hasPin && pin >= 0 ? pin : -1, y);
+        y = BuildChoicePips(content, key + "_Pips", background, standingOptions, hasPin && pin >= 0 ? pin : -1, y);
 
         return y;
     }
@@ -491,8 +488,9 @@ internal static class SequenceUi {
     /// <summary>Step rows of a per-event choice spot's plan, each a cycler over the spot's
     /// options with a per-step random checkbox, option pips underneath and a remove
     /// button; the last one carries the loop checkbox. Step 1 plays right after the
-    /// standing value.</summary>
-    public static float BuildChoiceSteps(RectTransform content, string keyPrefix, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y) {
+    /// standing value. stepMaxIndex (when set) caps the option indices per step, for
+    /// spots whose occurrences accept different value ranges.</summary>
+    public static float BuildChoiceSteps(RectTransform content, string keyPrefix, int paritySeed, IntSequenceBackend backend, RngOption[] options, Action refresh, float y, Func<int, int> stepMaxIndex = null) {
         List<int> steps = backend.GetSteps();
         for (int i = 0; i < steps.Count; i++) {
             bool isLast = i == steps.Count - 1;
@@ -500,15 +498,16 @@ internal static class SequenceUi {
             int capturedValue = steps[i];
             bool isRandom = capturedValue < 0;
             Color background = (paritySeed + i) % 2 == 0 ? MenuTheme.RowBg : MenuTheme.RowBgAlt;
+            RngOption[] stepOptions = StepOptions(options, stepMaxIndex, i + 1);
 
             GameObject stepRow = Ui.Row(content, keyPrefix + "_Step" + (i + 2), background, y, 40f);
 
             string initialLabel = capturedValue < 0
                 ? "Random"
-                : (capturedValue < options.Length ? options[capturedValue].Label : "#" + (capturedValue + 1));
+                : (capturedValue < stepOptions.Length ? stepOptions[capturedValue].Label : "#" + (capturedValue + 1));
             UiCycle cycle = UiCycle.Create(stepRow.transform, "Step", 280f, MenuTheme.ControlSize, initialLabel,
-                () => CycleChoiceStep(backend, options, captured, -1, refresh),
-                () => CycleChoiceStep(backend, options, captured, +1, refresh));
+                () => CycleChoiceStep(backend, stepOptions, captured, -1, refresh),
+                () => CycleChoiceStep(backend, stepOptions, captured, +1, refresh));
             PlaceLeft(cycle.Root, 124f);
 
             // per-step random checkbox: checked = this occurrence rolls naturally again
@@ -545,9 +544,26 @@ internal static class SequenceUi {
             y += 40f + 2f;
 
             // option pips under this step's cycler: the selected option is lit
-            y = BuildChoicePips(content, keyPrefix + "_Step" + (i + 2) + "_Pips", background, options, capturedValue, y);
+            y = BuildChoicePips(content, keyPrefix + "_Step" + (i + 2) + "_Pips", background, stepOptions, capturedValue, y);
         }
         return y;
+    }
+
+    /// <summary>The option subset one step may pick from: every option, or the capped
+    /// prefix when the spot defines a per-step maximum.</summary>
+    private static RngOption[] StepOptions(RngOption[] options, Func<int, int> stepMaxIndex, int step) {
+        if (stepMaxIndex == null) {
+            return options;
+        }
+        int max = stepMaxIndex(step);
+        if (max >= options.Length - 1) {
+            return options;
+        }
+        RngOption[] subset = new RngOption[max + 1];
+        for (int i = 0; i <= max; i++) {
+            subset[i] = options[i];
+        }
+        return subset;
     }
 
     private static void CycleChoiceStanding(IntSequenceBackend backend, RngOption[] options, int direction, Action refresh) {
@@ -576,6 +592,118 @@ internal static class SequenceUi {
         steps[stepIndex] = next;
         backend.Write(backend.HasPin() ? backend.GetPin() : (int?)null, steps, backend.GetLoop());
         refresh();
+    }
+
+    /// <summary>The paste area under a paste-steps spot's plan: a digit-only multiline box
+    /// plus a Fill button that parses the rows (one number per line, bottom-up) and turns
+    /// them into plan steps through the backend (which applies the encounter-to-generation
+    /// translation for spots that store steps that way).</summary>
+    public static float BuildPasteRow(RectTransform content, string key, RngSpot spot, IntSequenceBackend backend, RngOption[] options, Action refresh, float y) {
+        GameObject row = Ui.Row(content, key + "_Paste", MenuTheme.RowBg, y, 112f);
+
+        // the ScrollRect lives on the box itself so wheel and drag events reach it (they
+        // never bubble down to children); the Button coexists on the same object. The
+        // outline is a plain frame panel behind the box - always visible, stylable via
+        // MenuTheme.Outline.
+        GameObject frame = Ui.Create("PasteFrame", row.transform);
+        RectTransform frameRect = Ui.Rect(frame);
+        frameRect.anchorMin = new Vector2(0f, 0.5f);
+        frameRect.anchorMax = new Vector2(0f, 0.5f);
+        frameRect.pivot = new Vector2(0f, 0.5f);
+        frameRect.anchoredPosition = new Vector2(121f, 0f);
+        frameRect.sizeDelta = new Vector2(306f, 106f);
+        Image frameBg = frame.AddComponent<Image>();
+        frameBg.color = MenuTheme.Outline;
+
+        GameObject box = Ui.Create("PasteBox", frame.transform);
+        RectTransform boxRect = Ui.Rect(box);
+        boxRect.anchorMin = Vector2.zero;
+        boxRect.anchorMax = Vector2.one;
+        boxRect.offsetMin = new Vector2(3f, 3f);
+        boxRect.offsetMax = new Vector2(-3f, -3f);
+        Image boxBg = box.AddComponent<Image>();
+        boxBg.color = MenuTheme.ButtonBg;
+
+        string boxKey = key + "_PasteBuffer";
+
+        ScrollRect scroll = box.AddComponent<ScrollRect>();
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 0f; // the wheel is handled manually in UiPasteBox
+
+        GameObject viewportGo = Ui.Create("Viewport", box.transform);
+        RectTransform viewport = Ui.Rect(viewportGo);
+        viewport.anchorMin = new Vector2(0f, 0f);
+        viewport.anchorMax = new Vector2(1f, 1f);
+        viewport.offsetMin = new Vector2(3f, 3f);
+        viewport.offsetMax = new Vector2(-3f, -3f);
+        viewportGo.AddComponent<RectMask2D>();
+
+        GameObject boxTextGo = Ui.Create("Buffer", viewportGo.transform);
+        RectTransform textRect = Ui.Rect(boxTextGo);
+        textRect.anchorMin = new Vector2(0f, 1f);
+        textRect.anchorMax = new Vector2(1f, 1f);
+        textRect.pivot = new Vector2(0f, 1f);
+        textRect.offsetMin = new Vector2(0f, 0f);
+        textRect.offsetMax = new Vector2(0f, 0f);
+        Text boxText = Ui.Label(boxTextGo, UiPasteBox.DisplayText(boxKey), MenuTheme.FontSizeSmall, MenuTheme.TextDim, TextAnchor.UpperLeft);
+        boxText.horizontalOverflow = HorizontalWrapMode.Wrap;
+        scroll.content = textRect;
+        scroll.viewport = viewport;
+        UiPasteBox.Register(boxKey, textRect, scroll);
+        UiPasteBox.ResizeBuffer(boxKey, textRect, viewport.rect.height);
+        Ui.MakeButton(box, () => UiPasteBox.Begin(boxKey, boxText, boxBg, frameBg, scroll), new Color(0f, 0f, 0f, 0f));
+
+        GameObject fill = Ui.TextButton(row.transform, "Fill", "Fill", 84f, 36f, () => {
+            string buffer = UiPasteBox.Buffer(boxKey);
+            List<int> rows = new List<int>();
+            foreach (string rawLine in buffer.Split(new[] { '\n' })) {
+                string trimmed = rawLine.Trim();
+                int value;
+                if (trimmed.Length == 0 || !int.TryParse(trimmed, out value)) {
+                    continue;
+                }
+                int max = spot.StepMaxIndex != null ? spot.StepMaxIndex(rows.Count) : options.Length - 1;
+                if (value < 0 || value > max) {
+                    Toast.Show("Row " + (rows.Count + 1) + ": value must be 0-" + max + " (that row has " + (max + 1) + " platforms)");
+                    continue;
+                }
+                rows.Add(value);
+            }
+            if (rows.Count == 0) {
+                Toast.Show("No platform rows found - one number (0-" + (options.Length - 1) + ") per line");
+                return;
+            }
+            // the first row is the standing pick, the rest become plan steps - a full
+            // replace, exactly like the old file
+            List<int> rest = rows.GetRange(1, rows.Count - 1);
+            backend.Write(rows[0], rest, false);
+            Toast.Show("Loaded " + rows.Count + " platform rows");
+            refresh();
+        }, MenuTheme.FontSizeSmall);
+        RectTransform fillRect = Ui.Rect(fill);
+        fillRect.anchorMin = new Vector2(0f, 0.5f);
+        fillRect.anchorMax = new Vector2(0f, 0.5f);
+        fillRect.pivot = new Vector2(0f, 0.5f);
+        fillRect.anchoredPosition = new Vector2(440f, 0f);
+
+        GameObject perfect = Ui.TextButton(row.transform, "FillPerfect", "Fill with Perfect Platforms", 10f, 36f, () => {
+            // a pinned 0 with Repeat?: row 1 keeps its leftmost platform and the repeat
+            // carries it to every row after it
+            backend.Write(0, new List<int>(), true);
+            Toast.Show("Perfect platforms - every row keeps its leftmost platform");
+            refresh();
+        }, MenuTheme.FontSizeSmall);
+        RectTransform perfectRect = Ui.Rect(perfect);
+        perfectRect.anchorMin = new Vector2(0f, 0.5f);
+        perfectRect.anchorMax = new Vector2(0f, 0.5f);
+        perfectRect.pivot = new Vector2(0f, 0.5f);
+        perfectRect.anchoredPosition = new Vector2(532f, 0f);
+        Text perfectLabel = perfect.GetComponentInChildren<Text>();
+        perfectRect.sizeDelta = new Vector2(perfectLabel != null ? perfectLabel.preferredWidth + 16f : 220f, 36f);
+
+        return y + 112f + 2f;
     }
 
     private static void Place(GameObject go, float offset) {

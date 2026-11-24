@@ -26,6 +26,7 @@ internal static class MenuTheme {
     public static readonly Color TextDim = new Color(0.70f, 0.70f, 0.75f);
     public static readonly Color Warning = new Color(0.90f, 0.38f, 0.10f);   // non-vanilla configuration warnings
     public static readonly Color ButtonBg = new Color(0.24f, 0.24f, 0.30f);
+    public static readonly Color Outline = new Color(0.45f, 0.45f, 0.52f);   // thin input-box outlines
 
     // Type badges on spot cards: "start" = the random start of a fixed cycle, "per attack"
     // = re-rolled independently every attack, "once" = decided once per fight, "order" =

@@ -1,12 +1,18 @@
 # What is BeePlatforms.txt
-This is a file that can be used to inject a platform pattern into the Rumor Honeybottoms fight. This can be done by enabling `Read Missing Platforms from file` under `RNG Rumor Honeybottoms`, and placing a file called `BeePlatforms.txt` in the same folder as the Cuphead executable.
+This file format used to be read from the game folder via the legacy "Read Missing
+Platforms from file" setting. That setting has been replaced by the **Missing Platform**
+card on the RNG menu's Rumor Honeybottoms page: the same row format is pasted into the
+card's paste box (one number per line, bottom-up) and turned into plan steps with the
+**Fill** button. The file itself is no longer read.
 
-# File Format
-At its core, the file format is pretty simple: each row corresponds to the index of the one platform that's supposed to go missing, bottom up.
+# Row format
+At its core, the format is pretty simple: each line corresponds to the index of the one
+platform that's supposed to go missing, bottom up.
 
-Each row is made up of either 3 or 4 platforms. So, depending on the row, this index (which is zero-index) can either contain values between 0 and 2, or between 0 and 3.
+Each line is made up of either 3 or 4 platforms. So, depending on the row, this index
+(which is zero-index) can either contain values between 0 and 2, or between 0 and 3.
 
-For example, take the following file:
+For example, take the following rows:
 ```
 0
 1
@@ -15,11 +21,15 @@ For example, take the following file:
 2
 ```
 
-This would result in the 1st platform going missing, then the 2nd, then the 1st, then the 4th, then the 3rd.
-The platforms are numbered from left to right, meaning that the "1st platform" means the one that's farthest left, the "2nd platform" means the one just right of it, and so on.
-Once the file has been read to the end, the rest of the platforms generated in the fight will be random.
+This would result in the 1st platform going missing, then the 2nd, then the 1st, then the
+4th, then the 3rd.
+The platforms are numbered from left to right, meaning that the "1st platform" means the
+one that's farthest left, the "2nd platform" means the one just right of it, and so on.
+Once the pasted rows have been used up, the rest of the platforms generated in the fight
+will be random.
 
-That being said, there are a few complicated rules that can result in the game not actually removing any platform from certain rows.
+That being said, there are a few complicated rules that can result in the game not
+actually removing any platform from certain rows.
 
 # How the game's code randomizes platforms
 
@@ -83,9 +93,9 @@ If you think about it, this means that the game doesn't actually always work on 
 
 This implies that between the 4th and the 5th rows encountered, you might actually get two "1st > 1st" platforms missing for example, because when the time comes to generate the 5th row, the `lastPlatform` field will have the value of whatever platform will be missing in the **6th** row, not the **4th** row.
 
-# BeePlatforms file example with some of these rules applied
+# Pasted-rows example with some of these rules applied
 
-Take the following file:
+Take the following rows:
 ```
 0
 3
@@ -97,7 +107,7 @@ Take the following file:
 0
 ```
 
-First of all, this file is split into chunks of 4 rows each, and are read in reverse order.
+First of all, these rows are split into chunks of 4 lines each, and are consumed in reverse order.
 * The 4th line is the one that gets read first, and whichever platform index is here will go missing in the 4th row encountered, which in this case is the **1st**.
 * The 3rd line gets read next, and this results in the **3rd** platform going missing in the 3rd row encountered.
 * The 2nd line is now read. This attempts to get the **4th** platform removed in the 2nd row encountered, but because the previous platform that was just removed was the 3rd one, no platforms will actually be removed due to the **2nd Condition**.

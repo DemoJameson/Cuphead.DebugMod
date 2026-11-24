@@ -711,6 +711,58 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(dragonPhase3Peashot.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
         }
 
+        // Ported from the old Rumor Honeybottoms preset: the queen opens phase 2 with the
+        // chain, and every platform row keeps its leftmost platform (the old Perfect
+        // Platforms toggle, now a pinned 0 that repeats).
+        RngSpot beePattern = RngSpots.FindForMode(RngSpots.BeeGenericPattern, Level.Mode.Normal);
+        RngSpot beePlatform = RngSpots.FindForMode(RngSpots.BeePlatform, Level.Mode.Normal);
+        if (beePattern != null) {
+            perfect.GetOrCreateSpot(beePattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(2, 1f));
+        }
+        if (beePlatform != null) {
+            RngSpotConfig platformConfig = perfect.GetOrCreateSpot(beePlatform.Key(Level.Mode.Normal));
+            platformConfig.Pool.Add(new RngPoolEntry(0, 1f));
+            platformConfig.LoopSequence = true;
+        }
+
+        // Ported from the old Dr. Kahl's Robot preset: the final phase's first gem is red.
+        RngSpot robotGemColor = RngSpots.FindForMode(RngSpots.RobotGemColor, Level.Mode.Normal);
+        if (robotGemColor != null) {
+            perfect.GetOrCreateSpot(robotGemColor.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+
+        // Ported from the old Sally Stage Play preset: act 1 opens with the kiss, Sally's
+        // first jump is a dive kick and her first teleport lands at center.
+        RngSpot sallyPattern = RngSpots.FindForMode(RngSpots.SallyMainPattern, Level.Mode.Normal);
+        RngSpot sallyJumpType = RngSpots.FindForMode(RngSpots.SallyJumpType, Level.Mode.Normal);
+        RngSpot sallyTeleport = RngSpots.FindForMode(RngSpots.SallyTeleportOffset, Level.Mode.Normal);
+        if (sallyPattern != null) {
+            perfect.GetOrCreateSpot(sallyPattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+        if (sallyJumpType != null) {
+            perfect.GetOrCreateSpot(sallyJumpType.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (sallyTeleport != null) {
+            perfect.GetOrCreateSpot(sallyTeleport.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+
+        // Ported from the old Werner Werman preset: act 1 opens with the catapult, the
+        // can wanders at most 340 from center and the broken can at most 28.
+        RngSpot mousePattern = RngSpots.FindForMode(RngSpots.MouseMainPattern, Level.Mode.Normal);
+        RngSpot mouseMoveMaxX = RngSpots.FindForMode(RngSpots.MouseMoveMaxX, Level.Mode.Normal);
+        RngSpot mouseBrokenMoveMaxX = RngSpots.FindForMode(RngSpots.MouseBrokenMoveMaxX, Level.Mode.Normal);
+        if (mousePattern != null) {
+            // the "Catapult" option: cycle position 2 on Regular's cycle (the first
+            // catapult entry), consumed as the opening attack via the pre-increment
+            perfect.GetOrCreateSpot(mousePattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(2, 1f));
+        }
+        if (mouseMoveMaxX != null) {
+            perfect.GetOrCreateSpot(mouseMoveMaxX.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(340f, 1f));
+        }
+        if (mouseBrokenMoveMaxX != null) {
+            perfect.GetOrCreateSpot(mouseBrokenMoveMaxX.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(28f, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 
