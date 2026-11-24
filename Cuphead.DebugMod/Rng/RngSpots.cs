@@ -452,6 +452,19 @@ internal static class RngSpots {
     public const string ClownHorseType = "Clown/Horse/Type";
     public const string ClownHorseSide = "Clown/Horse/Side";
 
+    // Grim Matchstick (the head's attack cycle is rolled once per state and walked; the
+    // meteor and peashot volley patterns are re-rolled per attack. Regular has two
+    // Generic states - "Phase 2" and "Phase 3".)
+    public const string DragonMainPattern = "Dragon/Main/Pattern";
+    public const string DragonGeneric1Pattern = "Dragon/Generic1/Pattern";
+    public const string DragonGeneric2Pattern = "Dragon/Generic2/Pattern";
+    public const string DragonMainPeashot = "Dragon/Main/Peashot";
+    public const string DragonMainMeteor = "Dragon/Main/Meteor";
+    public const string DragonGeneric1Peashot = "Dragon/Generic1/Peashot";
+    public const string DragonGeneric1Meteor = "Dragon/Generic1/Meteor";
+    public const string DragonGeneric2Peashot = "Dragon/Generic2/Peashot";
+    public const string DragonGeneric2Meteor = "Dragon/Generic2/Meteor";
+
     public static readonly RngSpot[] Devil = {
         new RngSpot(
             DevilPhase1PatternStart, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
@@ -980,6 +993,54 @@ internal static class RngSpots {
         ) { PerEvent = true }
     };
 
+    public static readonly RngSpot[] Dragon = {
+        new RngSpot(
+            DragonMainPattern, "Phase 1", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => DragonTailCycleOptions(mode, LevelProperties.Dragon.States.Main, 0),
+            "Which attack the dragon's fixed cycle begins with; it then repeats the cycle in order. Simple and Regular only ever roll the first entry here."
+        ),
+        new RngSpot(
+            DragonMainPeashot, "Phase 1", "Peashot Pattern", RngShape.Choice, true, false,
+            mode => DragonPeashotOptions(mode, LevelProperties.Dragon.States.Main, 0),
+            "The zinger volley for one peashot attack, re-rolled per attack (P = a burst of zingers, numbers = waits between them)."
+        ) { PerEvent = true },
+        new RngSpot(
+            DragonMainMeteor, "Phase 1", "Meteor Pattern", RngShape.Choice, true, false,
+            mode => DragonMeteorOptions(mode, LevelProperties.Dragon.States.Main, 0),
+            "The meteor directions for one meteor attack, re-rolled per attack (U = up, D = down, B = both sides; a comma between letters makes an extra up meteor fall - a vanilla quirk). The game's list repeats rows, so some sequences are more likely than others."
+        ) { PerEvent = true, Available = mode => DragonCycleHas(mode, LevelProperties.Dragon.States.Main, 0, LevelProperties.Dragon.Pattern.Meteor) },
+        new RngSpot(
+            DragonGeneric1Pattern, "Phase 2", "Overall Pattern", RngShape.StartPool, true, true,
+            mode => DragonTailCycleOptions(mode, LevelProperties.Dragon.States.Generic, 0),
+            "Which attack this phase's fixed cycle begins with; it then repeats the cycle in order."
+        ),
+        new RngSpot(
+            DragonGeneric1Peashot, "Phase 2", "Peashot Pattern", RngShape.Choice, true, false,
+            mode => DragonPeashotOptions(mode, LevelProperties.Dragon.States.Generic, 0),
+            "The zinger volley for one peashot attack, re-rolled per attack (P = a burst of zingers, numbers = waits between them)."
+        ) { PerEvent = true, Available = mode => DragonCycleHas(mode, LevelProperties.Dragon.States.Generic, 0, LevelProperties.Dragon.Pattern.Peashot) },
+        new RngSpot(
+            DragonGeneric1Meteor, "Phase 2", "Meteor Pattern", RngShape.Choice, true, false,
+            mode => DragonMeteorOptions(mode, LevelProperties.Dragon.States.Generic, 0),
+            "The meteor directions for one meteor attack, re-rolled per attack (U = up, D = down, B = both sides). The game's list repeats rows, so some sequences are more likely than others."
+        ) { PerEvent = true },
+        new RngSpot(
+            DragonGeneric2Pattern, "Phase 3", "Overall Pattern", RngShape.StartPool, false, true,
+            mode => DragonTailCycleOptions(mode, LevelProperties.Dragon.States.Generic, 1),
+            "Which attack this phase's fixed cycle begins with; it then repeats the cycle in order."
+        ) { OnlyFor = Level.Mode.Normal },
+        new RngSpot(
+            DragonGeneric2Peashot, "Phase 3", "Peashot Pattern", RngShape.Choice, false, false,
+            mode => DragonPeashotOptions(mode, LevelProperties.Dragon.States.Generic, 1),
+            "The zinger volley for one peashot attack, re-rolled per attack (P = a burst of zingers, numbers = waits between them)."
+        ) { PerEvent = true, OnlyFor = Level.Mode.Normal },
+        new RngSpot(
+            DragonGeneric2Meteor, "Phase 3", "Meteor Pattern", RngShape.Choice, false, false,
+            mode => DragonMeteorOptions(mode, LevelProperties.Dragon.States.Generic, 1),
+            "The meteor directions for one meteor attack, re-rolled per attack (U = up, D = down, B = both sides)."
+        ) { PerEvent = true, OnlyFor = Level.Mode.Normal }
+    };
+
     /// <summary>Every catalog spot, in page order.</summary>
     public static readonly RngSpot[] All = BuildAll();
 
@@ -997,6 +1058,7 @@ internal static class RngSpots {
         all.AddRange(FlyingBird);
         all.AddRange(FlyingGenie);
         all.AddRange(Clown);
+        all.AddRange(Dragon);
 
         // per-difficulty settings become one spot per difficulty, each with its own UI
         List<RngSpot> expanded = new List<RngSpot>();
@@ -1048,7 +1110,8 @@ internal static class RngSpots {
         { "FunfairFever", "Funfair Fever" },
         { "FlyingBird", "Wally Warbles" },
         { "FlyingGenie", "Djimmi The Great" },
-        { "Clown", "Beppi The Clown" }
+        { "Clown", "Beppi The Clown" },
+        { "Dragon", "Grim Matchstick" }
     };
 
     public static string StageLabel(string stageId) {
@@ -2223,6 +2286,138 @@ internal static class RngSpots {
     private static string ClownDuckTypeLabel(string entry) {
         string c = entry.Trim();
         return c == "P" ? "Parry" : c == "B" ? "Bomb" : "Regular";
+    }
+
+    // ------------------------------------------------------------------
+    // Grim Matchstick option enumeration. The per-difficulty state data
+    // comes from LevelProperties.Dragon.GetMode(mode); Regular has two
+    // Generic states, matched by occurrence.
+    // ------------------------------------------------------------------
+
+    private static readonly Dictionary<Level.Mode, LevelProperties.Dragon.State[]> DragonStatesCache = new Dictionary<Level.Mode, LevelProperties.Dragon.State[]>();
+
+    private static LevelProperties.Dragon.State[] DragonStatesFor(Level.Mode mode) {
+        LevelProperties.Dragon.State[] states;
+        if (DragonStatesCache.TryGetValue(mode, out states)) {
+            return states;
+        }
+
+        try {
+            LevelProperties.Dragon properties = LevelProperties.Dragon.GetMode(mode);
+            states = (LevelProperties.Dragon.State[])FindField(typeof(LevelProperties.Dragon), "states").GetValue(properties);
+        } catch (Exception) {
+            states = new LevelProperties.Dragon.State[0];
+        }
+
+        DragonStatesCache[mode] = states;
+        return states;
+    }
+
+    private static LevelProperties.Dragon.State DragonStateFor(Level.Mode mode, LevelProperties.Dragon.States stateName, int occurrence) {
+        int seen = 0;
+        foreach (LevelProperties.Dragon.State state in DragonStatesFor(mode)) {
+            if (state.stateName != stateName) {
+                continue;
+            }
+            if (seen == occurrence) {
+                return state;
+            }
+            seen++;
+        }
+        return null;
+    }
+
+    /// <summary>One option per entry of the state's head-attack cycle.</summary>
+    private static RngOption[] DragonTailCycleOptions(Level.Mode mode, LevelProperties.Dragon.States stateName, int occurrence) {
+        try {
+            LevelProperties.Dragon.State state = DragonStateFor(mode, stateName, occurrence);
+            if (state == null) {
+                return new RngOption[0];
+            }
+            RngOption[] options = new RngOption[state.patterns.Length];
+            for (int i = 0; i < state.patterns.Length; i++) {
+                options[i] = new RngOption(state.patterns[i] == LevelProperties.Dragon.Pattern.Peashot ? "Peashot" : "Meteor", i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    /// <summary>One option per meteor direction sequence of the state, worded per letter
+    /// (a comma fires an extra up meteor - the game's default branch treats every
+    /// non-direction character as Up).</summary>
+    private static RngOption[] DragonMeteorOptions(Level.Mode mode, LevelProperties.Dragon.States stateName, int occurrence) {
+        try {
+            LevelProperties.Dragon.State state = DragonStateFor(mode, stateName, occurrence);
+            if (state == null) {
+                return new RngOption[0];
+            }
+            string[] rows = state.meteor.pattern;
+            RngOption[] options = new RngOption[rows.Length];
+            for (int i = 0; i < rows.Length; i++) {
+                options[i] = new RngOption(DragonMeteorLabel(rows[i]), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
+    }
+
+    private static string DragonMeteorLabel(string row) {
+        List<string> words = new List<string>();
+        foreach (char c in row) {
+            switch (c) {
+                case 'D':
+                    words.Add("Down");
+                    break;
+                case 'B':
+                    words.Add("Both");
+                    break;
+                case 'F':
+                    words.Add("Forward");
+                    break;
+                default:
+                    words.Add("Up"); // U, and the vanilla comma quirk
+                    break;
+            }
+        }
+        return string.Join("-", words.ToArray());
+    }
+
+    /// <summary>Whether the state's head-attack cycle can roll the given pattern.</summary>
+    private static bool DragonCycleHas(Level.Mode mode, LevelProperties.Dragon.States stateName, int occurrence, LevelProperties.Dragon.Pattern pattern) {
+        try {
+            LevelProperties.Dragon.State state = DragonStateFor(mode, stateName, occurrence);
+            if (state == null) {
+                return false;
+            }
+            foreach (LevelProperties.Dragon.Pattern entry in state.patterns) {
+                if (entry == pattern) {
+                    return true;
+                }
+            }
+        } catch (Exception) {
+        }
+        return false;
+    }
+
+    /// <summary>One option per zinger volley pattern of the state.</summary>
+    private static RngOption[] DragonPeashotOptions(Level.Mode mode, LevelProperties.Dragon.States stateName, int occurrence) {
+        try {
+            LevelProperties.Dragon.State state = DragonStateFor(mode, stateName, occurrence);
+            if (state == null) {
+                return new RngOption[0];
+            }
+            string[] rows = state.peashot.patternString;
+            RngOption[] options = new RngOption[rows.Length];
+            for (int i = 0; i < rows.Length; i++) {
+                options[i] = new RngOption(rows[i].Trim(), i);
+            }
+            return options;
+        } catch (Exception) {
+        }
+        return new RngOption[0];
     }
 
     /// <summary>One option per entry of the horse's wave/drop attack cycle.</summary>

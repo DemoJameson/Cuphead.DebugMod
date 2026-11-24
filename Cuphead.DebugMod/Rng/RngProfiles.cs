@@ -695,6 +695,22 @@ internal static class RngProfiles {
             perfect.GetOrCreateSpot(clownBumperDelay.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(8, 1f));
         }
 
+        // Ported from the old Grim Matchstick preset: Regular's phase 3 cycle starts with
+        // Peashot, phase 1 fires three zingers per peashot attack and phase 3 starts with
+        // the two-zinger volley.
+        RngSpot dragonPhase3Pattern = RngSpots.FindForMode(RngSpots.DragonGeneric2Pattern, Level.Mode.Normal);
+        RngSpot dragonPhase1Peashot = RngSpots.FindForMode(RngSpots.DragonMainPeashot, Level.Mode.Normal);
+        RngSpot dragonPhase3Peashot = RngSpots.FindForMode(RngSpots.DragonGeneric2Peashot, Level.Mode.Normal);
+        if (dragonPhase3Pattern != null) {
+            perfect.GetOrCreateSpot(dragonPhase3Pattern.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(1, 1f));
+        }
+        if (dragonPhase1Peashot != null) {
+            perfect.GetOrCreateSpot(dragonPhase1Peashot.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+        if (dragonPhase3Peashot != null) {
+            perfect.GetOrCreateSpot(dragonPhase3Peashot.Key(Level.Mode.Normal)).Pool.Add(new RngPoolEntry(0, 1f));
+        }
+
         Profiles[PerfectName] = perfect;
     }
 

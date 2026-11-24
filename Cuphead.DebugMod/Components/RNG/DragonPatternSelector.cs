@@ -1,270 +1,115 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+using BepInEx.CupheadDebugMod.Rng;
 using HarmonyLib;
 using MonoMod.Cil;
-using UnityEngine;
-using static BepInEx.CupheadDebugMod.Config.Settings;
-using static BepInEx.CupheadDebugMod.Config.SettingsEnums;
 using OpCodes = Mono.Cecil.Cil.OpCodes;
 
 namespace BepInEx.CupheadDebugMod.Components.RNG;
 
+// All values come from RngState, which passes vanilla results through untouched and only
+// resolves configured spots (see Rng/RngSpots.cs for the catalog).
 [HarmonyPatch]
-internal class DragonPatternSelector {
+internal class DragonPatternSelector : PluginComponent {
 
-    [HarmonyPatch(typeof(DragonLevel), nameof(DragonLevel.OnStateChanged))]
-    [HarmonyPrefix]
+    private static Level.Mode Mode => Level.ScoringData.difficulty;
 
-    // pattern index seems to get regenerated in phases 2 and 3
-    public static void DragonPatternManipulator(ref DragonLevel __instance) {
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-            if (IsWithinPhase(0.75f, 0.45f)) {
-                if (DragonPhaseTwoPatternEasy.Value != DragonPhaseTwoPatternsEasy.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DragonPhaseTwoPatternsEasy>((int) DragonPhaseTwoPatternEasy.Value);
-                }
-            }
-        } else if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            if (IsWithinPhase(0.82f, 0.63f)) {
-                if (DragonPhaseThreePatternNormal.Value != DragonPhaseThreePatternsNormal.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DragonPhaseThreePatternsNormal>((int) DragonPhaseThreePatternNormal.Value);
-                }
-            }
-        } else if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            if (IsWithinPhase(0.9f, 0.64f)) {
-                if (DragonPhaseTwoPatternHard.Value != DragonPhaseTwoPatternsHard.Random) {
-                    __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DragonPhaseTwoPatternsHard>((int) DragonPhaseTwoPatternHard.Value);
-                }
-            }
+    // The head's attack cycle is decided once per fight when the level's State objects
+    // are constructed, and NextPattern only walks an index forward from there. All
+    // spots are therefore resolved up-front against the fight's own states, matched by
+    // state name and occurrence (Regular has two Generic states). NextPattern advances
+    // the index before reading it, hence preIncrement.
+    [HarmonyPatch(typeof(DragonLevel), nameof(DragonLevel.PartialInit))]
+    [HarmonyPostfix]
+    private static void TailCycleManipulator(DragonLevel __instance) {
+        LevelProperties.Dragon.State[] states = (LevelProperties.Dragon.State[])RngSpots.FindField(
+            typeof(LevelProperties.Dragon), "states").GetValue(__instance.properties);
+        if (states == null) {
+            return;
         }
-    }
-
-    [HarmonyPatch(typeof(DragonLevel), nameof(DragonLevel.Start))]
-    [HarmonyPrefix]
-    public static void DragonPhaseOnePatternManipulator(ref DragonLevel __instance) {
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-            if (DragonPhaseOnePatternEasy.Value != DragonPhaseOnePatternsEasy.Random) {
-                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DragonPhaseOnePatternsEasy>((int) DragonPhaseOnePatternEasy.Value);
-            }
-        }
-        else if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            if (DragonPhaseOnePatternHard.Value != DragonPhaseOnePatternsHard.Random) {
-                __instance.properties.CurrentState.patternIndex = Utility.GetUserPattern<DragonPhaseOnePatternsHard>((int) DragonPhaseOnePatternHard.Value);
-            }
-        }
-    }
-
-    // Skipping over original method and replacing with a modified peashot_cr(). This avoids having to modify peashot_cr() through IL.
-    [HarmonyPatch(typeof(DragonLevelDragon), nameof(DragonLevelDragon.StartPeashot))]
-    [HarmonyPrefix]
-    public static bool PeashotManipulator(DragonLevelDragon __instance) {
-        __instance.state = DragonLevelDragon.State.Peashot;
-        __instance.StartCoroutine(new_peashot_cr(__instance));
-        return false;
-    }
-
-
-    private static IEnumerator new_peashot_cr(DragonLevelDragon __instance) {
-        LevelProperties.Dragon.Peashot p = __instance.properties.CurrentState.peashot;
-        int peashotIndex = -1;
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-            if (IsWithinPhase(1f, 0.75f)) {
-                if (DragonPhaseOneLaserPatternEasy.Value != DragonPhaseOneLaserPatternsEasy.Random) {
-                    peashotIndex = (int) DragonPhaseOneLaserPatternEasy.Value - 1;
-                }
-            }
-            if (IsWithinPhase(0.75f, 0.45f)) {
-                if (DragonPhaseTwoLaserPatternEasy.Value != DragonPhaseTwoLaserPatternsEasy.Random) {
-                    peashotIndex = (int) DragonPhaseTwoLaserPatternEasy.Value - 1;
-                }
-            }
-        }
-
-
-        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            if (IsWithinPhase(1.0f, 0.92f)) {
-                if (DragonPhaseOneLaserPatternNormal.Value != DragonPhaseOneLaserPatternsNormal.Random) {
-                    peashotIndex = (int) DragonPhaseOneLaserPatternNormal.Value - 1;
-                }
-            }
-            if (IsWithinPhase(0.82f, 0.63f)) {
-                if (DragonPhaseThreeLaserPatternNormal.Value != DragonPhaseThreeLaserPatternsNormal.Random) {
-                    peashotIndex = (int) DragonPhaseThreeLaserPatternNormal.Value - 1;
-                }
-            }
-        }
-
-        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            if (IsWithinPhase(1.0f, 0.9f)) {
-                if (DragonPhaseOneLaserPatternHard.Value != DragonPhaseOneLaserPatternsHard.Random) {
-                    peashotIndex = (int) DragonPhaseOneLaserPatternHard.Value - 1;
-                }
-            }
-            if (IsWithinPhase(0.9f, 0.64f)) {
-                if (DragonPhaseTwoLaserPatternHard.Value != DragonPhaseTwoLaserPatternsHard.Random) {
-                    peashotIndex = (int) DragonPhaseTwoLaserPatternHard.Value - 1;
-                }
-            }
-        }
-        string[] pattern;
-
-        if (peashotIndex != -1) { 
-            pattern = p.patternString[peashotIndex].Split(new char[]
-            {
-                ','
-            });
-        } else {
-            pattern = p.patternString.GetRandom<string>().Split(new char[]
-            {
-                ','
-            });
-        }
-
-
-        __instance.animator.SetBool("Peashot", true);
-        yield return __instance.animator.WaitForAnimationToEnd(__instance, "Peashot_In", false);
-        __instance.animator.Play("Peashot_Zinger");
-        for (int i = 0; i < pattern.Length; i++) {
-            if (pattern[i].ToLower() == "p") {
-                __instance.peashotRoot.LookAt2D(PlayerManager.GetNext().center);
-                for (int c = 0; c < p.colorString.Length; c++) {
-                    int color = 0;
-                    char c2 = p.colorString[c];
-                    if (c2 != 'O') {
-                        if (c2 != 'P') {
-                            if (c2 == 'B') {
-                                color = 1;
-                            }
-                        } else {
-                            color = 2;
-                        }
-                    } else {
-                        color = 0;
-                    }
-                    AudioManager.Play("level_dragon_left_dragon_peashot_fire");
-                    __instance.emitAudioFromObject.Add("level_dragon_left_dragon_peashot_fire");
-                    (__instance.peashotPrefab.Create(__instance.peashotRoot.position, __instance.peashotRoot.eulerAngles.z, p.speed) as DragonLevelPeashot).color = color;
-                    yield return CupheadTime.WaitForSeconds(__instance, p.shotDelay);
-                }
+        int generics = 0;
+        foreach (LevelProperties.Dragon.State state in states) {
+            string spotId;
+            if (state.stateName == LevelProperties.Dragon.States.Main) {
+                spotId = RngSpots.DragonMainPattern;
+            } else if (state.stateName == LevelProperties.Dragon.States.Generic) {
+                spotId = generics == 0 ? RngSpots.DragonGeneric1Pattern : RngSpots.DragonGeneric2Pattern;
+                generics++;
             } else {
-                float delay = 0f;
-                float.TryParse(pattern[i], out delay);
-                yield return CupheadTime.WaitForSeconds(__instance, delay);
+                continue; // FireMarchers/ThreeHeads have no head-attack cycle
             }
+            if (state.patterns.Length < 2) {
+                continue; // single-entry cycles have no start roll
+            }
+            state.patternIndex = RngState.Index(spotId, Mode, state.patternIndex, state.patterns.Length, true);
         }
-        __instance.animator.SetBool("Peashot", false);
-        yield return __instance.animator.WaitForAnimationToStart(__instance, "Peashot_Out", false);
-        AudioManager.Play("level_dragon_left_dragon_peashot_out");
-        __instance.emitAudioFromObject.Add("level_dragon_left_dragon_peashot_out");
-        yield return CupheadTime.WaitForSeconds(__instance, p.hesitate);
-        __instance.state = DragonLevelDragon.State.Idle;
-        yield break;
     }
 
-    // Skipping over original method and replacing with a modified meteor_cr(). This avoids having to modify meteor_cr() through IL.
-    [HarmonyPatch(typeof(DragonLevelDragon), nameof(DragonLevelDragon.StartMeteor))]
-    [HarmonyPrefix]
-    public static bool MeteorManipulator(DragonLevelDragon __instance) {
-        __instance.state = DragonLevelDragon.State.Meteor;
-        __instance.StartCoroutine(new_meteor_cr(__instance));
-        return false;
+    // The meteor and peashot volley patterns are re-rolled per attack from the current
+    // state's rows. The roll is a GetRandom call over a row array, so the array itself
+    // is swapped for a one-row array when configured - the game's own body keeps running
+    // (no version-drift risk, unlike the legacy wholesale replacements), and the vanilla
+    // stream is untouched either way.
+    [HarmonyPatch(typeof(DragonLevelDragon), nameof(DragonLevelDragon.peashot_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void PeashotManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        if (ilCursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Ldfld && i.Operand?.ToString().Contains("Peashot::patternString") == true)) {
+            ilCursor.EmitDelegate<Func<string[], string[]>>(rows => SwapRows(rows, true));
+        }
     }
 
-    private static IEnumerator new_meteor_cr(DragonLevelDragon __instance) {
-        __instance.currentMeteorProperties = __instance.properties.CurrentState.meteor;
-        char[] meteorPattern = null ;
-
-        if (Level.ScoringData.difficulty == Level.Mode.Easy) {
-            if (IsWithinPhase(1f, 0.75f)) {
-                if (DragonPhaseOneMeteorPatternEasy.Value != DragonPhaseOneMeteorPatternsEasy.Random) {
-                    meteorPattern = DragonPhaseOneMeteorPatternEasy.Value.ToString().ToCharArray();
-                }
-            }
-            if (IsWithinPhase(0.75f, 0.45f)) {
-                if (DragonPhaseTwoMeteorPatternEasy.Value != DragonPhaseTwoMeteorPatternsEasy.Random) {
-                    meteorPattern = DragonPhaseTwoMeteorPatternEasy.Value.ToString().ToCharArray();
-                }
-            }
+    [HarmonyPatch(typeof(DragonLevelDragon), nameof(DragonLevelDragon.meteor_cr), MethodType.Enumerator)]
+    [HarmonyILManipulator]
+    private static void MeteorManipulator(ILContext il) {
+        ILCursor ilCursor = new(il);
+        if (ilCursor.TryGotoNext(MoveType.After,
+                i => i.OpCode == OpCodes.Ldfld && i.Operand?.ToString().Contains("Meteor::pattern") == true)) {
+            ilCursor.EmitDelegate<Func<string[], string[]>>(rows => SwapRows(rows, false));
         }
-        if (Level.ScoringData.difficulty == Level.Mode.Normal) {
-            if (IsWithinPhase(0.92f, 0.82f)) {
-                if (DragonPhaseTwoMeteorPatternNormal.Value != DragonPhaseTwoMeteorPatternsNormal.Random) {
-                    meteorPattern = DragonPhaseTwoMeteorPatternNormal.Value.ToString().ToCharArray();
-                }
-            }
-            if (IsWithinPhase(0.82f, 0.63f)) {
-                if (DragonPhaseThreeMeteorPatternNormal.Value != DragonPhaseThreeMeteorPatternsNormal.Random) {
-                    meteorPattern = DragonPhaseThreeMeteorPatternNormal.Value.ToString().ToCharArray();
-                }
-            }
-        }
-        if (Level.ScoringData.difficulty == Level.Mode.Hard) {
-            if (IsWithinPhase(1f, 0.9f)) {
-                if (DragonPhaseOneMeteorPatternHard.Value != DragonPhaseOneMeteorPatternsHard.Random) {
-                    meteorPattern = DragonPhaseOneMeteorPatternHard.Value.ToString().ToCharArray();
-                }
-            }
-            if (IsWithinPhase(0.9f, 0.64f)) {
-                if (DragonPhaseTwoMeteorPatternHard.Value != DragonPhaseTwoMeteorPatternsHard.Random) {
-                    meteorPattern = DragonPhaseTwoMeteorPatternHard.Value.ToString().ToCharArray();
-                }
-            }
-        }
-
-        if (meteorPattern.IsNullOrEmpty()) {
-            meteorPattern = __instance.currentMeteorProperties.pattern.GetRandom<string>().ToCharArray();
-        }
-
-        __instance.animator.SetTrigger("OnMeteor");
-        __instance.animator.SetBool("Repeat", true);
-        yield return __instance.animator.WaitForAnimationToStart(__instance, "MeteorStart", false);
-        AudioManager.Play("level_dragon_left_dragon_meteor_start");
-        __instance.emitAudioFromObject.Add("level_dragon_left_dragon_meteor_start");
-        for (int i = 0; i < meteorPattern.Length; i++) {
-            char c = meteorPattern[i];
-            switch (c) {
-                case 'B':
-                    __instance.meteorState = DragonLevelMeteor.State.Both;
-                    break;
-                default:
-                    if (c != 'U') {
-                    }
-                    __instance.meteorState = DragonLevelMeteor.State.Up;
-                    break;
-                case 'D':
-                    __instance.meteorState = DragonLevelMeteor.State.Down;
-                    break;
-                case 'F':
-                    __instance.meteorState = DragonLevelMeteor.State.Forward;
-                    break;
-            }
-            if (i >= meteorPattern.Length - 1) {
-                __instance.animator.SetBool("Repeat", false);
-            }
-            yield return __instance.animator.WaitForAnimationToStart(__instance, "Meteor_Anticipation_Loop", false);
-            AudioManager.Play("level_dragon_left_dragon_meteor_anticipation_loop");
-            __instance.emitAudioFromObject.Add("level_dragon_left_dragon_meteor_anticipation_loop");
-            yield return CupheadTime.WaitForSeconds(__instance, __instance.currentMeteorProperties.shotDelay);
-            __instance.animator.SetTrigger("OnMeteor");
-            AudioManager.Stop("level_dragon_left_dragon_meteor_anticipation_loop");
-            yield return __instance.animator.WaitForAnimationToStart(__instance, "Meteor_Attack", false);
-            AudioManager.Play("level_dragon_left_dragon_meteor_attack");
-            yield return __instance.animator.WaitForAnimationToEnd(__instance, "Meteor_Attack", false);
-        }
-        yield return __instance.animator.WaitForAnimationToEnd(__instance, "Meteor_Attack_End", false);
-        yield return CupheadTime.WaitForSeconds(__instance, __instance.currentMeteorProperties.hesitate);
-        __instance.state = DragonLevelDragon.State.Idle;
-        yield break;
     }
 
-    protected static bool IsWithinPhase(float phaseStart, float phaseEnd) {
-        // i'm not actually sure on the inclusivity of values here ( <, > vs <=, >=). i'm taking a guess.
-        return
-        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health <= phaseStart &&
-        (Level.Current.timeline.health - Level.Current.timeline.damage) / Level.Current.timeline.health > phaseEnd;
+    // The rows belong to the state that is current when the attack starts, so the spot is
+    // resolved from the live fight: Main, the first Generic or the second Generic
+    // (Regular only). The later states have no spots.
+    private static string[] SwapRows(string[] rows, bool peashot) {
+        DragonLevel level = Level.Current as DragonLevel;
+        if (level == null || rows == null || rows.Length < 2) {
+            return rows;
+        }
+        LevelProperties.Dragon.State[] states = (LevelProperties.Dragon.State[])RngSpots.FindField(
+            typeof(LevelProperties.Dragon), "states").GetValue(level.properties);
+        LevelProperties.Dragon.State current = level.properties.CurrentState;
+        if (states == null || current == null) {
+            return rows;
+        }
+        int index = -1;
+        for (int i = 0; i < states.Length; i++) {
+            if (states[i] == current) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            return rows;
+        }
+        int generics = 0;
+        for (int i = 0; i < index; i++) {
+            if (states[i].stateName == LevelProperties.Dragon.States.Generic) {
+                generics++;
+            }
+        }
+        string spotId;
+        if (current.stateName == LevelProperties.Dragon.States.Main) {
+            spotId = peashot ? RngSpots.DragonMainPeashot : RngSpots.DragonMainMeteor;
+        } else if (current.stateName == LevelProperties.Dragon.States.Generic && generics == 0) {
+            spotId = peashot ? RngSpots.DragonGeneric1Peashot : RngSpots.DragonGeneric1Meteor;
+        } else if (current.stateName == LevelProperties.Dragon.States.Generic) {
+            spotId = peashot ? RngSpots.DragonGeneric2Peashot : RngSpots.DragonGeneric2Meteor;
+        } else {
+            return rows;
+        }
+        int pick = RngState.Index(spotId, Mode, -1, rows.Length, false);
+        return pick >= 0 ? new[] { rows[pick] } : rows;
     }
-
 }

@@ -79,23 +79,6 @@ public class Settings : PluginComponent {
     public static ConfigEntry<KeyboardShortcut> RngMenu;
     public static ConfigEntry<bool> EnablePatternForms;
 
-    public static ConfigEntry<DragonPhaseOnePatternsEasy> DragonPhaseOnePatternEasy;
-    public static ConfigEntry<DragonPhaseTwoPatternsEasy> DragonPhaseTwoPatternEasy;
-    public static ConfigEntry<DragonPhaseThreePatternsNormal> DragonPhaseThreePatternNormal;
-    public static ConfigEntry<DragonPhaseOnePatternsHard> DragonPhaseOnePatternHard;
-    public static ConfigEntry<DragonPhaseTwoPatternsHard> DragonPhaseTwoPatternHard;
-    public static ConfigEntry<DragonPhaseOneLaserPatternsEasy> DragonPhaseOneLaserPatternEasy;
-    public static ConfigEntry<DragonPhaseTwoLaserPatternsEasy> DragonPhaseTwoLaserPatternEasy;
-    public static ConfigEntry<DragonPhaseOneLaserPatternsNormal> DragonPhaseOneLaserPatternNormal;
-    public static ConfigEntry<DragonPhaseThreeLaserPatternsNormal> DragonPhaseThreeLaserPatternNormal;
-    public static ConfigEntry<DragonPhaseOneLaserPatternsHard> DragonPhaseOneLaserPatternHard;
-    public static ConfigEntry<DragonPhaseTwoLaserPatternsHard> DragonPhaseTwoLaserPatternHard;
-    public static ConfigEntry<DragonPhaseOneMeteorPatternsEasy> DragonPhaseOneMeteorPatternEasy;
-    public static ConfigEntry<DragonPhaseTwoMeteorPatternsEasy> DragonPhaseTwoMeteorPatternEasy;
-    public static ConfigEntry<DragonPhaseTwoMeteorPatternsNormal> DragonPhaseTwoMeteorPatternNormal;
-    public static ConfigEntry<DragonPhaseThreeMeteorPatternsNormal> DragonPhaseThreeMeteorPatternNormal;
-    public static ConfigEntry<DragonPhaseOneMeteorPatternsHard> DragonPhaseOneMeteorPatternHard;
-    public static ConfigEntry<DragonPhaseTwoMeteorPatternsHard> DragonPhaseTwoMeteorPatternHard;
     public static ConfigEntry<BeePhaseTwoPatternsEasy> BeePhaseTwoPatternEasy;
     public static ConfigEntry<BeePhaseTwoPatternsNormal> BeePhaseTwoPatternNormal;
     public static ConfigEntry<BeePhaseTwoPatternsHard> BeePhaseTwoPatternHard;
@@ -272,23 +255,6 @@ public class Settings : PluginComponent {
         ShowSimpleExpertRNG.SettingChanged += ShowSimpleExpertRNGOnSettingChanged;
         ShowUnusedLevels = config.Bind("Misc", "Show Unused Levels / Items", false, --order);
 
-        DragonPhaseOnePatternEasy = config.Bind("RNG Grim Matchstick", "Phase 1 Pattern Simple", DragonPhaseOnePatternsEasy.Random, --order);
-        DragonPhaseTwoPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 2 Pattern Simple", DragonPhaseTwoPatternsEasy.Random, --order);
-        DragonPhaseThreePatternNormal = config.Bind("RNG Grim Matchstick", "Phase 3 Pattern Regular", DragonPhaseThreePatternsNormal.Random, --order);
-        DragonPhaseOnePatternHard = config.Bind("RNG Grim Matchstick", "Phase 1 Pattern Expert", DragonPhaseOnePatternsHard.Random, --order);
-        DragonPhaseTwoPatternHard = config.Bind("RNG Grim Matchstick", "Phase 2 Pattern Expert", DragonPhaseTwoPatternsHard.Random, --order);
-        DragonPhaseOneLaserPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 1 Laser Pattern Simple", DragonPhaseOneLaserPatternsEasy.Random, --order);
-        DragonPhaseTwoLaserPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 2 Laser Pattern Simple", DragonPhaseTwoLaserPatternsEasy.Random, --order);
-        DragonPhaseOneMeteorPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 1 Meteor Pattern Simple", DragonPhaseOneMeteorPatternsEasy.Random, --order);
-        DragonPhaseTwoMeteorPatternEasy = config.Bind("RNG Grim Matchstick", "Phase 2 Meteor Pattern Simple", DragonPhaseTwoMeteorPatternsEasy.Random, --order);
-        DragonPhaseOneLaserPatternNormal = config.Bind("RNG Grim Matchstick", "Phase 1 Laser Pattern Regular", DragonPhaseOneLaserPatternsNormal.Random, --order);
-        DragonPhaseThreeLaserPatternNormal = config.Bind("RNG Grim Matchstick", "Phase 3 Laser Pattern Regular", DragonPhaseThreeLaserPatternsNormal.Random, --order);
-        DragonPhaseTwoMeteorPatternNormal = config.Bind("RNG Grim Matchstick", "Phase 2 Meteor Pattern Regular", DragonPhaseTwoMeteorPatternsNormal.Random, --order);
-        DragonPhaseThreeMeteorPatternNormal = config.Bind("RNG Grim Matchstick", "Phase 3 Meteor Pattern Regular", DragonPhaseThreeMeteorPatternsNormal.Random, --order);
-        DragonPhaseOneMeteorPatternHard = config.Bind("RNG Grim Matchstick", "Phase 1 Meteor Pattern Expert", DragonPhaseOneMeteorPatternsHard.Random, --order);
-        DragonPhaseTwoMeteorPatternHard = config.Bind("RNG Grim Matchstick", "Phase 2 Meteor Pattern Expert", DragonPhaseTwoMeteorPatternsHard.Random, --order);
-        DragonPhaseOneLaserPatternHard = config.Bind("RNG Grim Matchstick", "Phase 1 Laser Pattern Expert", DragonPhaseOneLaserPatternsHard.Random, --order);
-        DragonPhaseTwoLaserPatternHard = config.Bind("RNG Grim Matchstick", "Phase 2 Laser Pattern Expert", DragonPhaseTwoLaserPatternsHard.Random, --order);
         BeePhaseTwoPatternEasy = config.Bind("RNG Rumor Honeybottoms", "Phase 2 Simple", BeePhaseTwoPatternsEasy.Random, --order);
         BeePhaseTwoPatternNormal = config.Bind("RNG Rumor Honeybottoms", "Phase 2 Regular", BeePhaseTwoPatternsNormal.Random, --order);
         BeePhaseTwoPatternHard = config.Bind("RNG Rumor Honeybottoms", "Phase 2 Expert", BeePhaseTwoPatternsHard.Random, --order);
